@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript">
+		function *show() {
+			alert('a');
+			let a = yield;
+			alert('b');
+			alert(a);
+		}
+		let gen = show();
+		//next方法可以带一个参数，该参数就会被当作上一个yield表达式的返回值。
+		gen.next(12);//执行的是第一个yield之前（包括yield在内）的代码部分
+		gen.next(5);//执行的是第一个yield之后到第二个yield之间的代码部分
+	</script>
+</head>
+<body>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript">
+		window.onload = function () {
+			var aBtn = document.getElementsByTagName('input');
+/*			for (var i = 0; i < aBtn.length; i++) {
+				(function (i) {
+					aBtn[i].onclick = function () {
+						alert(i);
+					} 
+				})(i);//f()()执行子函数，返回孙函数,里面的那个匿名函数就是子函数
+			}*/
+			for (let i = 0; i < aBtn.length; i++) {
+				aBtn[i].onclick = function () {
+					alert(i);
+				} 
+			}
+		}
+	</script>
+</head>
+<body>
+	<input type="button" value="1">
+	<input type="button" value="2">
+	<input type="button" value="3">
+</body>
+</html>

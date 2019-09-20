@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript" src="jquery-3.4.1/jquery-3.4.1.js"></script>
+	<script>
+			let p = new Promise(function(resolve,reject){
+				//异步代码
+				//resolve:成功
+				//reject:失败
+				$.ajax({
+					url:'data/arr.txt',
+					dataType:'json',
+					success(arr){
+						resolve(arr);
+					},
+					error(err){
+						reject(err);
+					}
+				})
+			});
+
+			p.then(function(arr){
+				alert('成功'+arr);
+			},function(err){
+				console.log(err);
+				alert('失败');
+			})
+	</script>
+
+</head>
+
+<body>
+
+</body>
+</html>
