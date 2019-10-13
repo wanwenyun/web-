@@ -1,0 +1,3 @@
+Nodejs也是JS
+
+JS能用的NodeJS也能用

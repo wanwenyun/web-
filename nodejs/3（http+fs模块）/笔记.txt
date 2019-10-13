@@ -1,0 +1,10 @@
+http--模块
+
+文件操作:fs--File System
+
+异步vs同步
+异步-多个操作可以同时操作，前一次的操作没做完，后一次也可以开始
+同步-一次一个操作
+
+readFile(文件名，function（err，data）{})；
+writeFile(文件名，内容，function（err）{})
