@@ -51,11 +51,11 @@ export default function App() {
 
 新生命周期：（v16.3）
 
-![截屏2022-04-12 下午12.02.50](./picture/React-学习笔记.assets/截屏2022-04-12 下午12.02.50.png)
+![截屏2022-04-12 下午12.02.50](./picture/React-学习笔记.assets/1.png)
 
 废弃了`componentWillMount componentWillReceiveProps componentWillUpdate` 这三个生命周期钩子函数。并为他们取了别名`UNSAFE_componentWillMount UNSAFE_componentWillReceiveProps UNSAFE_componentWillUpdate`。
 
-![截屏2022-04-12 下午12.03.01](./picture/React-学习笔记.assets/截屏2022-04-12 下午12.03.01.png)
+![截屏2022-04-12 下午12.03.01](./picture/React-学习笔记.assets/2.png)
 
 *参考链接 [https://juejin.cn/post/6914112105964634119](https://juejin.cn/post/6914112105964634119)*
 
@@ -68,5 +68,3 @@ export default function App() {
 *学习地址 [https://github.com/Wscats/react-tutorial/tree/master/react/redux](https://github.com/Wscats/react-tutorial/tree/master/react/redux)*
 
 ## dobux
-
- 
