@@ -2,7 +2,7 @@ React篇（建议可以从第四点的reack-hooks学习大全开始看）
 
 # 了解useCallback、useMemo、React.memo的使用时机
 
->学习地址： [https://juejin.cn/post/7010278471473594404](https://juejin.cn/post/7010278471473594404)
+>学习地址： https://juejin.cn/post/7010278471473594404、https://juejin.cn/post/6844904001998176263
 
 # React.useRef
 
@@ -170,7 +170,34 @@ state最好避免使用复杂类型的值：
 
 useState可以修改数据，数据变更会触发组件重新渲染，上面3个就是和组件渲染关联最紧密的生命周期函数。
 
-useEffect可以用来解决类组件某些执行代码被分散在不同的生命周期函数中的问题。
+`useEffect(effect,[deps])`函数可以传入2个参数，第1个参数为我们定义的执行函数、第2个参数是依赖关系(可选参数)。若一个函数组件中定义了多个useEffect，那么他们实际执行顺序是按照在代码中定义的先后顺序来执行的。
+使用方式:
+```js
+useEffect(() => {
+    //此处编写 组件挂载之后和组件重新渲染之后执行的代码
+    ...
+
+    return () => {
+        //此处编写 组件即将被卸载前执行的代码
+        ...
+    }
+},[deps])
+```
+1. effect 函数主体内容中的代码，就是组件挂载之后和组件重新渲染之后你需要执行的代码；
+2. effect 函数 return 出去的返回函数主体内容中的代码，就是组件即将被卸载前你需要执行的代码；
+3. 第2个参数 [deps]，为可选参数，若有值则向React表明该useEffect是依赖哪些变量发生改变而触发的；
+
+`effect`补充说明
+1. 若你不需要在组件卸载前执行任何代码，那么可以忽略不写 effect 中的 return相关代码；
+
+`[deps]`补充说明：
+1. 若缺省，则组件挂载、组件重新渲染、组件即将被卸载前，每一次都会触发该useEffect；
+2. 若传值，则必须为数组，数组的内容是函数组件中通过useState自定义的变量或者是父组件传值过来的props中的变量，告诉React只有数组内的变量发生变化时才会触发useEffect；
+3. 若传值，但是传的是`空数组[]`，则表示该useEffect里的内容仅会在“挂载完成后和组件即将被卸载前”执行一次；
+
+
+
+useEffect还可以用来解决类组件某些执行代码被分散在不同的生命周期函数中的问题。
 
 例如：
 举例1：若某类组件中有变量a，默认值为0，当组件第一次被挂载后或组件重新渲染后，将网页标题显示为a的值。
@@ -187,16 +214,173 @@ componentDidUpdate(){
 ```
 相同的代码需要在componentDidMount、componentDidUpdate中写两次。
 
+在函数组件中使用useEffect：
+```js
+import React, { useState,useEffect} from 'react';
+
+function Component() {
+  const [a, setA] = useState(0);//定义变量a，并且默认值为0
+  useEffect(() => {
+      //无论是第一次挂载还是以后每次组件更新，修改网页标题的执行代码只需要在这里写一次即可
+      document.title = `${a} - ${Math.floor(Math.random()*100)}`;
+  })
+  const clickAbtHandler = (eve) =>{
+      setA(a+1);
+  }
+  return <div>
+      {a}
+      <button onClick={clickAbtHandler}>a+1</button>
+    </div>
+}
+
+export default Component;
+```
+
+
+## *useContext*
+它的作用是“勾住”获取由React.createContext()创建、<XxxContext.Provider>添加设置的共享数据value值。useContext可以替代<XxxContext.Consumer>标签，简化获取共享数据的代码。
+
+我们知道，原本不同级别的组件之间传递属性值，必须逐层传递，即使中间层的组件不需要这些数据。
+
+在旧版的react中，可以通过以下方式进行数据传递：[参考链接](https://zh-hans.reactjs.org/docs/context.html#reactcreatecontext)
+
+1. 在组件顶层或单独的模块中，由React.createContext()创建一个共享数据对象；
+2. 在父组件中添加共享数据对象的引用，通过且只能通过`<XxxContext.provider value={{xx:'xxx'}}></XxxContext.provider>`的形式将数据传递给子组件。
+3. 若某一层的子组件需要用到共享数据对象的数据，则可通过`<XxxContext.Consumer></XxxContext.Consumer>`获取到数据；
+4. 在类组件中除了`<XxxContext.Consumer>`标签，还有另外一种获取共享数据方式：`static xxx = XxxContext`; 但是这种形式在函数组件中无法使用。
+
+**`useContext`是`<XxxContext.Consumer>`的替代品，可以大量简化获取共享数据值的代码。**
+
+### 基本使用方法：
+```js
+import GlobalContext from './global-context'; //引入共享数据对象
+
+function Component(){
+  const global = useContext(GlobalContext); //在函数组件中声明一个变量来代表该共享数据对象的value值
+  //若想获取共享数据对象中的属性xxx的值，直接使用global.xxx即可
+  return <div>
+    {global.xxx}
+  </div>
+}
+```
+需要注意的是，这里执行的依然是`单向数据流`，只可以获取global.xx，不可以直接更改global.xx。
+
+### 父组件同时传递多个共享数据值给1个子组件：
+```js
+import React,{ useContext } from 'react'
+
+const UserContext = React.createContext();
+const NewsContext = React.createContext();
+
+function AppComponent() {
+  return (
+    <UserContext.Provider value={{name:'puxiao'}}>
+        <NewsContext.Provider value={{title:'Hello React Hook.'}}>
+            <ChildComponent />
+        </NewsContext.Provider>
+    </UserContext.Provider>
+  )
+}
+
+function ChildComponent(){
+  const user = useContext(UserContext);
+  const news = useContext(NewsContext);
+  return <div>
+    {user.name} - {news.title}
+  </div>
+}
+
+export default AppComponent;
+```
+1. 父组件同时要实现传递2个共享数据对象value值，需要使用<XxxContext.Provider value={obj}>标签进行2次嵌套。
+2. 子组件使用了useContext，他可以自由随意使用父组件传递过来的共享数据value，并不需要多次嵌套获取。
+
+
+### 为什么不使用Redux？
+在Hook出现以前，React主要负责视图层的渲染，并不负责组件数据状态管理，所以才有了第三方Redux模块，专门来负责React的数据管理。
+
+但是自从有了Hook后，使用React Hook 进行函数组件开发，实现数据状态管理变得切实可行。只要根据实际项目需求，使用useContext以及下一章节要学习的useReducer，一定程度上是可以满足常见需求的。
+
+`但useContext不能完全替代redux`，因为Context不支持只订阅Context中局部的value，只要context valve一变，所有依赖了此Context的组件就全部render。
+
+## *useReducer*
+useReducer是useState的升级版(实际上应该是原始版)，可以实现复杂逻辑修改，而不是像useState那样只是直接赋值修改。
+
+当state 逻辑较复杂且包含多个子值，或者下一个 state 依赖于之前的 state 等场景下，更适合用useReducer。并且，使用 useReducer 还能给那些会触发深更新的组件做性能优化，因为你可以向子组件传递 dispatch 而不是回调函数 。
+
+### 基础用法：
+
+`const [state, dispatch] = useReducer(reducer, initialArg, init);`
+
+```js
+function init(initialCount) {
+  return {count: initialCount};
+}
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      return {count: state.count + 1};
+    case 'decrement':
+      return {count: state.count - 1};
+    case 'reset':
+      return init(action.payload);
+    default:
+      throw new Error();
+  }
+}
+const initialState = {count: 0};
+function Counter({initialCount}) {
+  const [state, dispatch] = useReducer(reducer, initialCount, init); // 惰性初始化:将 init 函数作为 useReducer 的第三个参数传入，这样初始 state 将被设置为 init(initialArg)
+  return (
+    <>
+      Count: {state.count}
+      <button
+        onClick={() => dispatch({type: 'reset', payload: initialCount})}>
+        Reset
+      </button>
+      <button onClick={() => dispatch({type: 'decrement'})}>-</button>
+      <button onClick={() => dispatch({type: 'increment'})}>+</button>
+    </>
+  );
+}
+```
+
+### 使用useContext和useReducer实现操作全局共享数据
+> 参考链接：https://github.com/puxiao/react-hook-tutorial/blob/master/09%20useReducer%E9%AB%98%E7%BA%A7%E7%94%A8%E6%B3%95.md
+
+在运营活动的项目中（qcact-base）也是采用了这样的方式来实现状态管理，父组件暴露了个方法给子组件，子组件执行了父组件提供的方法，就会触发相应的dispatch。
+
+所以，`使用 useReducer + useContext 可以完全替代redux`。
+
+> Recoil dobux
+## *useCallback、useMemo*
+`useCallback`他的作用是“勾住”组件属性中某些处理函数，创建这些函数对应在react原型链上的变量引用。useCallback第2个参数是处理函数中的依赖变量，只有当依赖变量发生改变时才会重新修改并创建新的一份处理函数。
+```js
+const memoizedCallback = useCallback(
+  () => {
+    doSomething(a, b);
+  },
+  [a, b],
+);
+```
+在a和b的变量值不变的情况下，memoizedCallback的引用不变。即：useCallback的第一个入参函数会被缓存，从而达到渲染性能优化的目的。
+
+`useMemo`他的作用是“减少组件重新渲染时不必要的函数计算”。
+```js
+const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+```
+在a和b的变量值不变的情况下，memoizedValue的值不变。即：useMemo函数的第一个入参函数不会被执行，从而达到节省计算量的目的。
+
+> https://juejin.cn/post/6844904001998176263
+
+## *useRef*
 
 
 # react-redux在类组件中的使用（比较老的用法，但是公司老旧项目会有）
 
 > 学习地址：https://github.com/Wscats/react-tutorial/tree/master/react/redux
 
-
-# dobux
-
-> 官网链接： https://kcfe.github.io/dobux/
 
 # React Diff 原理解析
 > 参考链接：https://km.woa.com/articles/show/511997
