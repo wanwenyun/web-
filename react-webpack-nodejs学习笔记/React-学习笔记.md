@@ -481,6 +481,20 @@ useRef像一个变量，类似于this，就像一个盒子，可以存放任何�
 ## *useImperativeHandle*
 它的作用是“勾住”子组件中某些函数(方法)供父组件调用。
 
+# 自定义hook和CF(common function)的区别
+hook本身就是个函数，那它和普通的函数有什么区别？
+
+什么时候我应该抽hook；什么时候应该放util里，当个通用函数合适？
+
+1. 调用时机不同和调用方法不同。
+在FC里使用的时候，自定义hook和CF都通过import作为FC(Function Component)的一部分，但调用时机不同。hook（因为必须写在顶部），在每次渲染的时候都会调用；但通用函数则需要手动调用。
+2. 命名方式不同。
+hook必须useXXX命名，CF就很灵活了。
+3. 能使用的工具不同。
+hook中可以使用其他hook，比如useEffect， useState；但CF不行，CF只能处理没有hook的逻辑。
+4. 使用场景不同。
+CF可以被用在任何地方，但hook只能被用在FC或者其他hook中。
+
 # 有状态组件、无状态组件
 
 
