@@ -353,7 +353,7 @@ function Counter({initialCount}) {
 
 所以，`使用 useReducer + useContext 可以完全替代redux`。
 
-> Recoil dobux
+> Recoil、dobux状态管理工具. .
 ## *useCallback、useMemo*
 `useCallback`他的作用是“勾住”组件属性中某些处理函数，创建这些函数对应在react原型链上的变量引用。useCallback第2个参数是处理函数中的依赖变量，只有当依赖变量发生改变时才会重新修改并创建新的一份处理函数。
 ```js
@@ -375,6 +375,113 @@ const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
 > https://juejin.cn/post/6844904001998176263
 
 ## *useRef*
+他的作用是“勾住”某些组件挂载完成或重新渲染完成后才拥有的某些对象，并返回该对象的引用。且保证该引用在组件整个生命周期内`固定不变`，都能准确找到我们要找的对象。
+
+`某些对象`主要分为3种：
+1. JSX组件转换后对应的真实DOM对象
+    
+    useRef只能“勾住”小写开头的类似原生标签的组件，自定义组件（大写开头的）无法使用useRef。
+2. 在useEffect中创建的变量
+3. 子组件内自定义的函数(方法)
+
+    由于需要结合useImperativeHandle才可以实现
+
+*<u>主动修改 useRef变量的.current 的值并不会触发组件重新渲染</u>*
+
+接下来具体说说useRef关联对象的2种用法：
+1. 针对 JSX组件，通过属性 ref={xxxRef} 进行关联。
+2. 针对 useEffect中的变量，通过 xxxRef.current 进行关联。
+```js
+//先定义一个xxRef引用变量，用于“勾住”某些组件挂载完成或重新渲染完成后才拥有的某些对象
+const xxRef = useRef(null);
+//针对 JSX组件，通过属性 ref={xxxRef} 进行关联
+<xxx ref={xxRef} />
+//针对 useEffect中的变量，通过 xxxRef.current 进行关联
+useEffect(() => {
+    xxRef.current = xxxxxx;
+},[]);
+```
+
+适用场景：
+1. 自动获得输入框的输入焦点
+
+    思路：需要使用useRef “勾住”这个输入框，当它被挂载到网页后，通过操作原生html的方法，将焦点赋予该输入框上。
+    ```js
+    import React,{useEffect,useRef} from 'react'
+
+    function Component() {
+      //先定义一个inputRef引用变量，用于“勾住”挂载网页后的输入框
+      const inputRef = useRef(null);
+
+      useEffect(() => {
+        //inputRef.current就是挂载到网页后的那个输入框，一个真实DOM，因此可以调用html中的   方法focus()
+        inputRef.current.focus();
+      },[]);
+
+      return <div>
+          {/* 通过 ref 属性将 inputRef与该输入框进行“挂钩” */}
+          <input type='text' ref={inputRef} />
+        </div>
+    }
+    export default Component
+    ```
+    注意：1. 在给组件设置 ref 属性时，只需传入 inputRef，千万不要传入 inputRef.current。2. 在“勾住”渲染后的真实DOM输入框后，能且只能调用原生html中该标签拥有的方法。
+2. 可以用useRef控制只想在组件生命周期内只想执行一次的操作
+    ```js
+    const myCComponent:React.FC = () => {
+      const updateRef = React.useRef(false);
+
+      // other operations 后，updateRef.current = true 
+
+      React.useEffect(() => {
+        if(!updateRef.current){
+          // doSomething
+        }
+      }, [])
+    }
+    ```
+
+useRef使用场景总结：
+1. 如果需要对渲染后的DOM节点进行操作，必须使用useRef。
+2. 如果需要对渲染后才会存在的变量对象进行某些操作，建议使用useRef。
+
+用**React.forwardRef()**来获取子组件内的原生标签组件
+```js
+import React from 'react'
+
+const ChildComponent = React.forwardRef((props,ref) => {
+  //子组件通过将第2个参数ref 添加到内部真正的“小写开头的类似原生标签的组件”中 
+  return <button ref={ref}>{props.label}</button>
+});
+
+/* 上面的子组件直接在父组件内定义了，如果子组件是单独的.js文件，则可以通过
+   export default React.forwardRef(ChildComponent) 这种形式  */
+
+function Forward() {
+  const ref = React.useRef();//父组件定义一个ref
+  const clickHandle = () =>{
+    console.log(ref.current);//父组件获得渲染后子组件中对应的DOM节点引用
+  }
+  return (
+    <div>
+        {/* 父组件通过给子组件添加属性 ref={ref} 将ref作为参数传递给子组件 */}
+        <ChildComponent label='child bt' ref={ref} />
+        <button onClick={clickHandle} >get child bt ref</button>
+    </div>
+  )
+}
+export default Forward;
+```
+
+**useRef和createRef的区别**
+
+useRef像一个变量，类似于this，就像一个盒子，可以存放任何东西。createRef 每次渲染都会返回一个新的引用，而 useRef 每次都会返回相同的引用(值不变)。
+
+
+## *useImperativeHandle*
+它的作用是“勾住”子组件中某些函数(方法)供父组件调用。
+
+# 有状态组件、无状态组件
 
 
 # react-redux在类组件中的使用（比较老的用法，但是公司老旧项目会有）
