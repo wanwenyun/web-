@@ -110,11 +110,43 @@ function deepCopy_full(obj) {
  * 广度优先遍历-深拷贝，队列
  * @param {*} params 
  */
+const _toString = Object.prototype.toString
+function getType(obj) {
+   return _toString.call(obj).slice(8, -1)
+}
 function deepCopyBFS(obj) {
 	if (obj === null) return null;
     if (typeof obj !== "object") return obj;
 	if (obj.constructor === Date) return new Date(obj);
-	
+
+	let res = {};
+  	const origin = [obj];
+  	const copy = [res];
+  	const vistied = new Set([obj]);
+
+  	while (origin.length) {
+  	  const _obj = origin.shift();
+  	  const copyObj = copy.shift();
+
+  	  Object.keys(_obj).forEach(k => {
+  	    const item = _obj[k];
+  	    if (getType(item) === 'Object' || getType(item) === 'Array') {
+  	      if (vistied.has(item)) {
+  	        copyObj[k] = item;
+  	      } else {
+  	        vistied.add(item);
+  	        copyObj[k] = getType(item) === 'Object' ? {} : [];
+  	        origin.push(item);
+  	        copy.push(copyObj[k]);
+  	      }
+  	    } else if (typeof item === 'function') {
+  	      copyObj[k] = eval(`(${item.toString()})`);
+  	    } else {
+  	      copyObj[k] = item;
+  	    }
+  	  })
+  	}
+  	return res;
 }
 
 
@@ -142,5 +174,5 @@ let test = {
 	err: new Error('我是一个错误')
 }
 
-let obj2 = deepCopy_full(test)
+let obj2 = deepCopyBFS(test)
 console.log(obj2)
