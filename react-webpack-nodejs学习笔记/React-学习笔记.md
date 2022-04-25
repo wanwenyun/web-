@@ -440,10 +440,52 @@ useEffect(() => {
       }, [])
     }
     ```
+  3. 利用useRef获取最新state
+  ```js
+  const addHandle = () => {
+        setCount(count + 1);
+        setTimeout(() => {
+            console.log(`count is : ${count}`);
+        }, 1000);
+  }
+  ```
+  如果点击三次，输出结果是：0，1，2
+  ```js
+  const useCurrentValue = (val) => {
+    const ref = useRef(val);
+    useEffect(() => {
+        ref.current = val;
+    }, [val]);
+    return ref
+  }
+
+  export default (props = {}) => {
+      const [count, setCount] = useState(0);
+
+      const countRef3 = useCurrentValue(count);
+      const addHandle = () => {
+          setCount(count + 1);
+          setTimeout(() => {
+              console.log(`countRef3.current is: ${countRef3. current}`);
+          }, 1000);
+      }
+
+      return (
+          <div>
+              <h2>function component</h2>
+              <p>count is {count}</p>
+              <button onClick={addHandle}>add</button>
+          </div>
+      );
+  }
+  ```
+  这样改造之后，点击三次之后输出是：3，3，3
 
 useRef使用场景总结：
-1. 如果需要对渲染后的DOM节点进行操作，必须使用useRef。
+1. 如果需要对渲染后的DOM节点进行操作，必须使用useRef。（可以用于获取并存放组件的 dom 节点, 以便直接对 dom 节点进行原生的事件操作）
 2. 如果需要对渲染后才会存在的变量对象进行某些操作，建议使用useRef。
+3. 利用useRef存放想要持久化( instant )的数据, 该数据不和 react 组件树的渲染绑定。
+4. 利用 useRef 解决由于 hooks 函数式组件产生闭包时无法获取最新 state 的问题。
 
 用**React.forwardRef()**来获取子组件内的原生标签组件
 ```js
@@ -591,9 +633,53 @@ CF可以被用在任何地方，但hook只能被用在FC或者其他hook中。
 
 > 学习地址：https://github.com/Wscats/react-tutorial/tree/master/react/redux
 
+# React 事件绑定原理
 
-# React Diff 原理解析
+# React 类组件和函数组件的区别
+1. 形式上：
+类组件：用es6 class语法去写一个组件
+```js
+import React from 'react'
+class Welcome extends React.Component {
+  constructor(props) {
+    super(props)
+  }
+  render() {
+    return <h1>welcome, {this.props.name}</h1>
+  }
+}
+
+export default Welcome
+```
+函数组件：用 JavaScript 函数创建组件
+```js
+import React from 'react'
+const Welcome = (props) => {
+  return <h1>welcome, {props.name}</h1>
+}
+export default Welcome
+```
+2. 状态管理和生命周期函数
+
+    函数组件：又称`无状态组件`，函数组件是一个纯函数，所以不能在组件中使用 setState()。同时也不能使用生命周期函数。
+
+    但react16.8 版本中添加了 hooks，使得我们可以在函数组件中使用 useState 钩子去管理 state，使用 useEffect 钩子去使用生命周期函数。
+
+3. 调用方式
+
+    函数组件：调用则是执行函数即可
+    类组件：需要将组件进行实例化，然后调用实例对象的render方法
+
+4. 获取渲染的值
+
+# React 虚拟dom渲染原理 和 Diff 原理
 > 参考链接：https://km.woa.com/articles/show/511997
 
 # React 的 render 异常处理机制
 > 参考链接：https://km.woa.com/articles/show/539330
+
+# React错误边界
+
+# context
+
+# React 性能优化手段
