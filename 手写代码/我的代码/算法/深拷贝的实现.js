@@ -18,6 +18,7 @@ function deepCopy_1(obj) {
 
 /**
  * JSON.parse/stringfy
+ * 缺点：undefined、function、正则、Error类型没有拷贝成功
  * @param {*} obj 
  */
 function deepCopy_2(obj) {
@@ -53,7 +54,7 @@ function deepCopy(obj) {
         for(key in obj){
             if(obj.hasOwnProperty(key)){
                 //判断ojb子元素是否为对象，如果是，递归复制
-                if(obj[key]&&typeof obj[key] ==="object"){
+                if(obj[key] && typeof obj[key] === "object"){
                     objClone[key] = deepCopy(obj[key]);
                 }else{
                     //如果不是，简单复制
@@ -66,44 +67,39 @@ function deepCopy(obj) {
 }
 
 /**
- * 深拷贝完全版，递归
- * 深度优先遍历
+ * 深度优先遍历实现深拷贝完整版
  * @param {*} obj 
+ * @returns 
  */
-function deepCopy_full(obj) {
-	let copyed_obj = []
-	function _deepCopy(obj) {
-		if(!obj || obj !== 'object') return obj
 
-		//判断该对象是否被拷贝过,拷贝过则返回
-		for (let i = 0; i < copyed_obj.length; i++) {
-			if (copyed_obj[i].target === obj) {
-				return copyed_obj[i].copyObj
-			}
-		}
-		
-		let type = type(obj)
-		let copy_obj
-		switch (type) {
-			case 'date': return new Date(obj)
-			case 'regExp': return new RegExp(obj)
-			case 'array':
-				copy_obj = []
-				break
-			case 'object':
-				copy_obj = {}
-				break
-		}
-		copyed_obj.push({target: obj[key], copy_obj: copy_obj})
-		for(let key in obj) {
-			if(obj.hasOwnProperty(key)) {
-				copy_obj[key] = typeof obj[key] === 'object' ? deepCopy(obj[key]) : obj[key]
-			}
+function getType(obj){
+    return Object.prototype.toString.call(obj).slice(8,-1)
+}
 
-		}
-		return copy_obj
-	}
-	return _deepCopy(obj)
+// 深度优先遍历思想实现拷贝函数, arr存放所有已访问的父级节点
+// 循环节点有两种情况，一种是父级引用，另一种是同级引用
+function DFSdeepCopy(obj,arr = []){
+    const type = getType(obj)
+    let _obj = {}
+    if(['Array','Object'].includes(type)){
+        if(type === 'Array'){
+            _obj = []
+        }
+        let index = arr.indexOf(obj)
+        if(index === -1){
+            arr.push(obj)
+            for(let item in obj){
+                _obj[item] = DFSdeepCopy(obj[item],arr)
+            }
+        }else{
+            _obj = arr[index]
+        }
+    }else if(type === 'Function'){
+        _obj = obj
+    }else{
+        _obj = obj
+    }
+    return _obj
 }
 
 /**
@@ -163,7 +159,10 @@ let test = {
 	nul: null,
 	obj: {
 		name: '我是一个对象',
-		id: 1
+		id: 1,
+		innerObj: {
+			text: '没想到吧，里面还有',
+		}
 	},
 	arr: [0, 1, 2],
 	func: function() {
@@ -174,5 +173,7 @@ let test = {
 	err: new Error('我是一个错误')
 }
 
-let obj2 = deepCopyBFS(test)
-console.log(obj2)
+let obj2 = DFSdeepCopy(test);
+test.str = '修改后';
+test.arr.push(9);
+console.log(obj2, test);
