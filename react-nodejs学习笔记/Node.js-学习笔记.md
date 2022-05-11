@@ -49,7 +49,8 @@ process 全局对象可以说是 Node.js 的灵魂，它是管理当前 Node.js 
 - pid：进程编号
 - env：系统环境变量
 - argv：命令行执行此脚本时的输入参数
-- platform：当前操作系统的平台、等
+- platform：当前操作系统的平台
+- exit：实现退出 Node.js 程序的函数，等
 
 **Buffer**
 
@@ -60,6 +61,7 @@ Buffer 全局对象让 JavaScript 也能够轻松地处理二进制数据流，�
 分别代表当前所运行 Node 脚本的文件路径和所在目录路径。
 
 ps: __filename 和 __dirname 只能在 Node 脚本文件中使用，在 REPL 中是没有定义的。
+
 
 **使用node全局对象**
 ```js
@@ -231,3 +233,70 @@ emitter.on('connect', function (username) {
 // 触发 connect 事件，并且加上一个参数（即上面的 username）
 emitter.emit('connect', 'wanwan');
 ```
+
+# 跟着官网文档学习
+
+## 使用Node.js输出到命令行
+Node.js 提供了 console 模块，该模块提供了大量非常有用的与命令行交互的方法。
+它基本上与浏览器中的 console 对象相同。
+
+**打印堆栈踪迹**
+可以使用 console.trace() 实现：
+```js
+const function2 = () => console.trace()
+const function1 = () => function2()
+function1()
+```
+输出：
+```
+Trace
+    at function2 (repl:1:33)
+    at function1 (repl:1:25)
+    at repl:1:1
+    at ContextifyScript.Script.runInThisContext (vm.js:44:33)
+    at REPLServer.defaultEval (repl.js:239:29)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:440:10)
+    at emitOne (events.js:120:20)
+    at REPLServer.emit (events.js:210:7)
+```
+
+**计算耗时**
+```js
+const doSomething = () => console.log('测试')
+const measureDoingSomething = () => {
+  console.time('doSomething()')
+  //做点事，并测量所需的时间。
+  doSomething()
+  console.timeEnd('doSomething()')
+}
+measureDoingSomething()
+```
+输出
+```
+测试
+doSomething(): 0.255ms
+```
+推荐包：`chalk`（着色）、`Progress`（进度条）
+## 从命令行接收输入
+可用readline模块来实现
+```js
+const readline = require('readline').createInterface({
+  input: process.stdin,
+  output: process.stdout
+})
+
+readline.question(`你叫什么名字?`, name => {
+  console.log(`你好 ${name}!`)
+  readline.close()
+})
+```
+推荐包：`Inquirer.js`
+
+## npx包运行器
+npx 可以运行使用 Node.js 构建并通过 npm 仓库发布的代码。
+
+## 事件循环
+[深入理解NodeJS事件循环机制](https://juejin.cn/post/6844903999506923528)
+![img](./picture/Node-学习笔记.assets/node-event-loop.png)
