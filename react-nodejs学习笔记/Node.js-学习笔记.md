@@ -300,3 +300,148 @@ npx 可以运行使用 Node.js 构建并通过 npm 仓库发布的代码。
 ## 事件循环
 [深入理解NodeJS事件循环机制](https://juejin.cn/post/6844903999506923528)
 ![img](./picture/Node-学习笔记.assets/node-event-loop.png)
+
+## js异步编程和回调
+终于搞清楚`回调`是什么意思了！
+JavaScript诞生于浏览器内部，一开始的主要工作是响应用户的操作。有的时候不知道用户何时单击按钮。 因此，为点击事件定义了一个事件处理程序。 该事件处理程序会接受一个函数，该函数会在该事件被触发时被调用，这就叫回调。
+```
+document.getElementById('button').addEventListener('click', () => {
+  //被点击
+})
+```
+回调是一个简单的函数，会作为值被传给另一个函数，并且仅在事件发生时才被执行。
+
+但回调引起的代码嵌套问题，也不容忽视。
+
+因此，随着发展回调函数也有了很多替代品，比如：`promise`, `Async/Await`...
+
+```js
+const promiseToDoSomething = () => {
+  return new Promise(resolve => {
+    setTimeout(() => resolve('做些事情'), 10000)
+  })
+}
+
+const watchOverSomeoneDoingSomething = async () => {
+  const something = await promiseToDoSomething()
+  return something + ' 查看'
+}
+
+const watchOverSomeoneWatchingSomeoneDoingSomething = async () => {
+  const something = await watchOverSomeoneDoingSomething()
+  return something + ' 再次查看'
+}
+
+watchOverSomeoneWatchingSomeoneDoingSomething().then(res => {
+  console.log(res)
+})
+```
+
+Async/await 使对于编译器而言，让异步代码变得像同步代码一样好理解。
+
+## Node.js事件触发器--events模块
+[events事件模块](http://nodejs.cn/api/events.html)提供了`eventEmitter`类，用于处理事件。该类提供了`on`和`emit`方法。
+* `emit`用于触发事件
+* `on`用于添加触发事件的回调函数（会在时间被触发时执行）
+
+```js
+const EventEmitter = require('events')
+const eventEmitter = new EventEmitter()
+
+eventEmitter.on('start', (age) => {
+  console.log('开始', age)
+})
+
+eventEmitter.emit('start', 18)
+```
+
+## 搭建HTTP服务器 -- http模块
+`HTTP`模块是 Node.js 网络的关键模块。
+通过以下代码引入：`const http = require('http')`
+
+该模块提供了一些属性、方法、以及类。
+### 属性
+1. `http.METHODS`：该属性列出了http所有的方法
+![img](./picture/Node-学习笔记.assets/http-methods.png)
+2. `http.STATUS_CODES`: 此属性列出了所有的 HTTP 状态代码及其描述
+3. `http.globalAgent`: 指向 Agent 对象的全局实例，该实例是 `http.Agent` 类的实例。用于管理 HTTP 客户端连接的持久性和复用，它是 Node.js HTTP 网络的关键组件。
+
+等
+### 方法
+1. `http.createServer()`: 返回 `http.Server` 类的新实例。
+用法如下：
+```js
+const server = http.createServer((req, res) => {
+  //使用此回调处理每个单独的请求。
+})
+```
+2. `http.request()`：发送 HTTP 请求到服务器，并创建 `http.ClientRequest` 类的实例。
+3. `http.get()`: 类似于 http.request()，但会自动地设置 HTTP 方法为 GET，并自动地调用 req.end()。
+
+等
+
+### 类
+HTTP 模块提供了 5 个类：
+- `http.Agent`：
+  
+  Node.js 会创建 http.Agent 类的全局实例，以管理 HTTP 客户端连接的持久性和复用。
+
+  该对象会确保对服务器的每个请求进行排队并且单个 socket 被复用。
+
+  它还维护一个 socket 池。 出于性能原因，这是关键。
+- `http.ClientRequest`：
+
+  当 http.request() 或 http.get() 被调用时，会创建 http.ClientRequest 对象。
+
+  ```js
+  // http client 例子
+  var client = http.get('http://127.0.0.1:3000', function (clientRes){
+      clientRes.pipe(process.stdout);
+  });
+  ```
+
+  由http.get()方法返回的就是http.ClientRequest类的实例对象。该类拥有很多事件和方法，具体看参考[文档](http://nodejs.cn/api/http.html#class-httpclientrequest)。例如：
+    * end(): 完成发送请求。
+
+- `http.Server`：
+
+  当使用 http.createServer() 创建新的服务器时，通常会返回此类的实例化对象，即服务器对象。
+
+  该类拥有很多事件和方法，具体可参考[文档](http://nodejs.cn/api/http.html#class-httpserver)。例如：
+    * close() 停止服务器不再接受新的连接。
+    * listen() 启动 HTTP 服务器并监听连接。
+- `http.ServerResponse`
+
+  由 http.Server 创建，并作为第二个参数传给它触发的 request 事件。
+  
+  ```js
+  const server = http.createServer((req, res) => {
+  //res 是一个 http.ServerResponse 对象。
+  })
+  ```
+
+  该类有有很多属性和方法，具体可参考[文档](http://nodejs.cn/api/http.html#requestenddata-encoding-callback)
+- `http.IncomingMessage`：
+  
+  IncomingMessage对象是由http.Server或http.ClientRequest创建的，并作为`第一参数`分别传递给http.Server的'request'事件和http.ClientRequest的'response'事件。
+  
+  http.IncomingMessage 对象可通过以下方式创建：
+    - http.Server，监听 request 事件时。
+    - http.ClientRequest，监听 response 事件时。
+  ```js
+  var http = require('http');
+
+  // http server 例子
+  var server = http.createServer(function(serverReq,  serverRes){
+      var url = serverReq.url;
+      serverRes.end( '您访问的地址是：' + url );
+  });
+
+  server.listen(3000);
+
+  // http client 例子
+  var client = http.get('http://127.0.0.1:3000',  function(clientRes){
+      clientRes.pipe(process.stdout);
+  });
+  ```
+  上诉代码中的`serverReq/clientRes`就是 http.IncomingMessage实例对象。ß
