@@ -1,9 +1,17 @@
 # 参考资料：
 1. [一杯茶的时间，上手Node.js](https://zhuanlan.zhihu.com/p/97413574)
 
+2. [狼叔：如何正确学习node.js](https://cnodejs.org/topic/5ab3166be7b166bb7b9eccf7)
+
 2. [Node.js学习指南](https://blog.poetries.top/node-learning-notes/notes/base/01-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.html#%E8%AE%A4%E8%AF%86-node-js)
 
 3. [Node.js官网文档](http://nodejs.cn/learn/introduction-to-nodejs)
+---
+# node架构
+![img](./picture/Node-学习笔记.assets/node.png)
+Node.js 是基于 Chrome V8引擎构建的，由事件循环（Event Loop）分发 I/O 任务，最终工作线程（Work Thread）将任务丢到线程池（Thread Pool）里去执行，而事件循环只要等待执行结果就可以了。
+- Chrome V8 解释并执行 JavaScript 代码（这就是为什么浏览器能执行 JavaScript 原因）
+- libuv 由事件循环和线程池组成，负责所有 I/O 任务的分发与执行
 ---
 # 起步
 ## 什么是Node？
@@ -234,6 +242,9 @@ emitter.on('connect', function (username) {
 emitter.emit('connect', 'wanwan');
 ```
 
+---
+
+
 # 跟着官网文档学习
 
 ## 使用Node.js输出到命令行
@@ -423,7 +434,7 @@ HTTP 模块提供了 5 个类：
   该类有有很多属性和方法，具体可参考[文档](http://nodejs.cn/api/http.html#requestenddata-encoding-callback)
 - `http.IncomingMessage`：
   
-  IncomingMessage对象是由http.Server或http.ClientRequest创建的，并作为`第一参数`分别传递给http.Server的'request'事件和http.ClientRequest的'response'事件。
+  IncomingMessage对象是由http.Server或http.ClientRequest创建的，并作为`第一参数`分别传递给http.Server的'request'事件和http.ClientRequest的'response'事件。它可用于访问`响应`状态、标头和数据。
   
   http.IncomingMessage 对象可通过以下方式创建：
     - http.Server，监听 request 事件时。
@@ -444,4 +455,17 @@ HTTP 模块提供了 5 个类：
       clientRes.pipe(process.stdout);
   });
   ```
-  上诉代码中的`serverReq/clientRes`就是 http.IncomingMessage实例对象。ß
+  上诉代码中的`serverReq/clientRes`就是 http.IncomingMessage实例对象。
+
+## buffer 缓冲区
+
+## 使用WebAssembly
+WebAssembly是一种运行在现代网络浏览器中的新型代码，并且提供新的性能特性和效果。它设计的目的不是为了手写代码,而是为诸如C、C++和Rust等低级源语言提供一个高效的编译目标。
+
+而且，你在不知道如何编写WebAssembly代码的情况下就可以使用它。WebAssembly的模块可以被导入的到一个网络app（或Node.js）中，并且暴露出供JavaScript使用的WebAssembly函数。JavaScript框架不但可以使用WebAssembly获得巨大性能优势和新特性，而且还能使得各种功能保持对网络开发者的易用性。
+
+WebAssembly 并`不是一门编程语言`，而是一份字节码标准，需要使用高级编程语言(c、c++等)编译出字节码放到 WebAssembly 的虚拟机中运行（有点像 Java ），目前主流浏览器都已经支持 WebAssembly。
+
+翻译成人话就是：WebAssembly不是一门语言，它只是一种“工具”，可以将非js语言编译成可以在浏览器上运行的代码，使得浏览器可执行的代码不局限于js脚本。
+
+[WebAssembly各浏览器兼容性](https://caniuse.com/?search=WebAssembly)
