@@ -312,6 +312,9 @@ npx 可以运行使用 Node.js 构建并通过 npm 仓库发布的代码。
 [深入理解NodeJS事件循环机制](https://juejin.cn/post/6844903999506923528)
 ![img](./picture/Node-学习笔记.assets/node-event-loop.png)
 
+## 浏览器和node事件循环的区别
+// TODO：浏览器和node事件循环的区别
+
 ## js异步编程和回调
 终于搞清楚`回调`是什么意思了！
 JavaScript诞生于浏览器内部，一开始的主要工作是响应用户的操作。有的时候不知道用户何时单击按钮。 因此，为点击事件定义了一个事件处理程序。 该事件处理程序会接受一个函数，该函数会在该事件被触发时被调用，这就叫回调。
@@ -394,7 +397,7 @@ const server = http.createServer((req, res) => {
 ### 类
 HTTP 模块提供了 5 个类：
 - `http.Agent`：
-  
+
   Node.js 会创建 http.Agent 类的全局实例，以管理 HTTP 客户端连接的持久性和复用。
 
   该对象会确保对服务器的每个请求进行排队并且单个 socket 被复用。
@@ -424,7 +427,7 @@ HTTP 模块提供了 5 个类：
 - `http.ServerResponse`
 
   由 http.Server 创建，并作为第二个参数传给它触发的 request 事件。
-  
+
   ```js
   const server = http.createServer((req, res) => {
   //res 是一个 http.ServerResponse 对象。
@@ -433,9 +436,9 @@ HTTP 模块提供了 5 个类：
 
   该类有有很多属性和方法，具体可参考[文档](http://nodejs.cn/api/http.html#requestenddata-encoding-callback)
 - `http.IncomingMessage`：
-  
+
   IncomingMessage对象是由http.Server或http.ClientRequest创建的，并作为`第一参数`分别传递给http.Server的'request'事件和http.ClientRequest的'response'事件。它可用于访问`响应`状态、标头和数据。
-  
+
   http.IncomingMessage 对象可通过以下方式创建：
     - http.Server，监听 request 事件时。
     - http.ClientRequest，监听 response 事件时。
@@ -469,3 +472,8 @@ WebAssembly 并`不是一门编程语言`，而是一份字节码标准，需要
 翻译成人话就是：WebAssembly不是一门语言，它只是一种“工具”，可以将非js语言编译成可以在浏览器上运行的代码，使得浏览器可执行的代码不局限于js脚本。
 
 [WebAssembly各浏览器兼容性](https://caniuse.com/?search=WebAssembly)
+
+# 进阶node
+
+## node内存分配，内存溢出
+// TODO：学习node内存相关知识
