@@ -108,9 +108,10 @@ Hello World!
 2. 导入的 JS 文件之间不能相互访问
 3. 导入的 script 无法被轻易去除或修改
 
-因此，有两大模块化规范被提出:
+因此，有几个常见的模块化规范被提出:
 1. AMD（Asynchronous Module Definition）规范
-2. `CommonJS规范`，Node.js 所实现的正是这一模块标准。
+2. `CommonJS规范`，Node.js 所实现的正是这一模块标准。`module.exports/require`
+3. ES6 Module： `import/export`
 
 ### Node 模块机制浅析
 Node 模块可分为两大类：
