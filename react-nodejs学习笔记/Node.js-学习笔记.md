@@ -8,7 +8,8 @@
 3. [Node.js官网文档](http://nodejs.cn/learn/introduction-to-nodejs)
 ---
 # node架构
-![img](./picture/Node-学习笔记.assets/node.png)
+<img src='./picture/Node-学习笔记.assets/node.png' width=50%>
+
 Node.js 是基于 Chrome V8引擎构建的，由事件循环（Event Loop）分发 I/O 任务，最终工作线程（Work Thread）将任务丢到线程池（Thread Pool）里去执行，而事件循环只要等待执行结果就可以了。
 - Chrome V8 解释并执行 JavaScript 代码（这就是为什么浏览器能执行 JavaScript 原因）
 - libuv 由事件循环和线程池组成，负责所有 I/O 任务的分发与执行
@@ -18,7 +19,10 @@ Node.js 是基于 Chrome V8引擎构建的，由事件循环（Event Loop）分�
 Node（或者说 Node.js，两者是等价的）是 JavaScript 的一种运行环境。
 
 我们知道 JavaScript 都是在浏览器中执行的，用于给网页添加各种动态效果，那么可以说浏览器也是 JavaScript 的运行环境。两个运行环境差异如下图所示：
-![img](./picture/Node-学习笔记.assets/Node-and-JS-run-env.png)
+
+<img src='./picture/Node-学习笔记.assets/Node-and-JS-run-env.png' width=50%>
+
+
 两个运行环境共同包含了 ECMAScript，也就是剥离了所有运行环境的 JavaScript 语言标准本身。
 
 浏览器端 JavaScript 还包括了：BOM(window对象)、DOM(document对象)
@@ -28,7 +32,9 @@ Node.js 则是包括V8引擎(Chrome 浏览器中的JS引擎)。而 Node.js 则�
 ## 运行 Node 代码
 运行 Node 代码通常有两种方式：
 1. 在 REPL 中交互式输入和运行；
-![img](./picture/Node-学习笔记.assets/REPL.png)
+
+    <img src='./picture/Node-学习笔记.assets/REPL.png' width=50%>
+
 2. 将代码写入 JS 文件，并用 Node 执行。
 创建test.js文件，里面代码内容为：`console.log('Hello World!');`
 然后用 Node 解释器执行这个文件：
@@ -42,7 +48,9 @@ Node.js 则是包括V8引擎(Chrome 浏览器中的JS引擎)。而 Node.js 则�
 
 ## Node全局对象
 JavaScript在各个运行环境下的全局对象的比较：
-![img](./picture/Node-学习笔记.assets/js-global-object.jpeg)
+
+<img src='./picture/Node-学习笔记.assets/js-global-object.jpeg' width=50%>
+
 可以分为四类：
 1. 浏览器专属，例如 `window、alert` 等等；
 2. Node 专属，例如 `process、Buffer、__dirname、__filename` 等等；
@@ -144,7 +152,9 @@ const utils = require('/home/xxx/MyProject/utils');
 
 **module**
 module对象有以下字段:
-![img](./picture/Node-学习笔记.assets/node-module.jpeg)
+
+<img src='./picture/Node-学习笔记.assets/node-module.jpeg' width=70%>
+
 * `id`：模块的唯一标识符，如果是被运行的主程序则为 `.`，如果是被导入的模块（则等同于此文件名（即下面的 filename 字段）
 * `path`和`filename`：模块所在路径和文件名
 * `exports`：模块所导出的内容，实际上之前的 exports 对象是指向 module.exports 的引用。
@@ -197,7 +207,7 @@ console.log(process.argv);
 ```
 在REPL中分别执行这两行命令：
 1. `node args.js --time 5 --message "hi wanwan"`
-![img](./picture/Node-学习笔记.assets/args.png)
+<img src='./picture/Node-学习笔记.assets/args.png' width=50%>
 2. `node timer.js --time 5 --message "hi wanwan"`，输出如下：
     ```
     当前用户 wanwan
@@ -317,7 +327,8 @@ npx 可以运行使用 Node.js 构建并通过 npm 仓库发布的代码。
 
 ## 事件循环
 [深入理解NodeJS事件循环机制](https://juejin.cn/post/6844903999506923528)
-![img](./picture/Node-学习笔记.assets/node-event-loop.png)
+
+<img src='./picture/Node-学习笔记.assets/node-event-loop.png' width=80%>
 
 ## 浏览器和node事件循环的区别
 // TODO：浏览器和node事件循环的区别
@@ -383,7 +394,7 @@ eventEmitter.emit('start', 18)
 该模块提供了一些属性、方法、以及类。
 ### 属性
 1. `http.METHODS`：该属性列出了http所有的方法
-![img](./picture/Node-学习笔记.assets/http-methods.png)
+<img src='./picture/Node-学习笔记.assets/http-methods.png' width=50%>
 2. `http.STATUS_CODES`: 此属性列出了所有的 HTTP 状态代码及其描述
 3. `http.globalAgent`: 指向 Agent 对象的全局实例，该实例是 `http.Agent` 类的实例。用于管理 HTTP 客户端连接的持久性和复用，它是 Node.js HTTP 网络的关键组件。
 
