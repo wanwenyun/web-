@@ -113,6 +113,12 @@ Hello World!
 2. `CommonJS规范`，Node.js 所实现的正是这一模块标准。`module.exports/require`
 3. ES6 Module： `import/export`
 
+> ps:​ 
+> 
+> – require 是运行时调用，因此 require 理论上可以运用在代码的任何地方；
+>
+> – import 是编译时调用，因此必须放在文件开头；
+
 ### Node 模块机制浅析
 Node 模块可分为两大类：
 - 核心模块：Node 提供的内置模块，在安装 Node 时已经被编译成二进制可执行文件
