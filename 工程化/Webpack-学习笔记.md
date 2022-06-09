@@ -116,6 +116,8 @@ module.exports = {
 - CommonJS通过module.exports导出模块，require('…')导入模块。
 - ES6 Module通过import()函数动态导入模块，CommonJS通过require.ensure动态导入模块，现在推荐使用import()函数动态导入模块。
 
+<img src="./picture/webpack/module.png" width=60%/>
+
 ## 入口entry
 * context：表示资源入口entry是从哪个目录为起点的。context的值是一个字符串，表示一个绝对路径。在我们没有设置context的时候，它是当前工程的根目录。
 * entry：它有三种形式的值
