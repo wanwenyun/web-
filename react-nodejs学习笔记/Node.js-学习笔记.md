@@ -25,7 +25,7 @@ Node（或者说 Node.js，两者是等价的）是 JavaScript 的一种运行�
 
 两个运行环境共同包含了 ECMAScript，也就是剥离了所有运行环境的 JavaScript 语言标准本身。
 
-浏览器端 JavaScript 还包括了：BOM(window对象)、DOM(document对象)
+浏览器端 JavaScript 还包括了：BOM(即浏览器Browser对象，包含Window对象、Navigator对象、Screen对象、History对象、Location对象、存储对象等)、DOM(即html的DOM)
 
 Node.js 则是包括V8引擎(Chrome 浏览器中的JS引擎)。而 Node.js 则进一步将 V8 引擎加工成可以在任何操作系统中运行 JavaScript 的平台。
 

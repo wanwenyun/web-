@@ -349,7 +349,20 @@ function Counter({initialCount}) {
 ### 使用useContext和useReducer实现操作全局共享数据
 > 参考链接：https://github.com/puxiao/react-hook-tutorial/blob/master/09%20useReducer%E9%AB%98%E7%BA%A7%E7%94%A8%E6%B3%95.md
 
-在运营活动的项目中（qcact-base）也是采用了这样的方式来实现状态管理，父组件暴露了个方法给子组件，子组件执行了父组件提供的方法，就会触发相应的dispatch。
+**实现原理：**
+1. 用 useContext 实现“获取全局数据”
+2. 用 useReducer 实现“修改全局数据”
+
+**实现思路：**
+1. 用React.createContext()定义一个全局数据对象；
+2. 在父组件中用 useReducer 定义全局变量xx和负责抛出修改事件的dispatch；
+3. 在父组件之外，定义负责具体修改全局变量的处理函数reducer，根据修改xx事件类型和参数，执行修改xx的值；
+4. 在父组件中用 <XxxContext.Provider value={{xx,dispathch}}> 标签把 全局共享数据和负责抛出修改xx的dispatch 暴露给子组件；
+5. 在子组件中用 useContext 获取全局变量；
+6. 在子组件中用 xxContext.dispatch 去抛出修改xx的事件，携带修改事件类型和参数；
+
+
+在运营活动的项目中（qcact-base）也是采用了这样的方式来实现状态管理，父组件将dispatch包装在相应的方法内并暴露给子组件，当子组件执行了父组件提供的方法，就会触发相应的dispatch。
 
 所以，`使用 useReducer + useContext 可以完全替代redux`。
 
