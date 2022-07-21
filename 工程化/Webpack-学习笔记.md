@@ -4,6 +4,12 @@
 Webpack是一个模块打包工具(module bundler)，因为平常多用来对前端工程打包，所以也是一个前端构建工具。
 通俗的说是：`找出模块之间的依赖关系，按照一定的规则把这些模块组织合并为一个JavaScript文件`。
 
+**为什么需要打包？**
+1. 编译，将浏览器无法识别的ES6等高级语法编辑成浏览器可识别的ES5语法
+2. 提高渲染效率，把许多零碎的文件打包成一个整体，减少单页面内的衍生请求次数，提高网站效率
+3. 优化代码体积，去除空格、去除不必要的代码、缩短变量名
+4. 混淆代码，代码打包的同时进行混淆，提高代码的安全性
+
 ## 快速入门
 现在我有三个文件，a.js，b.js和index.html
 
@@ -61,6 +67,10 @@ module.exports = {
 Webpack自身只支持对JS文件处理（现在的版本也支持对JSON文件处理），如果引入了一个非js文件，那么Webpack在处理该模块的时候，会在控制台报错：`Module parse failed…You may need an appropriate loader to handle this file type.`
 
 当Webpack自身无法处理某种类型的文件的时候，我们就可以通过配置特定的`loader`，赋予Webpack来处理该类型文件的能力。
+
+`loader`有两个属性：
+1. test 属性，识别出哪些文件会被转换。
+2. use 属性，定义出在进行转换时，应该使用哪个 loader。
 
 还是延续上面的文件夹，在里面再加一个c.css文件，内容如下:
 ```css
@@ -279,9 +289,9 @@ Module配置项里一个重要的子项`rules`，它定义了loader的处理法�
 
 Rules是一个数组，数组每一项是一个JS对象，该对象有两个关键属性`test`和`use`。
 
-test是一个正则表达式或正则表达式数组，模块文件名与正则匹配的会被use里的loader处理。
+`test`是一个正则表达式或正则表达式数组，模块文件名与正则匹配的会被use里的loader处理。
 
-use可以是字符串，对象或数组，表示要使用的loader。如果该loader额外配置参数，那么可以取对象，额外参数放在options里（有部分loader放query里）。例如：
+`use`可以是字符串，对象或数组，表示要使用的loader。如果该loader额外配置参数，那么可以取对象，额外参数放在options里（有部分loader放query里）。例如：
 ```js
 use: {
   loader: 'babel-loader', 
@@ -329,6 +339,69 @@ use: {
 # Webpack插件plugin
 在Webpack中使用插件非常简单，只需要在配置项里增加一个plugins项即可。plugins是一个数组，每一个数组元素是一个插件。
 
+插件会专注处理 webpack 在编译过程中的某个特定的任务。插件的范围包括，从打包优化和压缩，一直到重新定义环境中的变量。插件接口功能极其强大，可以用来处理各种各样的任务。
+
+想要使用一个插件，你只需要 require() 它，然后把它添加到 plugins 数组中。多数插件可以通过选项(option)自定义。你也可以在一个配置文件中因为不同目的而多次使用同一个插件，这时需要通过使用 new 操作符来创建它的一个实例。
+
+<img src="./picture/webpack/use-webpack.png" width=40%/>
+
+```js
+const webpack = require('webpack');
+
+// 假设有这么一个 webpack plugin
+const SomewebpackPlugin = require('some-webpack-plugin');
+
+webpack({
+    // ...
+    plugins: [
+        new SomewebpackPlugin({/* some plugin options */})
+    ]
+    // ...
+});
+
+```
+
+那么怎么样的一个东西可以称之为 webpack 插件呢？一个完整的 webpack 插件需要满足以下几点规则和特征：
+
+1. 是一个独立的模块。
+2. 模块对外暴露一个 js 函数。
+3. 函数的原型 (prototype) 上定义了一个注入compiler对象的apply方法。
+4. apply函数中需要有通过 compiler 对象挂载的 webpack 事件钩子，钩子的回调中能拿到当前编译的 compilation 对象，如果是异步编译插件的话可以拿到回调 callback。
+5. 完成自定义子编译流程并处理 complition 对象的内部数据。
+6. 如果异步编译插件的话，数据处理完成后执行 callback 回调。
+
+例如：
+```js
+// 1、some-webpack-plugin.js 文件（独立模块）
+
+// 2、模块对外暴露的 js 函数
+function SomewebpackPlugin(pluginOpions) {
+    this.options = pluginOptions;
+}
+
+// 3、原型定义一个 apply 函数，并注入了 compiler 对象
+SomewebpackPlugin.prototype.apply = function (compiler) {
+    // 4、挂载 webpack 事件钩子（这里挂载的是 emit 事件）
+    compiler.plugin('emit', function (compilation, callback) {
+        // ... 内部进行自定义的编译操作
+        // 5、操作 compilation 对象的内部数据
+        console.log(compilation);
+        // 6、执行 callback 回调
+        callback();
+    });
+};
+
+// 暴露 js 函数
+module.exports = SomewebpackPlugin;
+```
+
+在上面这个插件通用代码框架里面，发现了两个对象，一个是 compiler 对象, 一个是 compilation 对象，是webpack最核心的两个对象。
+
+* [compiler对象](https://github.com/webpack/webpack/blob/main/lib/Compiler.js)：compiler 对象是 webpack 的编译器对象。compiler 对象会在启动 webpack 的时候被一次性的初始化，compiler 对象中包含了所有 webpack 可自定义操作的配置，例如 loader 的配置，plugin 的配置，entry 的配置等各种原始 webpack 配置等，在 webpack 插件中的自定义子编译流程中，我们肯定会用到 compiler 对象中的相关配置信息，我们相当于可以通过 compiler 对象拿到 webpack 的主环境所有的信息。
+
+* [compilation对象](https://github.com/webpack/webpack/blob/main/lib/Compilation.js)：compilation 实例继承于 compiler，compilation 对象代表了一次单一的版本 webpack 构建和生成编译资源的过程。当运行 webpack 开发环境中间件时，每当检测到一个文件变化，一次新的编译将被创建，从而生成一组新的编译资源以及新的 compilation 对象。一个 compilation 对象包含了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息。
+
+webpack 以插件的形式提供了灵活强大的自定义 api 功能。webpack 提供生命周期钩子以便注册插件。webpack 的插件架构主要基于 [Tapable](https://github.com/webpack/tapable) 实现的。
 # plugin和loader的区别
 loader是翻译官，plugin是干活滴
 
@@ -380,6 +453,7 @@ Webpack 的运行流程是一个串行的过程,从启动到结束会依次执�
 - seal 输出资源：根据入口和模块之间的依赖关系，组装成一个个包含多个模块的 `Chunk`，再把每个 Chunk 转换成一个单独的文件加入到输出列表，这步是可以修改输出内容的最后机会
 - emit 输出完成：在确定好输出内容后，根据配置确定输出的路径和文件名，把文件内容写入到文件系统
 
+<img src='./picture/webpack/webpack-step.jpg' width=100%>
 
 # SourceMap和webpack
 

@@ -171,8 +171,12 @@ function compose (middleware) {
 }
 ```
 执行效果如图：
-![img](./pictures/koa-middleware.png)
+
+<img src='../pictures/koa-middleware.png' width=60%>
+
 因为每一个中间件都是一个async函数，所以我们调用await next()实际上是调用下一个中间件代码，当下一个中间代码执行完后，就回到上一个中间的next之后的代码继续执行，如此类推，从而实现出一个洋葱模型的中间件执行模式。
+
+类似于这样的效果: `中间件1(中间件2(中间件3()))`
 
 ## createContext
 createContext函数是用来生成全局context对象的。实际上是对createServer中返回的req和res进行封装。
@@ -221,7 +225,8 @@ handleRequest(ctx, fnMiddleware) {
 5. 对ctx和全局的error做监听
 
 ---
-[参考文章](https://zhuanlan.zhihu.com/p/90677000)
+## 参考资料：
+1. https://zhuanlan.zhihu.com/p/90677000
 
 
 

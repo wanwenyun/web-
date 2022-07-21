@@ -14,7 +14,7 @@ React篇（建议可以从第四点的reack-hooks学习大全开始看）
 
 * useRef的改变不会让组件重新渲染（render）；
 
-* useRef能够获取到dom；
+* useRef能够获取到`dom`；
 
 ```js
 import { useRef,useEffect } from "react";
