@@ -235,7 +235,7 @@ function Component() {
 
 export default Component;
 ```
-
+参考链接： [useEffect 完整指南](https://overreacted.io/zh-hans/a-complete-guide-to-useeffect/)
 
 ## *useContext*
 它的作用是“勾住”获取由React.createContext()创建、<XxxContext.Provider>添加设置的共享数据value值。useContext可以替代<XxxContext.Consumer>标签，简化获取共享数据的代码。
@@ -635,9 +635,10 @@ hook本身就是个函数，那它和普通的函数有什么区别？
 2. 命名方式不同。
 hook必须useXXX命名，CF就很灵活了。
 3. 能使用的工具不同。
-hook中可以使用其他hook，比如useEffect， useState；但CF不行，CF只能处理没有hook的逻辑。
+**hook中可以使用其他hook，比如useEffect， useState；但CF不行，CF只能处理没有hook的逻辑。**
 4. 使用场景不同。
-CF可以被用在任何地方，但hook只能被用在FC或者其他hook中。
+**CF可以被用在任何地方，但hook只能被用在FC(组件)或者其他hook中。**
+
 
 # 有状态组件、无状态组件
 
