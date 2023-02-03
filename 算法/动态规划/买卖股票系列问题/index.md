@@ -1,4 +1,4 @@
-<img src="../../../picture/dp/stock.png" width=70%/>
+<img src="./picture/stock.png" width=70%/>
 
 ### 限制条件
 * 先买入才能卖出

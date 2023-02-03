@@ -3,6 +3,7 @@
  *
  * [76] 最小覆盖子串
  */
+// 两个字符串比较的情况
 /*
 解题思路：https://labuladong.github.io/algo/di-ling-zh-bfe1b/wo-xie-le--f02cd/
 用左右两个指针遍历s字符串，

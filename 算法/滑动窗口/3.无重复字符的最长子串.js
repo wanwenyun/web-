@@ -3,7 +3,7 @@
  *
  * [3] 无重复字符的最长子串
  */
-
+// 单个字符串的情况
 // @lc code=start
 /**
  * @param {string} s

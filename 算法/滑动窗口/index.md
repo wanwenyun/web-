@@ -23,11 +23,13 @@ while (right < s.size()) {
 
 但滑动窗口的难点在于，比如说如何向窗口中添加新元素，如何缩小窗口，在窗口滑动的哪个阶段更新结果。即便你明白了这些细节，也容易出 bug，找 bug 还不知道怎么找。
 
+滑动窗口很多时候都是在处理**字符串**相关的问题
+
 下面就是一位大佬总结出来的滑动窗口代码框架：
+
+**有两个字符串进行比较的情况**
 ```js
 /* 滑动窗口算法框架 */
-
-// 有两个字符串进行比较的情况
 var slidingWindow = function(s, t) {
 
     const need = {}; // 用来记录t中字符出现次数，方便后续的判断
@@ -64,7 +66,7 @@ var slidingWindow = function(s, t) {
 }
 ```
 
-// 只有一个字符串的情况
+**只有一个字符串的情况**
 ```js
 var slidingWindow = function(s) {
     const window = {};
@@ -94,4 +96,26 @@ var slidingWindow = function(s) {
 }
 ```
 
-滑动窗口很多时候都是在处理**字符串**相关的问题
+**窗口大小固定的情况**
+```js
+var slidingWindow = function(s, k) {
+    const window = {};
+    let left = 0, right = 0;
+
+    while(right < k) { // k为窗口大小
+        // 进行窗口内数据的一系列更新
+        ...
+        right++;
+    }
+
+    // 额外的代码逻辑
+    ...
+
+    while (right < s.length) { // 固定窗口大小，不断向后移动
+        // 进行窗口内数据的一系列更新
+        ...
+        left++;
+        right++;
+    }
+}
+```
