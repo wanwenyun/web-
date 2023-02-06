@@ -18,23 +18,29 @@
  * @param {ListNode} headB
  * @return {ListNode}
  */
-// 解法一： 链表
 var getIntersectionNode = function(headA, headB) {
-    const list = new Set();
-    let temp = headA;
-    while(temp !== null) { // 将链表A存入Set中
-        list.add(temp);
-        temp = temp.next;
+    /* 使用额外空间的版本：用 Set 记录一个链表的所有节点，然后和另一条链表对比，
+    const map = new Set();
+    while(headA) {
+        map.add(headA);
+        headA = headA.next;
     }
-
-    temp = headB;
-    while(temp !== null) { // 遍历链表B
-        if(list.has(temp)){
-            return temp;
+    while(headB) {
+        if(map.has(headB)) {
+            return headB;
         }
-        temp = temp.next;
+        headB = headB.next;
     }
     return null;
+    */
+   
+    // 不使用额外空间的版本：
+    let p1 = headA, p2 = headB;
+    while(p1 !== p2) {
+        p1 === null ? p1 = headB : p1 = p1.next;
+        p2 === null ? p2 = headA : p2 = p2.next;
+    } 
+    return p1;
 };
 // @lc code=end
 

@@ -1,0 +1,34 @@
+/*
+ * @lc app=leetcode.cn id=141 lang=javascript
+ *
+ * [141] 环形链表
+ */
+
+// @lc code=start
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val) {
+ *     this.val = val;
+ *     this.next = null;
+ * }
+ * 思路：
+ * 快慢指针，慢指针走1步，快指针走两步。
+ * 如果快指针最终为null，则不存在环。
+ * 如果 fast 最终和 slow 相遇，那肯定是 fast 超过了 slow 一圈，说明链表中含有环
+ */
+
+/**
+ * @param {ListNode} head
+ * @return {boolean}
+ */
+var hasCycle = function(head) {
+    let fast = head, slow = head;
+    while(fast !== null && fast.next !== null) {
+        slow = slow.next;
+        fast = fast.next.next;
+        if(fast === slow) return true;
+    }
+    return false;
+};
+// @lc code=end
+
