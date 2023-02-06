@@ -1,0 +1,51 @@
+/*
+ * @lc app=leetcode.cn id=21 lang=javascript
+ *
+ * [21] 合并两个有序链表
+ */
+
+// @lc code=start
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val, next) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.next = (next===undefined ? null : next)
+ * }
+ */
+/**
+ * @param {ListNode} list1
+ * @param {ListNode} list2
+ * @return {ListNode}
+ */
+var mergeTwoLists = function(list1, list2) {
+    // 当需要创造一条新链表的时候，可以使用虚拟头结点简化边界情况的处理。
+    const head = new ListNode(-1); // 虚拟头节点
+    
+    let p = head;
+    
+    while(list1 !== null && list2 !== null){
+        // 比较p1和p2两个指针
+        if(list1.val > list2.val) {
+            p.next = list2;
+            list2 = list2.next;
+        }else {
+            p.next = list1;
+            list1 = list1.next;
+        }
+        
+        p = p.next; // p指向下一个位置
+    }
+
+    // p2已经遍历完了
+    if(list1 != null) {
+        p.next = list1;
+    }
+
+    // p1已经遍历完了
+    if(list2 != null) {
+        p.next = list2;
+    }
+    return head.next;
+};
+// @lc code=end
+

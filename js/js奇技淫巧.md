@@ -67,7 +67,7 @@ React官方使用的方式是通过判断条件`typeof destroy.then === 'functio
 > 因为promise的定义："promise"是具有then方法的对象或函数
 
 
-## 获取变量类型
+## 类型判断
 有两个类型判断关键字，`typeof`，`instanceof`。但他们有各自的缺陷
 
 `typeof`是用来判断变量基本类型的关键字，但typeof null==='object'，是个js的老bug
