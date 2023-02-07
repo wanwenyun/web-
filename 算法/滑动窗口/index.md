@@ -31,7 +31,6 @@ while (right < s.size()) {
 ```js
 /* 滑动窗口算法框架 */
 var slidingWindow = function(s, t) {
-
     const need = {}; // 用来记录t中字符出现次数，方便后续的判断
     const window = {}; // 记录「窗口」中的相应字符的出现次数。
     for (let a of t) {
