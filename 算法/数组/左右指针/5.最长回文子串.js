@@ -1,0 +1,33 @@
+/*
+ * @lc app=leetcode.cn id=5 lang=javascript
+ *
+ * [5] 最长回文子串
+ */
+
+// @lc code=start
+/**
+ * @param {string} s
+ * @return {string}
+ * 思路：左右指针，从中心往两边扩散。并且分奇、偶两种情况。
+ */
+var longestPalindrome = function(s) {
+    let res = ''
+
+    function help(left, right){
+        while(left >= 0 && right < s.length && s[left] === s[right]) {
+            left--;
+            right++;
+        }
+        return str = s.slice(left+1, right+1-1);
+    }
+
+    for(let i = 0; i < s.length; i++) {
+        const s1 = help(i,i); // s长度为奇数，以s[i]为中心
+        const s2 = help(i, i+1); // s长度为偶数，以s[i]，s[i+1]为中心
+        res = s1.length > res.length ? s1 : res;
+        res = s2.length > res.length ? s2 : res;
+    }
+    return res;
+};
+// @lc code=end
+
