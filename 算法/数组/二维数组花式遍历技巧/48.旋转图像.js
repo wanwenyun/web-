@@ -1,0 +1,40 @@
+/*
+ * @lc app=leetcode.cn id=48 lang=javascript
+ *
+ * [48] 旋转图像
+ */
+
+// @lc code=start
+/**
+ * @param {number[][]} matrix
+ * @return {void} Do not return anything, modify matrix in-place instead.
+ */
+var rotate = function(matrix) {
+    const len = matrix.length;
+    // 先沿对角线(左上右下方向)镜像对称二维矩阵
+    for (var i = 0; i < len; i++) {
+        for (var j = i; j < len; j++) { // 注意，这里是j = i
+            const tmp = matrix[i][j];
+            matrix[i][j] = matrix[j][i];
+            matrix[j][i] = tmp;
+        }
+    }
+    // 逐行反转二维数组
+    for (var i = 0; i < len; i++) {
+        reverse(matrix[i]);
+    }
+    return matrix;
+};
+// 反转一维数组
+var reverse = function(arr) {
+    let i = 0, j = arr.length - 1;
+    while (j > i) {
+        const temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+        i++;
+        j--;
+    }
+}
+// @lc code=end
+
