@@ -10,26 +10,6 @@
  * @param {number} target
  * @return {number[]}
  */
-// var searchRange = function(nums, target) {
-//     const len = nums.length;
-//     if(len === 0 ) return [-1,-1];
-
-//     let start, end = null;
-//     for(let i = 0 ; i < len ; i++) {
-//         if(nums[i] === target && (nums[i-1] !== target || i === 0) ) {
-//             start = i;
-//             end = i;
-//         }
-//         if(nums[i] === target && nums[i-1] === target) {
-//             end = i;
-//         }
-//         if(nums[i] < target) continue;
-//         if(nums[i] > target) break;
-//     }
-//     if(start !== null && end !== null) return [start, end];
-//     return [-1, -1];
-// };
-
 // 二分查找，左、右边界
 const left_bound = (nums, target) => {
     let left = 0;
