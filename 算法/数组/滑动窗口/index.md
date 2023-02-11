@@ -64,6 +64,11 @@ var slidingWindow = function(s, t) {
     }
 }
 ```
+其中两处 `...` 表示的更新窗口数据的地方，到时候你直接往里面填就行了。
+
+而且，这两个 `...` 处的操作分别是扩大和缩小窗口的更新操作，等会你会发现它们操作是完全对称的。
+
+滑动窗口时间复杂度是`O(N)`
 
 **只有一个字符串的情况**
 ```js
@@ -91,30 +96,6 @@ var slidingWindow = function(s) {
             // 进行窗口内数据的一系列更新
             ...
         }
-    }
-}
-```
-
-**窗口大小固定的情况**
-```js
-var slidingWindow = function(s, k) {
-    const window = {};
-    let left = 0, right = 0;
-
-    while(right < k) { // k为窗口大小
-        // 进行窗口内数据的一系列更新
-        ...
-        right++;
-    }
-
-    // 额外的代码逻辑
-    ...
-
-    while (right < s.length) { // 固定窗口大小，不断向后移动
-        // 进行窗口内数据的一系列更新
-        ...
-        left++;
-        right++;
     }
 }
 ```

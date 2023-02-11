@@ -4,7 +4,7 @@
  * [438] 找到字符串中所有字母异位词
  */
 
-// 两个字符串进行比较的情况
+// 两个字符串进行比较的情况，且窗口大小固定
 
 // @lc code=start
 /**
@@ -40,6 +40,7 @@ var findAnagrams = function(s, p) {
         
         // 判断左侧窗口是否要收缩
         while (right - left >= p.length) { // 当窗口的大小，大于等于s1的长度时
+            // 更新结果
             if(valid === Object.keys(need).length) {
                 res.push(left);
             }

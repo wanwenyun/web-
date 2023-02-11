@@ -3,16 +3,15 @@
  *
  * [76] 最小覆盖子串
  */
-// 两个字符串比较的情况
+// 两个字符串比较的情况，窗口大小不固定
 /*
 解题思路：https://labuladong.github.io/algo/di-ling-zh-bfe1b/wo-xie-le--f02cd/
 用左右两个指针遍历s字符串，
-当滑动窗口中的字符不能覆盖t中的字符时，右指针右移，
-扩大窗口，把右边的字符加入滑动窗口，
-当滑动窗口中的字符能覆盖t中的字符时，不断左移左指针，
-缩小窗口，直到窗口中的字符刚好能覆盖t中的字符，
-这个时候在左移就不能覆盖t中的字符了，
-在指针移动的过程中，不断更新最小覆盖子串
+当滑动窗口中的字符不能覆盖t中的字符时，右指针右移，扩大窗口，把右边的字符加入滑动窗口，
+当滑动窗口中的字符能覆盖t中的字符时，不断左移左指针，缩小窗口，直到窗口中的字符刚好能覆盖t中的字符，这个时候再左移就不能覆盖t中的字符了，
+然后再右移右指针，扩大窗口
+...
+如此循环，在指针移动的过程中，不断更新最小覆盖子串直至右指针移动至最右端，算法结束，返回结果。
 */
 
 // @lc code=start
@@ -53,7 +52,7 @@ var minWindow = function(s, t) {
         // 判断左侧窗口是否要收缩
         while (valid == Object.keys(need).length) { //字符种类与需要的字符个数一致时，即窗口中的字符串包含了t中的所有字符，就收缩窗口
             const newRes = s.substring(left, right);
-            if( !res || newRes.length < res.length ) res = newRes
+            if( !res || newRes.length < res.length ) res = newRes;
 
             // d 是将移出窗口的字符
             let d = s[left];
@@ -68,7 +67,7 @@ var minWindow = function(s, t) {
             }
         }
     }
-    //没有找到覆盖子串 返回'' 否则返回覆盖子串
+    //没有找到覆盖子串返回'' 否则返回覆盖子串
     return res;
 };
 // @lc code=end

@@ -4,8 +4,8 @@
  * [567] 字符串的排列
  */
 
-// 两个字符串进行比较的情况
-// 关键点在窗口收缩时机：当窗口的大小，大于等于s1的长度时，便收缩窗口。
+// 两个字符串进行比较的情况，窗口大小固定
+// 关键点在窗口收缩时机：当窗口的大小，大于等于s1的长度时，便收缩窗口。窗口大小固定
 
 // @lc code=start
 /**
@@ -40,7 +40,7 @@ var checkInclusion = function(s1, s2) {
         console.log(`window: [${left}, ${right})\n`);
         
         // 判断左侧窗口是否要收缩
-        while (right - left >= s1.length) { // 当窗口的大小，大于等于s1的长度时
+        while (right - left >= s1.length) { // 窗口大小固定，当窗口的大小 >= s1的长度时
             if(valid === Object.keys(need).length) {
                 return true;
             }
