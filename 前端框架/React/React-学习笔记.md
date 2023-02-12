@@ -1,4 +1,40 @@
-React篇（建议可以从第四点的reack-hooks学习大全开始看）
+- [怎么理解React的副作用？](#怎么理解react的副作用)
+- [了解useCallback、useMemo、React.memo的使用时机](#了解usecallbackusememoreactmemo的使用时机)
+- [React.useRef](#reactuseref)
+- [react ref属性 和 Refs](#react-ref属性-和-refs)
+- [react 生命周期 和hooks](#react-生命周期-和hooks)
+- [reack-hooks](#reack-hooks)
+  - [*useState*](#usestate)
+  - [*useEffect*](#useeffect)
+  - [*useContext*](#usecontext)
+    - [基本使用方法：](#基本使用方法)
+    - [父组件同时传递多个共享数据值给1个子组件：](#父组件同时传递多个共享数据值给1个子组件)
+    - [为什么不使用Redux？](#为什么不使用redux)
+  - [*useReducer*](#usereducer)
+    - [基础用法：](#基础用法)
+    - [使用useContext和useReducer实现操作全局共享数据](#使用usecontext和usereducer实现操作全局共享数据)
+  - [*useCallback、useMemo*](#usecallbackusememo)
+  - [*useRef*](#useref)
+  - [*useImperativeHandle*](#useimperativehandle)
+  - [*useLayoutEffect*](#uselayouteffect)
+  - [*useDebugValue*](#usedebugvalue)
+- [自定义hook和CF(common function)的区别](#自定义hook和cfcommon-function的区别)
+- [有状态组件、无状态组件](#有状态组件无状态组件)
+- [react-redux在类组件中的使用（比较老的用法，但是公司老旧项目会有）](#react-redux在类组件中的使用比较老的用法但是公司老旧项目会有)
+- [React 类组件和函数组件的区别](#react-类组件和函数组件的区别)
+- [React错误边界](#react错误边界)
+- [context](#context)
+- [React 性能优化手段](#react-性能优化手段)
+- [React事件绑定原理](#react事件绑定原理)
+- [React 虚拟dom渲染原理 和 Diff 原理](#react-虚拟dom渲染原理-和-diff-原理)
+- [React 的 render 异常处理机制](#react-的-render-异常处理机制)
+
+React篇（建议可以从第5点的reack-hooks学习大全开始看）
+
+# 怎么理解React的副作用？
+副作用（Side effect）指一个function做了和本身运算返回值无关的事。比如：修改了全局变量、修改了入参、console.log()等等
+
+比较经典的`ajax操作`、`修改dom`都是副作用.
 
 # 了解useCallback、useMemo、React.memo的使用时机
 
@@ -647,7 +683,6 @@ hook必须useXXX命名，CF就很灵活了。
 
 > 学习地址：https://github.com/Wscats/react-tutorial/tree/master/react/redux
 
-# React 事件绑定原理
 
 # React 类组件和函数组件的区别
 1. 形式上：
@@ -686,11 +721,7 @@ export default Welcome
 
 4. 获取渲染的值
 
-# React 虚拟dom渲染原理 和 Diff 原理
-> 参考链接：https://km.woa.com/articles/show/511997
 
-# React 的 render 异常处理机制
-> 参考链接：https://km.woa.com/articles/show/539330
 
 # React错误边界
 
@@ -700,3 +731,8 @@ export default Welcome
 
 # React事件绑定原理
 
+# React 虚拟dom渲染原理 和 Diff 原理
+> 参考链接：https://km.woa.com/articles/show/511997
+
+# React 的 render 异常处理机制
+> 参考链接：https://km.woa.com/articles/show/539330
