@@ -1,1 +1,0 @@
-import{_ as s,o as n,c as a,a as l}from"./app.e1f76b92.js";const p="/assets/preSum.3a03e8ba.png",_=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"算法/数组/前缀和/index.md"}'),o={name:"算法/数组/前缀和/index.md"},t=l("",5),e=[t];function r(c,F,y,D,C,A){return n(),a("div",null,e)}const m=s(o,[["render",r]]);export{_ as __pageData,m as default};

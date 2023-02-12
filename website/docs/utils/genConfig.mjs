@@ -1,4 +1,4 @@
-// 用于生成.vitepress/config.js中的sibebar，即网站的侧边栏
+// 用于生成.vitepress/config.js中的sidebar，即网站的侧边栏
 import fs from "fs";
 import path from "path";
 
@@ -65,7 +65,7 @@ function getAllSideBar(dir) {
 const data = {
   sidebar: {},
 };
-const dir = ["算法", "js", "前端框架"];
+const dir = ["算法", "js", "前端框架", "工程化"];
 dir.forEach((item, index) => {
   const res = getAllSideBar(`../${item}`);
   data.sidebar[`/${item}`] = [];

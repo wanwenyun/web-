@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 
 // 用于将之前的笔记中的.js转成.md文件，并且移动文件至该项目中
-
 function walkSync(currentDirPath, targeDirPath, callback) {
   // http://nodejs.cn/api/fs.html#fsreaddirsyncpath-options
   // http://nodejs.cn/api/fs.html#class-fsdirent 新增于: v10.10.0

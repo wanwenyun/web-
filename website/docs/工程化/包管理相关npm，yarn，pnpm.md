@@ -1,0 +1,23 @@
+## pnpm、npm、yarn
+* **npm2** 是通过嵌套的方式管理 node_modules 的，会有同样的依赖复制多次的问题。
+
+    <img src="./picture/pnpm、npm、yarn/pic1.png" width=30%/>
+
+    这样会造成：
+    1. 占据比较大的磁盘空间
+    2. windows 的文件路径最长是 260 多个字符，这样嵌套是会超过 windows 路径的长度限制的
+
+
+* **npm3+ 和 yarn** 是通过铺平的扁平化的方式来管理 node_modules，解决了嵌套方式的部分问题，同时还实现了`.lock`来锁定依赖版本的功能。但是引入了**幽灵依赖**的问题，也就是你明明没有声明在 dependencies 里的依赖，但在代码里却可以 require 进来。并且同名的包只会提升一个版本的，其余的版本依然会复制多次。
+
+    <img src="./picture/pnpm、npm、yarn/pic2.png" width=30%/>
+
+
+* **pnpm** 则是用了另一种方式，不再是复制了，而是都从`全局 store 硬连接`到 node_modules/.pnpm，然后之间通过`软链接`来组织依赖关系。这样不但节省磁盘空间，也没有幽灵依赖问题，安装速度还快，从机制上来说完胜 npm 和 yarn。
+
+    <figure>
+        <img src="./picture/pnpm、npm、yarn/pic4.png" width=35%/>
+        <img src="./picture/pnpm、npm、yarn/pic3.png" width=60%/>
+    </figure>
+
+    缺点：pnpm查看子级依赖很不方便。

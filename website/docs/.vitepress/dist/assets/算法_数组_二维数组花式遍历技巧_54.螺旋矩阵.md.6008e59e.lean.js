@@ -1,0 +1,1 @@
+import{_ as s,o as n,c as a,d as l}from"./app.8cb9dc40.js";const A=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"算法/数组/二维数组花式遍历技巧/54.螺旋矩阵.md"}'),p={name:"算法/数组/二维数组花式遍历技巧/54.螺旋矩阵.md"},o=l("",1),t=[o];function e(c,r,y,F,D,i){return n(),a("div",null,t)}const f=s(p,[["render",e]]);export{A as __pageData,f as default};

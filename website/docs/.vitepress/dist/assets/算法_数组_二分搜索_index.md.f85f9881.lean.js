@@ -1,0 +1,1 @@
+import{_ as s,o as n,c as a,d as l}from"./app.8cb9dc40.js";const A=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"算法/数组/二分搜索/index.md"}'),p={name:"算法/数组/二分搜索/index.md"},o=l("",11),t=[o];function e(c,r,y,F,D,i){return n(),a("div",null,t)}const g=s(p,[["render",e]]);export{A as __pageData,g as default};

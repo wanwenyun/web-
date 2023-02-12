@@ -303,30 +303,30 @@ function Component(){
 
 ### 父组件同时传递多个共享数据值给1个子组件：
 ```js
-import React,{ useContext } from 'react'
+  import React, { useContext } from 'react';
 
-const UserContext = React.createContext();
-const NewsContext = React.createContext();
+  const UserContext = React.createContext();
+  const NewsContext = React.createContext();
 
-function AppComponent() {
-  return (
-    <UserContext.Provider value={{name:'puxiao'}}>
-        <NewsContext.Provider value={{title:'Hello React Hook.'}}>
-            <ChildComponent />
-        </NewsContext.Provider>
-    </UserContext.Provider>
-  )
-}
+  function AppComponent() {
+    return (
+      <UserContext.Provider value={{name:'puxiao'}}>
+          <NewsContext.Provider value={{title:'Hello React Hook.'}}>
+              <ChildComponent />
+          </NewsContext.Provider>
+      </UserContext.Provider>
+    )
+  }
 
-function ChildComponent(){
-  const user = useContext(UserContext);
-  const news = useContext(NewsContext);
-  return <div>
-    {user.name} - {news.title}
-  </div>
-}
+  function ChildComponent(){
+    const user = useContext(UserContext);
+    const news = useContext(NewsContext);
+    return <div>
+      {user.name} - {news.title}
+    </div>
+  }
 
-export default AppComponent;
+  export default AppComponent;
 ```
 1. 父组件同时要实现传递2个共享数据对象value值，需要使用<XxxContext.Provider value={obj}>标签进行2次嵌套。
 2. 子组件使用了useContext，他可以自由随意使用父组件传递过来的共享数据value，并不需要多次嵌套获取。

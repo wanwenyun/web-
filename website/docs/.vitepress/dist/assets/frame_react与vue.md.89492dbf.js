@@ -1,1 +1,0 @@
-import{_ as e,o as t,c as a}from"./app.e1f76b92.js";const f=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"frame/react与vue.md"}'),r={name:"frame/react与vue.md"};function c(o,s,n,_,p,m){return t(),a("div")}const i=e(r,[["render",c]]);export{f as __pageData,i as default};
