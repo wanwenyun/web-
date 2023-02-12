@@ -1,13 +1,3 @@
-/*
- * @Author: ouyangzhichao@kuaishou.com
- * @Date: 2023-02-11 21:06:27
- * @LastEditors: ouyangzhichao ouyangzhichao@kuaishou.com
- * @LastEditTime: 2023-02-12 16:18:04
- * @FilePath: /website/docs/utils/genConfig.mjs
- * @Description:
- *
- * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
- */
 // 用于生成.vitepress/config.js中的sibebar，即网站的侧边栏
 import fs from "fs";
 import path from "path";
