@@ -1,0 +1,20 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "wanwan",
+  "license": "MIT",
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:serve": "vitepress serve docs --port 8080"
+  },
+  "devDependencies": {
+    "flexsearch": "^0.7.31",
+    "markdown-it": "^13.0.1",
+    "vitepress": "^1.0.0-alpha.45",
+    "vitepress-plugin-search": "^1.0.4-alpha.19",
+    "vue": "^3.2.47",
+    "vite": "4"
+  }
+}
