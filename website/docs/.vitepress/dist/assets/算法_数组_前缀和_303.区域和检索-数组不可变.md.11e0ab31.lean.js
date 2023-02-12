@@ -1,0 +1,1 @@
+import{_ as s,o as n,c as a,a as l}from"./app.e1f76b92.js";const A=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"算法/数组/前缀和/303.区域和检索-数组不可变.md"}'),p={name:"算法/数组/前缀和/303.区域和检索-数组不可变.md"},o=l("",1),t=[o];function e(c,r,y,i,F,D){return n(),a("div",null,t)}const f=s(p,[["render",e]]);export{A as __pageData,f as default};
