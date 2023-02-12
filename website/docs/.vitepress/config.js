@@ -1,13 +1,3 @@
-/*
- * @Author: ouyangzhichao@kuaishou.com
- * @Date: 2023-02-11 15:40:25
- * @LastEditors: ouyangzhichao ouyangzhichao@kuaishou.com
- * @LastEditTime: 2023-02-12 16:17:44
- * @FilePath: /website/docs/.vitepress/config.js
- * @Description:
- *
- * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
- */
 export default {
   title: "弯弯个人小站",
   description: "万雯赟小站",
