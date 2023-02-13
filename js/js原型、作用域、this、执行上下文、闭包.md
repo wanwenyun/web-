@@ -178,6 +178,44 @@ foo();
 
 作用域链定义：当查找变量的时候，会先从当前上下文的变量对象中查找，如果没有找到，就会从父级(词法层面上的父级)执行上下文的变量对象中查找，一直找到全局上下文的变量对象，也就是全局对象。这样由多个执行上下文的变量对象构成的链表就叫做作用域链。
 
+作用域链是基于调用栈的，而不是基于函数定义的位置的。
+
+例题：  
+```js
+var name = '全局'
+var type = 'global'
+
+
+function foo(){
+    var name = 'foo'
+    console.log(name) // foo
+    console.log(type) // global
+}
+
+
+function bar(){
+    var name = 'bar'
+    var type = 'function'
+    foo()
+}
+bar()
+```
+
+因为foo是在全局环境中声明的，所以foo()的执行对象是window，对应的作用域是全局作用域。打印name时，会现在foo作用域内查找，打印出`foo`。打印type时，在foo作用域内没找到，便会顺着作用域链向上找，上一级的作用域是**全局作用域**。
+
+
+```js
+var name = '全局'
+var type = 'global'
+function bar() {
+    var type = 'function'
+    function foo() {
+        console.log(type) // function
+    }
+    foo()
+}
+bar()
+```
 ## 从ECMAScript规范解读this
 > https://github.com/mqyqingfeng/Blog/issues/7
 ES语言类型，除了Undefined, Null, Boolean, String, Number, Object这些之外，还有一种规范类型。规范类型是用来描述ES语言结构和语言类型的，规范类型包括：**Reference**, List, Completion, Property Descriptor, Property Identifier, Lexical Environment, 和 Environment Record。
@@ -318,17 +356,21 @@ MDN对闭包的定义：闭包是指那些能够访问自由变量的函数。�
 
 简单的例子：
 ```js
-var a = 1;
 
-function foo() {
-    console.log(a);
+function foo(){
+    var number = 1
+    function bar(){
+        number++
+        console.log(number)
+    }
+    return bar
 }
-
-foo();
+var mybar = foo()
+mybar() // 2
 ```
-foo 函数可以访问变量 a，但是 a 既不是 foo 函数的**局部变量**，也不是 foo 函数的**参数**，所以 a 就是自由变量。
+bar 函数可以访问变量 number，但是 number 既不是 bar 函数的**局部变量**，也不是 bar 函数的**参数**，所以 a 就是自由变量。
 
-那么，函数 foo + foo 函数访问的自由变量 a 不就是构成了一个闭包
+那么，函数 bar + bar 函数访问的自由变量 a 不就是构成了一个**闭包**。即便 foo 函数执行结束了，其内部定义的 number 变量也不能被销毁，因为 bar 函数依然引用了该变量。
 
 每个函数在调用时会创建新的`上下文`及`作用域链`，而作用域链就是将外层（上层）上下文所绑定的变量对象逐一串连起来，使当前函数可以获取外层上下文的变量、数据等。
 
@@ -353,7 +395,25 @@ data[2](); // 3
 答案都是3。
 原因: 
 * data[i]函数形成了闭包。
-* data[0],data[1],data[2]引用的变量都是同一个`i`。当代码执行到data[0],data[1],data[2]这三个函数的时候，i变量的值已经变成了3。所以输出全是3。
+* 因为`i`是由`var`声明的，不会产生块级作用域，且存在变量提升现象，所以函数引用的i就是全局作用域的。
+* 由于全局作用域中只有一个，所以data[n]()引用的变量都是同一个`i`。每执行一次循环，i就变化一次，最后是3。所以打印出来全是3。
+
+```js
+var data = [];
+
+for (let i = 0; i < 3; i++) { //如果改成let，结果是什么
+  data[i] = function () {
+    console.log(i);
+  };
+}
+
+data[0](); // 3
+data[1](); // 3
+data[2](); // 3
+```
+* let只在let命令所在的代码块内有效。所以每执行一次循环，便会创建一个块级作用域。
+* 在这个块级作用域中，你又定义了一个函数，而这个函数又引用了函数外部的i变量，那么这就产生了**闭包**，也就是说，所有块级作用域中的i都不会被销毁.
+* 所以再次调用`data[n]()`时，v8就会拿出闭包中的变量i，且i的值都不同
 
 ## 参数按值传递
 > https://github.com/mqyqingfeng/Blog/issues/10
