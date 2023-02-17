@@ -43,7 +43,11 @@ var sort = function(nums, lo, hi) {
 * **中**序位置的代码在一个二叉树节点左子树都遍历完，即将开始遍历右子树的时候执行。
 
 
-二叉树遍历框架：
+二叉树题目的递归解法可以分两类思路，
+1. 第一类是**遍历**一遍二叉树得出答案，**回溯算法**
+2. 第二类是通过**分解**问题计算出答案，**动态规划**
+
+二叉树**遍历**框架：
 ```js
 var traverse = function(TreeNode root) {
     if (root == null) {
@@ -56,41 +60,22 @@ var traverse = function(TreeNode root) {
     // 在此操作，便是后序位置
 }
 ```
-`traverse` 函数其实就是一个能够遍历二叉树所有节点的一个函数，与遍历数组或者链表本质上没有区别：
+`traverse` 函数其实就是一个能够遍历二叉树所有节点的一个函数，与遍历数组或者链表本质上没有区别。
+
+
+二叉树**分解**框架：（以返回二叉树最大深度为例）
 ```js
-/* 迭代遍历数组 */
-var traverse = function(arr) {
-    for (let i = 0; i < arr.length; i++) {
+var maxDepth = function(root) {
+	if (root == null) {
+		return 0;
+	}
+	// 利用定义，计算左右子树的最大深度
+	let leftMax = maxDepth(root.left);
+	let rightMax = maxDepth(root.right);
+	// 整棵树的最大深度等于左右子树的最大深度取最大值，
+    // 然后再加上根节点自己
+	let res = Math.max(leftMax, rightMax) + 1;
 
-    }
-}
-
-/* 递归遍历数组 */
-var traverse = function(arr, i) {
-    if (i == arr.length) {
-        return;
-    }
-    // 前序位置
-    traverse(arr, i + 1);
-    // 后序位置
-}
-
-/* 迭代遍历单链表 */
-var traverse = function(head) {
-    for (ListNode p = head; p != null; p = p.next) {
-
-    }
-}
-
-/* 递归遍历单链表 */
-var traverse = function(head) {
-    if (head == null) {
-        return;
-    }
-    // 前序位置
-    traverse(head.next);
-    // 后序位置
+	return res; // 返回结果
 }
 ```
-
-二叉树题目的递归解法可以分两类思路，第一类是遍历一遍二叉树得出答案，第二类是通过分解问题计算出答案，这两类思路分别对应着 **回溯算法**核心框架 和 **动态规划**核心框架。
