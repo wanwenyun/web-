@@ -21,9 +21,12 @@
       - [单个变量](#单个变量)
       - [比较运算符](#比较运算符)
       - [使用 == 比较中的5条规则](#使用--比较中的5条规则)
-      - [== 和 ===有什么区别？](#-和-有什么区别)
+    - [几道经典例题：](#几道经典例题)
+    - [== 和 ===有什么区别？](#-和-有什么区别)
   - [显示类型转换](#显示类型转换)
     - [ToString](#tostring)
+      - [`String()、toString()`的基本类型值的字符串化规则：](#stringtostring的基本类型值的字符串化规则)
+      - [JSON.stringify()](#jsonstringify)
     - [ToNumber](#tonumber)
     - [ToBoolean](#toboolean)
   - [附录：类型转换表](#附录类型转换表)
@@ -213,25 +216,30 @@ console.log(myInstanceof(a, Teacher));
 
 ## String、Boolean、Number、对象之间的相互转换
 ###  其他类型转为字符串类型
-* null：转为"null"。
-* undefined：转为"undefined"。
-* Boolean：true转为"true"，false转为"false"。
-* Number：11转为"11"，科学计数法11e20转为"1.1e+21"。
+* `null`：转为`"null"`。
+* `undefined`：转为`"undefined"`。
+* `Boolean`：true转为"true"，false转为"false"。
+* `Number`：11转为"11"，科学计数法11e20转为"1.1e+21"。
 * 数组：
   * 空数组`[]` 转为空字符串`""`
   * 如果数组中的元素有null或者undefined,同样当做`空字符串`处理，
   * [1,2,3,4]转为"1,2,3,4"，相当于调用数组的`.join(',')`方法。PS：['1','2','3','4']也是转为"1,2,3,4"
-* 函数：function a(){}转为字符串是"function a(){}"。
+* 函数：`function a(){}`转为字符串是"function a(){}"。
 * 一般对象：相当于调用对象的`toString()`方法，返回的是"[object,object]"。
 
 ### 其他类型转为Number类型
-* null：转为 0。
-* undefined：转为NaN。
-* Boolean：true转为1，false转为0。
-* 字符串：如果是纯数字的字符串，则转为对应的数字，如11转为"11"，"1.1e+21"转为1.1e+21，空字符串转为0，其余情况则为`NaN`。
-* 数组：数组首先会被转换成`原始类型`，即primitive value(参考`ToPrimitive`)，得到原始类型后再根据上面的转换规则转换。
-  * :star:`ToPrimitive规则`，是引用类型向原始类型转变的规则，它遵循先valueOf后toString的模式期望得到一个原始类型。
-* 对象：和数组一样
+* `null`：转为 `0`。
+* `undefined`：转为`NaN`。
+* `Boolean`：true转为1，false转为0。
+* `字符串`：
+  * 如果是`纯数字`的字符串，则转为对应的十进制`数字`，如11转为"11"，
+  * 如果字符串中包含有效的`浮点`格式 ，则将其转换为对应的浮点数值， 如"1.1"转为1.1，"1.1e+21"转为1.1e+21，
+  * 如果字符串中包含有效的十六进制格式，则将其转换为相同大小的`十进制数`，如"0xf"转为15
+  * `空字符串转为0`，
+  * 其余情况则为`NaN`。
+* `数组`或`对象`：数组首先会被转换成`原始类型`，即primitive value(参考`ToPrimitive`)，得到原始类型后再根据上面的转换规则转换。
+  * :star:`ToPrimitive规则`，是引用类型向原始类型转变的规则，它遵循`先valueOf后toString`的模式期望得到一个原始类型。
+
 
 ### 其他类型转为Boolean类型
 只有`null，undefined，0，false，NaN，空字符串`这6种情况转为布尔值结果为`false`，其余全部为true
@@ -290,7 +298,7 @@ JavaScript 中，表达式中包含以下运算符时，会发生**隐式类型�
 #### 单个变量
 :star:**如果只有单个变量，会先将变量转换为Boolean值。**
 
-只有 `null undefined '' NaN 0 false` 这几个是 `false`，其他的情况都是 true，比如 {} , []。
+只有 `null, undefined, '', NaN, 0, false` 这几个是 `false`，其他的情况都是 true，比如 {} , []。
 
 #### 比较运算符
 1. 如果是对象，就通过 toPrimitive 转换对象
@@ -301,11 +309,11 @@ console.log([] < 'b') // true
 ```
 
 #### 使用 == 比较中的5条规则
-1. 规则 1：NaN和其他任何类型比较永远返回false（包括和他自己）。
+1. 规则 1：`NaN`和其他任何类型比较永远返回false（包括和他自己）。
    ```js
    NaN == NaN // false
    ```
-2. 规则 2：Boolean 和其他任何类型比较，Boolean 首先被转换为 Number 类型。
+2. 规则 2：Boolean 和其他任何类型比较，`Boolean` 首先被转换为 `Number` 类型。
    ```js
    true == 1  // true 
    true == '2'  // false, 先把 true 变成 1，而不是把 '2' 变成 true
@@ -314,13 +322,13 @@ console.log([] < 'b') // true
    undefined == false // false ，首先 false 变成 0，然后参考规则4
    null == false // false，同上
    ```
-3. 规则 3：String和Number比较，先将String转换为Number类型。
+3. 规则 3：String和Number比较，先将`String`转换为`Number`类型。
    ```js
    123 == '123' // true, '123' 会先变成 123
    '' == 0 // true, '' 会首先变成 0
    ```
 4. 规则 4：null == undefined比较结果是true，除此之外，null、undefined和其他任何结果的比较值都为false。
-5. 规则 5: 原始类型和引用类型做比较时，引用类型会依照`ToPrimitive规则`转换为原始类型。
+5. 规则 5: 原始类型和引用类型做比较时，`引用类型`会依照`ToPrimitive规则`转换为原始类型。
    >ToPrimitive规则，是引用类型向原始类型转变的规则，它遵循先valueOf后toString的模式期望得到一个原始类型。
 
    如果还是没法得到一个原始类型，就会抛出 `TypeError`。
@@ -336,7 +344,9 @@ console.log([] < 'b') // true
    let a = [1,2,3]
    console.log(a == b) // false
    ```
-**看几道经典例题：**
+
+### 几道经典例题：
+
 例题一：
 ```js
 var a = {
@@ -393,11 +403,11 @@ if (a == 1 && a == 2 && a == 3) {
 /**
  * 1. 根据规则2， Boolean 首先被转换为 Number 类型。变成[undefined] == 0
  * 2. 根据规则5， [undefined]转为原始类型。[undefined]先调用valueOf会返回本身，再调用toString()（undefined会被当成空字符串处理）, 变成''。此时变成  '' == 0
- * 3. 根据规则规则3， ''转为number类型为0.此时变成0 == 0。所以结果为true
+ * 3. 根据规则规则3， ''转为number类型为0.此时变成 0 == 0。所以结果为true
  * */
 ```
 
-#### == 和 ===有什么区别？
+### == 和 ===有什么区别？
 * ===叫做严格相等，是指：左右两边不仅值要相等，`类型`也要相等，例如'1'===1的结果是false，因为一边是string，另一边是number。
 * ==不像===那样严格，对于一般情况，只要值相等，就返回true，但==还涉及一些`类型转换`，它的转换规则如下：
 * 两边的类型是否相同，相同的话就比较值的大小，例如1==2，返回false
@@ -412,13 +422,83 @@ console.log({a: 1} == "[object Object]"); // true
 
 
 ## 显示类型转换
+>参考链接：https://juejin.cn/post/6844903877175672845
+
 JavaScript 中，强制类型转换主要是通过调用全局函数来实现的，例如 Number()、Boolean()、parseInt()、parseFloat() 等。
 
 ### ToString
+ToString负责处理非字符串到字符串的强制类型转换，常用的字符串化方法`String()、toString()`。
 
+
+#### `String()、toString()`的基本类型值的字符串化规则：
+* `null`转换为'null'
+* `undefined`转换为'undefined'
+* `true`转化为'true'
+* `数字`的字符串化遵循通用规则，极大值或者极小值采用科学计数法表示
+* `普通对象`在字符串化时，实际执行Object.prototype.toString()，返回该对象的类型[object type]
+  ```js
+  var test = {a : 'test'}
+  console.log(test.toString()) // '[object Object]'
+  console.log(String(test)) // '[object Object]'
+  ```
+* 但是当`对象有自己的toString方法`时，字符串化时就会调用该方法并返回该方法的返回值
+  ```js
+  var obj = {
+    a: 'test',
+    toString: function () {
+      return 1
+    }
+  }
+  console.log(obj.toString()) // 1
+  console.log(String(obj)) // 1
+  ```
+* 数组在做字符串化时，将数组所有元素字符串化再用`,`连接。
+  ```js
+  var arr = [1, 2, 3]
+  console.log(arr.toString()) // '1,2,3'
+  console.log(String(arr)) // '1,2,3'
+  ```
+
+#### JSON.stringify()
+* JSON.stringify()在将JSON对象序列化为字符串时，也涉及到了字符串化的相关规则。
+对大多数简单值来说，JSON字符串化和`toString()的效果基本相同`。
+```js
+console.log(JSON.stringify("test")) // ""test""
+console.log(JSON.stringify(1)) // "1"
+console.log(JSON.stringify(null)) // "null"
+```
+* 但是JSON.stringify()在对象中遇到function() {}、undefined、Symbol时会自动将其`忽略`，在数组中则会返回`null`
+```js
+var obj1 = {
+  a: undefined,
+  b: function () {},
+  c: Symbol()
+}
+console.log(JSON.stringify(obj1)) // "{}"
+console.log(JSON.stringify([undefined, function () {}, 1])) // "[null, mull, 1]"
+```
+
+* 当对象执行JSON.stringify()方法时，如果对象中存在`toJSON方法`，用它的返回值来进行序列化
+```js
+var obj2 = { 
+  a: undefined,
+  b: function () {},
+  c: Symbol(),
+  toJSON: function () {
+    return {a: 'replace'}
+  }
+}
+console.log(JSON.stringify(obj2)) // "{"a":"replace"}"
+```
 ### ToNumber
+ToNumber负责将非数字转化为数字，`Number()、parseInt()和parseFloat()`都可以将非数字转化为数字。
+
+规则同 *《其他类型转为Number类型》* 章节
 
 ### ToBoolean
+只有`null，undefined，0，false，NaN，空字符串`这6种情况转为布尔值结果为`false`，其余全部为true。
+
+常用于转化为布尔类型的方法有`Boolean()`或者`!!`
 
 ## 附录：类型转换表
 <img src='./picture/convert-table.png'/>
