@@ -1,9 +1,0 @@
-异步操作的几种方式：
-
-1.回调
-2.Promise：.then()，用同步一样的方法，来书写异步代码
-  Promise.all()
-  Promise.race()
-
-3.generator：yield，可以掺杂逻辑进去
-4.async：内置执行器
