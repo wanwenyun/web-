@@ -40,6 +40,31 @@ output 属性告诉 webpack 在哪里输出它所创建的 bundles， 以及如�
 loader 让 webpack 能够去处理那些`非js`文件（webpack 自身只理解 JavaScript）。并可以对代码做polyfill，解决一些浏览器兼容问题。
 >core-js 是js标准库的polyfill
 
+loader配置语法如下：
+```json
+// webpack.config.js
+module.exports = {
+  // ...other config
+  module: {
+    rules: [
+      {
+        test: /^your-regExp$/,
+        use: [
+          {
+             loader: 'loader-name-A',
+          }, 
+          {
+             loader: 'loader-name-B',
+          }
+        ]
+      },
+    ]
+  }
+}
+```
+
+针对每个文件类型，loader是支持以数组的形式配置多个的，因此当Webpack在转换该文件类型的时候，会按顺序链式调用每一个loader，前一个loader返回的内容会作为下一个loader的入参。因此loader的开发需要遵循一些规范，比如返回值必须是**标准的JS代码字符串**，以保证下一个loader能够正常工作，同时在开发上需要严格遵循“单一职责”，只关心loader的输出以及对应的输出。
+
 ## Plugin
 loader 被用于转换某些类型的模块,而插件则可以用于执行范围更广的任务。比如：按需加载，代码压缩，文件管理、环境注入等
 
@@ -51,9 +76,15 @@ Webpack 的运行流程是一个串行的过程,从启动到结束会依次执�
 2.启动webpack，创建`Compiler`对象并开始解析项目；
 3.从`入口`文件（entry）开始解析，并且找到其导入的依赖模块，递归遍历分析，形成`依赖关系树`；
 4.对不同文件类型的依赖模块文件使用对应的`Loader`进行编译，最终转为Javascript文件；
-5. 整个过程中webpack会通过发布订阅模式，向外抛出一些hooks，而webpack的插件即可通过监听这些关键的事件节点，执行`插件任务`进而达到干预输出结果的目的。
+5. 整个过程中webpack会通过**发布订阅模式**，向外抛出一些`hooks`，而webpack的插件即可通过监听这些关键的事件节点，执行`插件任务`进而达到干预输出结果的目的。
 6. 根据入口和模块之间的依赖关系,组装成一个个包含多个模块的 `Chunk`,再把每个 Chunk 转换成一个单独的文件加入到输出列表，再根据配置确定输出的路径和文件名，把文件内容写入到文件系统。
 
 >`Compiler` 对象: compiler 对象是 webpack 的编译器对象。compiler 对象会在启动 webpack 的时候被一次性的初始化，compiler 对象中包含了所有 webpack 可自定义操作的配置，例如 loader 的配置，plugin 的配置，entry 的配置等各种原始 webpack 配置等
 
 # sourceMap是什么？
+sourceMap是一项将编译、打包、压缩后的代码映**射回源代码**的技术，由于打包压缩后的代码并没有阅读性可言，一旦在开发中报错或者遇到问题，直接在混淆代码中debug问题会带来非常糟糕的体验，sourceMap可以帮助我们快速定位到源代码的位置，提高我们的开发效率。
+
+在webpack.config.js中设置`devtool: 'none'`来关闭source map功能。devtool属性可以接受以下值：
+
+<img src="./picture/webpack/devtool.png" width=60%/>
+
