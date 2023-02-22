@@ -1,0 +1,31 @@
+/*
+ * @lc app=leetcode.cn id=354 lang=javascript
+ *
+ * [354] 俄罗斯套娃信封问题
+ */
+
+// @lc code=start
+/**
+ * @param {number[][]} envelopes
+ * @return {number}
+ * 1. 先按宽度从小到大排序，然后宽度相同的，再按高度从大到小排序。
+ * 2. 按高度进行动态规划，找最长递增的子序列
+ */
+
+// 普通写法，对于复杂的测试用例会超时
+var maxEnvelopes = function(envelopes) {
+    // 排序
+    envelopes.sort((a, b) => a[0] === b[0] ? b[1] - a[1] : a[0] - b[0]);
+
+    let dp = new Array(envelopes.length).fill(1);
+    let res = 1;
+    for (let i = 0; i < dp.length; i++){
+        for(let j = 0; j < i; j++) {
+            if(envelopes[j][1] < envelopes[i][1]) dp[i] = Math.max(dp[i], dp[j] + 1);
+        }
+        res = Math.max(dp[i], res);
+    }
+    return res;
+};
+// @lc code=end
+

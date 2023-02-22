@@ -1,0 +1,32 @@
+/*
+ * @lc app=leetcode.cn id=300 lang=javascript
+ *
+ * [300] 最长递增子序列
+ * 注意「子序列」和「子串」这两个名词的区别，子串一定是连续的，而子序列不一定是连续的。
+ * 1. 双指针：该方法不行，理由同滑动窗口
+ * 2. 滑动窗口：该方法不行，因为滑动窗口适合于结果为连续的数组或者字符串
+ * 3. 动态规划
+ * dp定义：dp[i] 表示以 nums[i] 这个数结尾的最长递增子序列的长度
+ * 初始值：dp[0] = 1
+ * 状态转移方程：dp[i] = Math.max(dp[i], dp[j] + 1)
+ */
+
+// @lc code=start
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+var lengthOfLIS = function(nums) {
+    let dp = new Array(nums.length).fill(1);
+
+    for(let i = 0 ; i < nums.length; i++){
+        for (let j = 0; j < i; j++) {
+            if(nums[i] > nums[j]) dp[i] = Math.max(dp[i], dp[j]+1)
+        }
+    }
+
+    return dp.sort((a,b) => a-b)?.pop();
+};
+// @lc code=end
+
+console.log(lengthOfLIS([10,9,2,5,3,7,101,18]));
