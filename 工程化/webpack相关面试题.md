@@ -6,8 +6,14 @@
   - [Chunk](#chunk)
   - [Loader](#loader)
   - [Plugin](#plugin)
+  - [Loader和Plugin的区别，以及如何自定义Loader和Plugin？](#loader和plugin的区别以及如何自定义loader和plugin)
+    - [自定义Loader](#自定义loader)
+    - [自定义Plugin](#自定义plugin)
 - [webpack打包流程？](#webpack打包流程)
 - [sourceMap是什么？](#sourcemap是什么)
+- [webpack-dev-server（待细看）](#webpack-dev-server待细看)
+- [Webpack热更新（存疑，待细看)](#webpack热更新存疑待细看)
+- [Webpack Proxy工作原理](#webpack-proxy工作原理)
 
 
 >https://juejin.cn/post/6943468761575849992#heading-5
@@ -15,9 +21,10 @@
 >https://segmentfault.com/a/1190000041100811
 
 # webpack的作用是什么？
-* **模块打包：** 可以将**不同模块的文件打包整合**在一起，并且保证它们之间的引用正确，执行有序。利用打包我们就可以在开发的时候根据我们自己的业务自由划分文件模块，保证项目结构的清晰和可读性。
-* **编译兼容：** 在前端的“上古时期”，手写一堆**浏览器兼容**代码一直是令前端工程师头皮发麻的事情，而在今天这个问题被大大的弱化了，通过webpack的`Loader`机制，不仅仅可以帮助我们对代码做polyfill，还可以编译转换诸如`.less, .vue, .jsx`这类在浏览器无法识别的格式文件，让我们在开发的时候可以使用新特性和新语法做开发，提高开发效率。
-* **能力扩展：** 通过webpack的`Plugin`机制，我们在实现模块化打包和编译兼容的基础上，可以进一步实现诸如**按需加载，代码压缩**等一系列功能，帮助我们进一步提高自动化程度，工程效率以及打包输出的质量。
+* **模块打包：** 可以将**不同模块的文件打包整合**在一起，提高项目性能，可维护性，解决浏览器频繁请求文件的问题。
+* **编译兼容：** 通过webpack的`Loader`机制，解决**浏览器兼容**问题，并可以编译转换诸如`.less, .vue, .jsx`这类在浏览器无法识别的格式文件，提高开发效率。
+* **能力扩展：** 通过webpack的`Plugin`机制，进一步实现诸如**按需加载，代码压缩**等一系列功能，提高项目的自动化程度，工程效率以及打包输出的质量。
+
 
 # webpack核心概念
 
@@ -40,35 +47,138 @@ output 属性告诉 webpack 在哪里输出它所创建的 bundles， 以及如�
 loader 让 webpack 能够去处理那些`非js`文件（webpack 自身只理解 JavaScript）。并可以对代码做polyfill，解决一些浏览器兼容问题。
 >core-js 是js标准库的polyfill
 
+Loader本质就是一个`函数`，在该函数中对接收到的内容进行转换，返回转换后的结果。因为 Webpack 只认识 JavaScript，所以 Loader 就成了**翻译官**，对其他类型的资源进行转译的预处理工作。
+
+
 loader配置语法如下：
 ```json
-// webpack.config.js
 module.exports = {
-  // ...other config
   module: {
     rules: [
       {
-        test: /^your-regExp$/,
+        test: /\.css$/, // 匹配规则，一般为正则表达式
         use: [
+          { loader: 'style-loader' },
           {
-             loader: 'loader-name-A',
-          }, 
-          {
-             loader: 'loader-name-B',
-          }
+            loader: 'css-loader',
+            options: { modules: true }
+          },
+          { loader: 'sass-loader' }
         ]
-      },
+      }
     ]
+  }
+};
+```
+
+针对每个文件类型，loader是支持以数组的形式配置多个的，因此当Webpack在转换该文件类型的时候，会**按顺序链式调用**每一个loader，前一个loader返回的内容会作为下一个loader的入参。因此loader的开发需要遵循一些规范，比如返回值必须是**标准的JS代码字符串**，以保证下一个loader能够正常工作，同时在开发上需要严格遵循“单一职责”，只关心loader的输出以及对应的输出。
+
+
+常见loader：
+1. style-loader：将css添加到DOM的内联样式标签style里，然后通过 dom 操作去加载 css。
+2. css-loader :允许将css文件通过require的方式引入，并返回css代码。
+3. less-loader: 处理less，将less代码转换成css。
+4. sass-loader: 处理sass，将scss/sass代码转换成css。
+5. awesome-typescript-loader：将 TypeScript 转换成 JavaScript，性能优于 ts-loader。
+6. eslint-loader：通过 ESLint 检查 JavaScript 代码。
+7. tslint-loader：通过 TSLint检查 TypeScript 代码。
+
+
+## Plugin
+loader 被用于转换某些类型的模块,而插件则可以用于执行范围更广的任务。比如：按需加载，代码压缩，文件管理、环境注入等。
+
+在 Webpack 运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在合适的时机通过 Webpack 提供的 API 改变输出结果。
+
+配置语法：
+```json
+const HtmlWebpackPlugin = require('html-webpack-plugin'); // 通过 npm 安装
+const webpack = require('webpack'); // 访问内置的插件
+module.exports = {
+  ...
+  plugins: [
+    new webpack.ProgressPlugin(),
+    new HtmlWebpackPlugin({ template: './src/index.html' }),
+  ],
+};
+```
+
+Plugin从本质上来说，就是一个具有apply方法Javascript对象。apply 方法会被 webpack compiler 调用，并且在整个编译生命周期都可以访问 compiler 对象。
+
+
+常用的plugin有:
+1. html-webpack-plugin：html 模板处理
+2. webpack-bundle-analyzer: 可视化 Webpack 输出文件的体积
+
+
+
+## Loader和Plugin的区别，以及如何自定义Loader和Plugin？
+* Loader 运行在打包文件**之前**，Loader在 module.rules 中配置，作为模块的解析规则，类型为数组。每一项都是一个 Object，内部包含了 test(类型文件)、loader、options (参数)等属性。
+* Plugins 在**整个编译周期**都起作用，Plugin在 plugins 中单独配置，类型为数组，每一项是一个 Plugin 的实例，参数都通过构造函数传入。
+
+>PS：loader是翻译官，plugin是干活滴
+### 自定义Loader
+Loader本质上来说就是一个函数，函数中的 this 作为上下文会被 webpack 填充，因此我们不能将 loader设为一个箭头函数。该函数接受一个参数，为 webpack 传递给 loader 的文件源内容。
+
+函数中有异步操作或同步操作，异步操作通过 this.callback 返回，返回值要求为 string 或者 Buffer，如下。
+
+```js
+// 导出一个函数，source为webpack传递给loader的文件源内容
+module.exports = function(source) {
+    const content = doSomeThing2JsString(source);
+    
+    // 如果 loader 配置了 options 对象，那么this.query将指向 options
+    const options = this.query;
+    
+    // 可以用作解析其他模块路径的上下文
+    console.log('this.context');
+    
+    /*
+     * this.callback 参数：
+     * error：Error | null，当 loader 出错时向外抛出一个 error
+     * content：String | Buffer，经过 loader 编译后需要导出的内容
+     * sourceMap：为方便调试生成的编译后内容的 source map
+     * ast：本次编译生成的 AST 静态语法树，之后执行的 loader 可以直接使用这个 AST，进而省去重复生成 AST 的过程
+     */
+    this.callback(null, content); // 异步
+    return content; // 同步
+}
+```
+
+### 自定义Plugin
+Webpack编译会创建两个核心对象：`compiler和compilation`。
+
+* `compiler`：包含了 Webpack 环境的所有的配置信息，包括 options，loader 和 plugin，和 webpack 整个生命周期相关的钩子.这个对象在 Webpack 启动时候被实例化，它是**全局唯一**的，可以简单地把它理解为 **Webpack 实例**
+* `compilation`：作为 Plugin 内置事件回调函数的参数，包含了当前的**模块资源、编译生成资源、变化的文件以及被跟踪依赖的状态信息**。当检测到一个文件变化，一次新的 Compilation 将被创建。
+
+如果需要自定义Plugin，也需要遵循一定的规范：
+* 插件必须是一个函数或者是一个包含 apply 方法的对象，这样才能访问compiler实例
+* 传给每个插件的 compiler 和 compilation 对象都是同一个引用，因此不建议修改
+* 异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，不然会卡住
+
+```js
+class MyPlugin {
+    // Webpack 会调用 MyPlugin 实例的 apply 方法给插件实例传入 compiler 对象
+  apply (compiler) {
+    // 找到合适的事件钩子，实现自己的插件功能
+    compiler.hooks.emit.tap('MyPlugin', compilation => {
+        // compilation: 当前打包构建流程的上下文
+        console.log(compilation);
+        // do something...
+    })
   }
 }
 ```
 
-针对每个文件类型，loader是支持以数组的形式配置多个的，因此当Webpack在转换该文件类型的时候，会按顺序链式调用每一个loader，前一个loader返回的内容会作为下一个loader的入参。因此loader的开发需要遵循一些规范，比如返回值必须是**标准的JS代码字符串**，以保证下一个loader能够正常工作，同时在开发上需要严格遵循“单一职责”，只关心loader的输出以及对应的输出。
-
-## Plugin
-loader 被用于转换某些类型的模块,而插件则可以用于执行范围更广的任务。比如：按需加载，代码压缩，文件管理、环境注入等
-
->loader是翻译官，plugin是干活滴
+生命周期钩子有：
+* entry-option ：初始化 option
+* compile： 真正开始的编译，在创建 compilation 对象之前
+* compilation ：生成好了 compilation 对象
+* make：从 entry 开始递归分析依赖，准备对每个模块进行 build
+* after-compile： 编译 build 过程结束
+* emit ：在将内存中 assets 内容写到磁盘文件夹之前
+* after-emit ：在将内存中 assets 内容写到磁盘文件夹之后
+* done： 完成所有的编译过程
+* failed： 编译失败的时候
 
 # webpack打包流程？
 Webpack 的运行流程是一个串行的过程,从启动到结束会依次执行以下流程 :
@@ -79,7 +189,6 @@ Webpack 的运行流程是一个串行的过程,从启动到结束会依次执�
 5. 整个过程中webpack会通过**发布订阅模式**，向外抛出一些`hooks`，而webpack的插件即可通过监听这些关键的事件节点，执行`插件任务`进而达到干预输出结果的目的。
 6. 根据入口和模块之间的依赖关系,组装成一个个包含多个模块的 `Chunk`,再把每个 Chunk 转换成一个单独的文件加入到输出列表，再根据配置确定输出的路径和文件名，把文件内容写入到文件系统。
 
->`Compiler` 对象: compiler 对象是 webpack 的编译器对象。compiler 对象会在启动 webpack 的时候被一次性的初始化，compiler 对象中包含了所有 webpack 可自定义操作的配置，例如 loader 的配置，plugin 的配置，entry 的配置等各种原始 webpack 配置等
 
 # sourceMap是什么？
 sourceMap是一项将编译、打包、压缩后的代码映**射回源代码**的技术，由于打包压缩后的代码并没有阅读性可言，一旦在开发中报错或者遇到问题，直接在混淆代码中debug问题会带来非常糟糕的体验，sourceMap可以帮助我们快速定位到源代码的位置，提高我们的开发效率。
@@ -87,4 +196,80 @@ sourceMap是一项将编译、打包、压缩后的代码映**射回源代码**�
 在webpack.config.js中设置`devtool: 'none'`来关闭source map功能。devtool属性可以接受以下值：
 
 <img src="./picture/webpack/devtool.png" width=60%/>
+
+
+# webpack-dev-server（待细看）
+webpack-dev-server是 webpack 官方推出的一款**开发工具**，将自动编译和自动刷新浏览器等一系列对开发友好的功能全部集成在了一起。同时，为了提高开发者日常的开发效率，只适用在开发阶段。
+
+
+# Webpack热更新（存疑，待细看)
+Webpack的热更新（Hot Module Replacement），缩写为`HMR`。这个机制可以做到不用刷新浏览器而将新变更的模块替换掉旧的模块。
+
+在Webpack中配置开启热模块也非常的简单，只需要添加如下代码即可。
+```js
+const webpack = require('webpack')
+module.exports = {
+  // ...
+  devServer: {
+    hot: true // 开启 HMR 特性
+    // hotOnly: true
+  }
+}
+```
+
+webpack热更新步骤如下：
+1. 通过webpack-dev-server创建两个服务器：提供静态资源的服务（express server）和Socket服务
+    * `express server` 负责直接提供静态资源的服务（打包后的资源直接被浏览器请求和解析）
+    * `socket server` 是一个 websocket 的长连接，双方可以通信
+2. 当 socket server 监听到对应的模块发生变化时，会生成两个文件.json（manifest文件）和.js文件（update chunk）
+3. 通过长连接，socket server 可以直接将这两个文件主动发送给客户端（浏览器）
+4. 浏览器拿到两个新的文件后，通过`HMR runtime机制`，加载这两个文件，并且针对修改的模块进行更新
+
+<img src='./picture/webpack/HMR.png' width=80%/>
+
+* `Webpack Compile`：将 JS 源代码编译成 bundle.js
+* `HMR Server`：用来将热更新的文件输出给 HMR Runtime
+* `Bundle Server`：静态资源文件服务器，提供文件访问路径
+* `HMR Runtime`：socket服务器，会被注入到浏览器，更新文件的变化
+* `bundle.js`：构建输出的文件
+* 在HMR Runtime 和 HMR Server之间建立 `websocket`，即图上4号线，用于实时更新文件变化
+
+# Webpack Proxy工作原理
+在项目开发中不可避免会遇到跨越问题，Webpack中的`Proxy`就是解决前端`跨域`的方法之一。所谓代理，指的是在接收客户端发送的请求后**转发**给其他服务器的行为，webpack中提供服务器的工具为`webpack-dev-server`。
+
+当本地发送请求的时候，代理服务器响应该请求，并将请求转发到目标服务器，目标服务器响应数据后再将数据返回给代理服务器，最终再由代理服务器将数据响应给本地，原理图如下：
+
+<img src='./picture/webpack/proxy.png' />
+
+在代理服务器传递数据给本地浏览器的过程中，**两者同源（协议，域名，端口）**，并不存在跨域行为，这时候浏览器就能正常接收数据。
+
+> **服务器与服务器**之间请求数据并不会存在跨域行为，跨域行为是**浏览器安全策略限制**
+
+
+
+配置如下：
+```js
+const path = require('path')
+
+module.exports = {
+    // ...
+    devServer: {
+        contentBase: path.join(__dirname, 'dist'),
+        compress: true,
+        port: 9000,
+        proxy: {
+            '/api': {
+                target: 'https://api.github.com', // 表示的是代理到的目标地址。
+                pathRewrite: ***, //默认情况下，我们的 /api-hy 也会被写入到URL中，如果希望删除，可以使用pathRewrite。
+                secure: ***, //默认情况下不接收转发到https的服务器上，如果希望支持，可以设置为false。
+                changeOrigin: ***, //它表示是否更新代理后请求的 headers 中host地址。
+            }
+        }
+        // ...
+    }
+}
+```
+
+**原理：**
+proxy工作原理实质上是利用`http-proxy-middleware` 这个http代理中间件，实现请求转发给其他服务器。背后使用node来做server。
 
