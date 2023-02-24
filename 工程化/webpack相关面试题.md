@@ -14,6 +14,9 @@
 - [webpack-dev-server（待细看）](#webpack-dev-server待细看)
 - [Webpack热更新（存疑，待细看)](#webpack热更新存疑待细看)
 - [Webpack Proxy工作原理](#webpack-proxy工作原理)
+  - [浏览器跨域判定的原理](#浏览器跨域判定的原理)
+  - [webpack proxy原理](#webpack-proxy原理)
+  - [实际项目举例](#实际项目举例)
 
 
 >https://juejin.cn/post/6943468761575849992#heading-5
@@ -237,15 +240,6 @@ webpack热更新步骤如下：
 # Webpack Proxy工作原理
 在项目开发中不可避免会遇到跨越问题，Webpack中的`Proxy`就是解决前端`跨域`的方法之一。所谓代理，指的是在接收客户端发送的请求后**转发**给其他服务器的行为，webpack中提供服务器的工具为`webpack-dev-server`。
 
-当本地发送请求的时候，代理服务器响应该请求，并将请求转发到目标服务器，目标服务器响应数据后再将数据返回给代理服务器，最终再由代理服务器将数据响应给本地，原理图如下：
-
-<img src='./picture/webpack/proxy.png' />
-
-在代理服务器传递数据给本地浏览器的过程中，**两者同源（协议，域名，端口）**，并不存在跨域行为，这时候浏览器就能正常接收数据。
-
-> **服务器与服务器**之间请求数据并不会存在跨域行为，跨域行为是**浏览器安全策略限制**
-
-
 
 配置如下：
 ```js
@@ -270,6 +264,50 @@ module.exports = {
 }
 ```
 
-**原理：**
+## 浏览器跨域判定的原理
+1. 浏览器先根据同源策略对前端页面和后台交互地址做匹配，若同源，则直接发送数据请求。若不同源，则发送跨域请求，浏览器会在请求的http header中加上一个 `Origin`字段，标明这个请求是从哪里发出来的。例如：`Origin: http://localhost.com:3003`
+
+2. 服务器解析程序收到浏览器**跨域请求**后，根据自身配置返回对应文件头，若未配置过任何允许跨域，则文件头里不包含Access-control-Allow-origin字段。若配置过域名，则返回`Access-control-Allow-origin` + 对应配置规则里的域名的方式。
+
+3. 浏览器根据接受到的http文件头里的Access-Control-Allow-origin字段做匹配，若无该字段，说明不允许跨域，若有该字段，则对字段内容和当前域名做对比，如果同源，则说明可以跨域，浏览器发送请求。如果不同源，则说明该域名不可跨域，不发生请求。
+
+一个支持`CORS`的web服务器，有如下的判定字段，他们会在响应的header中写明:
+1. Access-Control-Allow-Origin：允许跨域的Origin列表
+2. Access-Control-Allow-Methods：允许跨域的方法列表
+3. Access-Control-Allow-Headers：允许跨域的Header列表
+4. Access-Control-Expose-Headers：允许暴露给JavaScript代码的Header列表
+5. Access-Control-Max-Age：最大的浏览器缓存时间，单位为s
+   
+## webpack proxy原理
 proxy工作原理实质上是利用`http-proxy-middleware` 这个http代理中间件，实现请求转发给其他服务器。背后使用node来做server。
 
+当本地发送请求的时候，代理服务器响应该请求，并将请求转发到目标服务器，目标服务器响应数据后再将数据返回给代理服务器，最终再由代理服务器将数据响应给本地，原理图如下：
+
+<img src='./picture/webpack/proxy.png' />
+
+在代理服务器传递数据给本地浏览器的过程中，**两者同源（协议，域名，端口）**，并不存在跨域行为，这时候浏览器就能正常接收数据。
+
+> **服务器与服务器**之间请求数据并不会存在跨域行为，跨域行为是**浏览器安全策略限制**
+
+**代理服务器和浏览器之间为什么同源？**
+对于浏览器来说，并不感知职工请求是不是被转发过，浏览器只知道请求来自于同一个域，所以就认为是同源是的。
+## 实际项目举例
+1. 前端项目本地服务启动在`http://localhost:3003`， 后台服务启动在`http://localhost:3000`。（如果直接发送请求会跨域，因为端口号不同）
+2. 项目用axios发送请求，并将baseURL配置为`'/api' `，用来标识这是调用后台接口的请求。实际请求路径的效果等同于`http://localhost:3003/api`。
+3. webpack的devServer中配置
+   ```json
+    devServer: {
+        host: 'localhost',
+        port: 3003,
+        proxy: {
+            '/api': {
+                target: `http://localhost:3000`, // 表示的是代理到的目标地址。
+                changeOrigin: true, //它表示是否更新代理后请求的 headers 中host地址。
+            }
+        }
+        // ...
+    }
+   ```
+4. 在第2步骤的基础上，由前端页面发送请求获取列表信息（`http://localhost:3000/api/getList`），此时前端页面(`http://localhost:3000`)和后台交互地址（`http://localhost:3000/api`）是**同源**(协议，域名，端口均一致)的，因此会直接把请求发生出去。
+5. 请求发生出去之后，会被webpack proxy拦截，匹配到了`api`标识，因此会按照第3步配置（`target`），将请求转发到真正的后台服务器上，也就是`http://localhost:3000`上。
+6. 后台服务器收到请求后进行处理，并将响应返回。webpack proxy会再次拦截，但proxy不会改变请求头中的任何信息。所以浏览器收到proxy返回的请求响应时，还是认为该响应是来自于**同源**服务器的。因此不会有跨域问题，可以正常的发送请求和接受响应。
