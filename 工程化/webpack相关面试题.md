@@ -12,11 +12,12 @@
 - [webpack打包流程？](#webpack打包流程)
 - [sourceMap是什么？](#sourcemap是什么)
 - [webpack-dev-server（待细看）](#webpack-dev-server待细看)
-- [Webpack热更新（存疑，待细看)](#webpack热更新存疑待细看)
+- [Webpack热更新HMR（存疑，待细看)](#webpack热更新hmr存疑待细看)
 - [Webpack Proxy工作原理](#webpack-proxy工作原理)
   - [浏览器跨域判定的原理](#浏览器跨域判定的原理)
   - [webpack proxy原理](#webpack-proxy原理)
   - [实际项目举例](#实际项目举例)
+- [如何借助Webpack来优化性能？](#如何借助webpack来优化性能)
 
 
 >https://juejin.cn/post/6943468761575849992#heading-5
@@ -205,7 +206,7 @@ sourceMap是一项将编译、打包、压缩后的代码映**射回源代码**�
 webpack-dev-server是 webpack 官方推出的一款**开发工具**，将自动编译和自动刷新浏览器等一系列对开发友好的功能全部集成在了一起。同时，为了提高开发者日常的开发效率，只适用在开发阶段。
 
 
-# Webpack热更新（存疑，待细看)
+# Webpack热更新HMR（存疑，待细看)
 Webpack的热更新（Hot Module Replacement），缩写为`HMR`。这个机制可以做到不用刷新浏览器而将新变更的模块替换掉旧的模块。
 
 在Webpack中配置开启热模块也非常的简单，只需要添加如下代码即可。
@@ -311,3 +312,19 @@ proxy工作原理实质上是利用`http-proxy-middleware` 这个http代理中�
 4. 在第2步骤的基础上，由前端页面发送请求获取列表信息（`http://localhost:3000/api/getList`），此时前端页面(`http://localhost:3000`)和后台交互地址（`http://localhost:3000/api`）是**同源**(协议，域名，端口均一致)的，因此会直接把请求发生出去。
 5. 请求发生出去之后，会被webpack proxy拦截，匹配到了`api`标识，因此会按照第3步配置（`target`），将请求转发到真正的后台服务器上，也就是`http://localhost:3000`上。
 6. 后台服务器收到请求后进行处理，并将响应返回。webpack proxy会再次拦截，但proxy不会改变请求头中的任何信息。所以浏览器收到proxy返回的请求响应时，还是认为该响应是来自于**同源**服务器的。因此不会有跨域问题，可以正常的发送请求和接受响应。
+
+# 如何借助Webpack来优化性能？
+为一个项目的打包构建工具，在完成项目开发后经常需要利用Webpack对前端项目进行性能优化，常见的优化手段有如下几个方面：
+* JS代码压缩：例如`terser`是一个JavaScript的解释、绞肉机、压缩机的工具集，可以帮助我们压缩、丑化我们的代码，让bundle更小。
+* CSS代码压缩：CSS压缩通常用于去除无用的空格等
+* Html文件代码压缩：
+* 文件大小压缩：对文件的大小进行压缩，可以有效减少http传输过程中宽带的损耗
+* 图片压缩
+* Tree Shaking：Tree Shaking 是一个术语，在计算机中表示消除`死代码`，依赖于ES Module的静态语法分析。在webpack实现Trss shaking有两种不同的方案：
+  * **usedExports**：通过标记某些函数是否被使用，之后通过Terser来进行优化的
+  * **sideEffects**：跳过整个模块/文件，直接查看该文件是否有副作用
+* 代码分离：默认情况下，所有的JavaScript代码（业务代码、第三方依赖、暂时没有用到的模块）在首页全部都加载，就会影响首页的加载速度。如果可以分出出更小的bundle，以及控制资源加载优先级，从而优化加载性能。例如：`splitChunksPlugin`
+* 内联 chunk：一些必须加载的代码可以用webpack来实现内联chunk。
+  
+总结一下，Webpack对前端性能的优化，主要是通过**文件体积大小**入手，主要的措施有**分包**、**减少Http请求次数**等。
+
