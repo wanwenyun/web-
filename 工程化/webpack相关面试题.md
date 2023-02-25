@@ -266,18 +266,26 @@ module.exports = {
 ```
 
 ## 浏览器跨域判定的原理
-1. 浏览器先根据同源策略对前端页面和后台交互地址做匹配，若同源，则直接发送数据请求。若不同源，则发送跨域请求，浏览器会在请求的http header中加上一个 `Origin`字段，标明这个请求是从哪里发出来的。例如：`Origin: http://localhost.com:3003`
+对于简单请求来说：（非简单请求请看《浏览器安全 - 页面安全》）
+1. **浏览器**先根据同源策略对前端页面和后台交互地址做匹配，
+   * 若同源，则直接发送数据请求。
+   * 若不同源，则发送跨域请求，浏览器会在请求的http header中加上一个 `Origin`字段，标明这个请求是从哪里发出来的。例如：`Origin: http://www.wanwan.com`
+2. 服务器解析程序收到浏览器**跨域请求**后，如果服务器认为这个请求可以接受，就在 Access-Control-Allow-Origin 头部中回发相同的源信息， 如`Access-Control-Allow-Origin：http://www.wanwan.com`。（如果是公共资源，可回发`*`）
+3. 浏览器收到服务器的响应后，根据接受到的响应头里的`Access-Control-Allow-origin`字段与**当前域名**做匹配，浏览器就会驳回请求。正常情况下，浏览器会处理请求。
+4. 注意，请求和响应都不包含 cookie 信息。
 
-2. 服务器解析程序收到浏览器**跨域请求**后，根据自身配置返回对应文件头，若未配置过任何允许跨域，则文件头里不包含Access-control-Allow-origin字段。若配置过域名，则返回`Access-control-Allow-origin` + 对应配置规则里的域名的方式。
+   
+PS：如果需要包含 `cookie` 信息，ajax 请求需要设置 xhr 的属性 `withCredentials` 为 true，服务器需要设置响应头部 `Access-Control-Allow-Credentials`: true。
 
-3. 浏览器根据接受到的http文件头里的Access-Control-Allow-origin字段做匹配，若无该字段，说明不允许跨域，若有该字段，则对字段内容和当前域名做对比，如果同源，则说明可以跨域，浏览器发送请求。如果不同源，则说明该域名不可跨域，不发生请求。
 
-一个支持`CORS`的web服务器，有如下的判定字段，他们会在响应的header中写明:
+
+一个支持`CORS（跨域资源共享）`的web服务器，有如下的判定字段，他们会在响应的header中写明:
 1. Access-Control-Allow-Origin：允许跨域的Origin列表
 2. Access-Control-Allow-Methods：允许跨域的方法列表
 3. Access-Control-Allow-Headers：允许跨域的Header列表
 4. Access-Control-Expose-Headers：允许暴露给JavaScript代码的Header列表
 5. Access-Control-Max-Age：最大的浏览器缓存时间，单位为s
+6. 等
    
 ## webpack proxy原理
 proxy工作原理实质上是利用`http-proxy-middleware` 这个http代理中间件，实现请求转发给其他服务器。背后使用node来做server。
