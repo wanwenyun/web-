@@ -1,0 +1,37 @@
+/*
+ * @lc app=leetcode.cn id=1143 lang=javascript
+ *
+ * [1143] 最长公共子序列
+ */
+
+// @lc code=start
+/**
+ * @param {string} text1
+ * @param {string} text2
+ * @return {number}
+ */
+var longestCommonSubsequence = function(text1, text2) {
+    let n = text1.length;
+    let m = text2.length;
+
+    // 目标：s1[0..m-1] 和 s2[0..n-1] 的 最长公共子序列 长度，即 dp[n][m]
+    // base case: dp[0][..] = dp[..][0] = 0
+    let dp = new Array(n + 1).fill(0).map(() => new Array(m + 1).fill(0));
+    
+    for(let i = 1; i <= n; i++){
+        for(let j = 1; j <= m; j++) {
+            // 因为 i 和 j 从 1 开始，所以要减一
+            if(text1[i-1] === text2[j-1]) {
+                // 要把当前在最长公共子序列中的字符剔除，所以是dp[i - 1][j - 1]
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            }else {
+                // text1[i-1] 和 text2[j-1] 至少有一个不在 最长公共子序列 中
+                dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+            }
+        }
+    }
+    return dp[n][m];
+};
+// @lc code=end
+
+console.log(longestCommonSubsequence("abc", "def"))

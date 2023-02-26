@@ -1,0 +1,37 @@
+/*
+ * @lc app=leetcode.cn id=516 lang=javascript
+ *
+ * [516] 最长回文子序列
+ */
+
+// @lc code=start
+/**
+ * @param {string} s
+ * @return {number}
+ */
+var longestPalindromeSubseq = function(s) {
+    let n = s.length;
+    let dp = new Array(n).fill(0).map(() => new Array(n).fill(0));
+
+    // base case
+    for (let i = 0; i < n; i++){
+        dp[i][i] = 1;
+    }
+    
+    // 反正遍历保证正确的转移状态
+    for(let i = n-1; i >= 0; i--){
+        for(let j = i + 1; j < n; j++) {
+            if(s[i] === s[j]) {
+                // s[i+1]和dp[j-1]一定在序列中
+                dp[i][j] = dp[i+1][j-1] + 2;
+            }else {
+                dp[i][j] = Math.max(dp[i][j-1], dp[i+1][j]);
+            }
+        }
+    }
+    // 整个s的最长回文子串长度
+    return dp[0][n-1];
+};
+// @lc code=end
+
+console.log(longestPalindromeSubseq("bbbab"))
