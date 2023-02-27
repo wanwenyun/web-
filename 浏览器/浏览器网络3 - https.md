@@ -4,6 +4,7 @@
 - [HTTPS验证过程（对称加密 + 非对称加密 + 证书）](#https验证过程对称加密--非对称加密--证书)
 
 
+>[参考链接](https://time.geekbang.org/column/article/156181?utm_term=zeusQYFJN&utm_source=app&utm_medium=geektime&utm_campaign=216-end&utm_content=v8zhuanlankaipianci0316)
 # 什么是HTTPS协议
 `HTTPS` 并非是一个新的协议，HTTPS是一种通过计算机网络进行安全通信的传输协议，经由`HTTP`进行通信，利用`SSL/TLS`建立全信道，加密数据包。HTTPS使用的主要作用是提供对网站服务器的身份认证，同时保护交换数据的隐私与完整性。
 
