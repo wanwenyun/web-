@@ -3,12 +3,12 @@
   - [浏览器缓存过程](#浏览器缓存过程)
   - [缓存机制](#缓存机制)
 - [强缓存](#强缓存)
-  - [Expires](#expires)
-  - [Cache-Control](#cache-control)
+  - [http 头：Expires](#http-头expires)
+  - [http 头：Cache-Control](#http-头cache-control)
 - [协商缓存](#协商缓存)
   - [协商缓存过程(相关状态码：304/200)](#协商缓存过程相关状态码304200)
-  - [Last-Modified／If-Modified-since(http 1.0)](#last-modifiedif-modified-sincehttp-10)
-  - [Etag/If-None-match(http 1.1)](#etagif-none-matchhttp-11)
+  - [http 头：Last-Modified／If-Modified-since(http 1.0)](#http-头last-modifiedif-modified-sincehttp-10)
+  - [http 头：Etag/If-None-match(http 1.1)](#http-头etagif-none-matchhttp-11)
 - [总结 强缓存和协商缓存](#总结-强缓存和协商缓存)
 - [启发式缓存阶段](#启发式缓存阶段)
 - [用户行为对浏览器缓存的影响](#用户行为对浏览器缓存的影响)
@@ -17,6 +17,12 @@
 Web缓存知识体系，如下图:
 <img src="./picture/cache/pic2.png"/>
 
+其实缓存有很多种，包括：浏览器缓存，DNS缓存，CDN缓存等等。
+
+从输入域名到返回结果，经历的每一步，都可能有缓存。如果有缓存，就不会进行下一步，直到达到全球只有13台的跟域名服务器；
+<img src="./picture/cache/pic9.png"/>
+
+今天主要介绍的就是浏览器缓存
 在本文主要介绍`浏览器`中的缓存:
 
 <img src="./picture/cache/pic1.png"/>
@@ -54,9 +60,9 @@ Web缓存知识体系，如下图:
 当请求命中**强制缓存**时，浏览器不会将本次请求发往服务器，而是直接从缓存中读取内容，在Chrome中打开控制台，在network中显示的是`memory cache`或者是`disk cache`。
 <img src="./picture/cache/pic4.png"/>
 
-强缓存可以通过设置两种HTTP Header实现：`Expires(1.0)`和`Cache-Control(1.1)`。
+强缓存可以通过设置两种**HTTP Header**实现：`Expires(1.0)`和`Cache-Control(1.1)`。
 
-## Expires
+## http 头：Expires
 `Expires`是一个**绝对**时间，是缓存过期时间。用以表达在这个时间点之前发起请求可以直接从浏览器中读取数据，而无需重新发起请求。值为一个时间戳。
 
 缺点：
@@ -67,7 +73,7 @@ Expires 是 HTTP/1 的产物，**受限于本地时间**，如果修改了本地
 Expires: Wed, 22 Oct 2018 08:41:00 GMT // 表示资源会在 Wed, 22 Oct 2018 08:41:00 GMT 后过期，需要再次请求。
 ```
 
-## Cache-Control
+## http 头：Cache-Control
 `Cache-Control`的**优先级比Expires的优先级高**。是HTTP/1.1产物。该字段表示资源缓存最大有效时间，在该时间内，客户端不需要向服务器发送请求。
 
 Cache-Control解决了Expires在浏览器中，时间被手动更改导致缓存判断错误的问题。
@@ -108,7 +114,7 @@ Cache-Control解决了Expires在浏览器中，时间被手动更改导致缓存
 * 协商缓存**失效**，返回`200`和`请求结果`
   <img src="./picture/cache/pic7.png" width=80%/>
 
-## Last-Modified／If-Modified-since(http 1.0)
+## http 头：Last-Modified／If-Modified-since(http 1.0)
 * 服务器通过 `Last-Modified` 字段告知客户端(返回资源的同时在header添加)，表示资源最后一次被修改的时间，浏览器将这个值和内容一起记录在缓存数据库中
 * 下一次请求相同的资源时，浏览器会从自己的缓存中找出“不确定是否过期的”缓存，因此在请求头中将上次的Last-Modified的值写入到请求头的`If-Modified-since`字段
 * 服务器会将If-Modified-since的值与**服务器中这个资源的最后修改时间**进行对比。如果没有变化，这表示未修改，响应304和空响应体，直接从缓存中读取；如果If-Modified-since**小于**最后修改时间，则表示修改了，响应 200 状态码，并返回数据
@@ -117,7 +123,7 @@ Cache-Control解决了Expires在浏览器中，时间被手动更改导致缓存
 1. 只要资源发生了修改，**无论内容是否发生了实质性的改变**，都会将该资源返回客户端。例如周期性重写，但这种情况下资源包含的数据实质是一样的。
 2. 以时刻作为标识，无法识别**一秒内多次修改的情况**。如果资源更新的速度是秒以下的单位，那么该缓存是不能被使用的，因为它的时间最低单位是秒。
 
-## Etag/If-None-match(http 1.1)
+## http 头：Etag/If-None-match(http 1.1)
 为了解决上述问题，出现了一组新的字段`Etag/In-None-Match`。
 
 * `Etag`是上一次加载资源时，**服务器**返回的当前资源文件的一个**唯一标识**。它的作用是用来标识资源**是否有变化**。
