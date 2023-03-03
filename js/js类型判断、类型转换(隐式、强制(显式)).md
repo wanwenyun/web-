@@ -32,8 +32,19 @@
   - [附录：类型转换表](#附录类型转换表)
 
 # js 数据类型
-基本类型： null，undefined，boolean，number，string，symbol（new in es6），bingInt。
-引用类型：Object 类型、Array 类型、Date 类型、RegExp 类型、Function 类型 等。
+js有8种数据类型：
+1. Null
+2. Nndefined，
+3. Boolean，
+4. Number
+5. String，
+6. Symbol（new in es6），
+7. BingInt
+8. Object
+
+其中前7中为**基本（原始）数据类型**。
+
+Object为**引用类型**，包括：Object 类型、Array 类型、Date 类型、RegExp 类型、Function 类型 等。
 # js 类型判断
 ## typeOf
 ```js
