@@ -1,6 +1,7 @@
 - [Cookie，document.cookie](#cookiedocumentcookie)
   - [Cookie的参数](#cookie的参数)
   - [Cookie函数](#cookie函数)
+  - [登录状态是如何保持的？](#登录状态是如何保持的)
 - [Web 存储对象：LocalStorage，sessionStorage](#web-存储对象localstoragesessionstorage)
   - [Storage事件](#storage事件)
 - [IndexedDB](#indexeddb)
@@ -65,6 +66,25 @@ document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT"    // 删�
 * getCookie(name)
 * setCookie(name, value, options)
 * deleteCookie(name)
+
+
+## 登录状态是如何保持的？
+* 用户打开登录页面，在登录框里填入用户名和密码，点击确定按钮。点击按钮会触发页面脚本生成用户登录信息，然后调用 **POST** 方法提交用户登录信息给服务器。
+* 服务器接收到浏览器提交的信息之后，查询后台，验证用户登录信息是否正确，如果正确的话，会生成一段表示用户身份的字符串，并把该字符串写到响应头的 `Set-Cookie` 字段里，如下所示，然后把响应头发送给浏览器。  
+  ```
+  Set-Cookie: UID=3431uad;
+  ```
+* 浏览器在接收到服务器的响应头后，开始解析响应头，如果遇到响应头里含有 Set-Cookie 字段的情况，浏览器就会把这个字段信息**保存到本地**。比如把UID=3431uad保持到本地。
+* 当用户再次访问时，浏览器会发起 HTTP 请求，但在发起请求之前，浏览器会读取之前保存的 `Cookie` 数据，并自动把数据写进**请求头**里的 Cookie 字段里（如下所示），然后浏览器再将请求头发送给服务器。
+  ```
+  Cookie: UID=3431uad;
+  ```
+* 服务器在收到 HTTP 请求头数据之后，就会查找请求头里面的`Cookie`字段信息，当查找到包含`UID=3431uad`的信息时，服务器查询后台，并判断该用户是**已登录状态**，然后生成含有该用户信息的页面数据，并把生成的数据发送给浏览器。
+* 浏览器在接收到该含有当前用户的页面数据后，就可以正确展示用户登录的状态信息了。
+
+<img src="./picture/storage/keep-login.png" width=50%/>
+
+简单地说，如果服务器端发送的响应头内有 Set-Cookie 的字段，那么浏览器就会将该字段的内容**保持到本地**。当下次客户端再往该服务器发送请求时，客户端会自动在请求头中加入 Cookie 值后再发送出去。服务器端发现客户端发送过来的 Cookie 后，会去检查究竟是从哪一个客户端发来的连接请求，然后对比服务器上的记录，最后得到该用户的状态信息。
 # Web 存储对象：LocalStorage，sessionStorage
 Web 存储对象 localStorage 和 sessionStorage 允许我们在浏览器上保存键/值对。
 
