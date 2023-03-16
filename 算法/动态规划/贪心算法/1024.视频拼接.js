@@ -1,0 +1,55 @@
+/*
+ * @lc app=leetcode.cn id=1024 lang=javascript
+ *
+ * [1024] 视频拼接
+ */
+
+// @lc code=start
+/**
+ * @param {number[][]} clips
+ * @param {number} time
+ * @return {number}
+ * 先按照起点升序排序，如果起点相同的话按照终点降序排序
+ * 排序之后，从第一个区间开始选，每当选中一个区间 x（图中红色的区间），
+ * 我们会比较所有起点小于 x.start 的区间，
+ * 根据贪心策略，它们中终点最大的那个区间就是下一个会被选中的区间，以此类推。
+ */
+var videoStitching = function(clips, time) {
+    if (time == 0) return 0;
+    let len = clips.length;
+
+    // 将 clips 按照起点升序排序，起点相同的按照终点降序排序
+    clips.sort((a, b) => {
+        if (a[0] == b[0]) {
+            return b[1] - a[1];
+        }
+        return a[0] - b[0];
+    });
+
+    // 记录结果
+    let res = 0;
+
+    // 短视频的起点不为0的情况
+    if(clips[0][0] !== 0) return -1;
+
+    let curEnd = 0, nextEnd = 0;
+
+    let i = 0;
+
+    while (i < len && clips[i][0] <= curEnd) {
+        // 在第 res 个视频的区间内贪心选择下一个视频, 比较所有起点小于 x.start 的区间
+        while( i < len && clips[i][0] <= curEnd) {
+            nextEnd = Math.max(nextEnd, clips[i][1]);
+            i++;
+        }
+        // 找到下一个视频，更新 curEnd
+        res++;
+        curEnd = nextEnd;
+        if(nextEnd >= time) {
+            return res;
+        }
+    }
+    return -1;
+};
+// @lc code=end
+
