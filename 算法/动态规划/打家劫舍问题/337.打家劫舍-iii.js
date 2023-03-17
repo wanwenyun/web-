@@ -1,0 +1,55 @@
+/*
+ * @lc app=leetcode.cn id=337 lang=javascript
+ *
+ * [337] 打家劫舍 III
+ */
+
+// @lc code=start
+/**
+ * Definition for a binary tree node.
+ * function TreeNode(val, left, right) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.left = (left===undefined ? null : left)
+ *     this.right = (right===undefined ? null : right)
+ * }
+ */
+/**
+ * @param {TreeNode} root
+ * @return {number}
+ * rob(node)表示强盗从第 node节点的房子开始抢劫，到最后一层抢到的最多的钱
+ * 同理每个房子都有抢与不抢两种选择
+ * rob(node) = Math.max(
+ * node.val // 当前房子抢
+        + (node.left == null ? 
+            0 : rob(node.left.left) + rob(node.left.right))
+        + (node.right == null ? 
+            0 : rob(node.right.left) + rob(node.right.right)),
+    rob(node.left)+rob(node.right) // 当前房子不抢
+ * )
+ */
+let map = new Map()
+var rob = function(root) {
+    if (root == null) return 0;
+
+    // 利用备忘录消除重叠子问题，解决超时问题
+    if(map.has(root)) return map.get(root);
+
+    // 抢，然后去下下家
+    let do_it = root.val
+        + (root.left == null ? 
+            0 : rob(root.left.left) + rob(root.left.right))
+        + (root.right == null ? 
+            0 : rob(root.right.left) + rob(root.right.right));
+
+    // 不抢，然后去下家
+    let not_do = rob(root.left) + rob(root.right);
+
+    let res = Math.max(do_it, not_do);
+
+    map.set(root, res); 
+
+    return res;
+};
+
+// @lc code=end
+
