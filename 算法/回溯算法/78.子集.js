@@ -29,7 +29,7 @@ var subsets = function(nums) {
             // 做选择
             track.push(nums[i]);
             // 回溯遍历下一层节点
-            backtrack(i+1);
+            backtrack(i+1); // 保证元素不重复
             // 撤销选择
             track.pop();
         }

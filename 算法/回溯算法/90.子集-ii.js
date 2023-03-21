@@ -28,13 +28,14 @@ var subsetsWithDup = function(nums) {
 
         // 回溯算法标准框架
         for (let i = start; i < nums.length; i++) {
+            // 剪枝逻辑，值相同的相邻树枝，只遍历第一条
             if(i > start && nums[i] === nums[i-1]) {
                 continue;
             } else {
                 // 做选择
                 track.push(nums[i]);
                 // 回溯遍历下一层节点
-                backtrack(i+1);
+                backtrack(i+1); // 保证元素不重复
                 // 撤销选择
                 track.pop();
             }
