@@ -6,6 +6,9 @@
 - [手写call](#手写call)
 - [手写apply](#手写apply)
 - [手写bind](#手写bind)
+- [New](#new)
+  - [new生成一个对象的过程](#new生成一个对象的过程)
+  - [手写new](#手写new)
 
 # call、apply、bind使用
 
@@ -36,7 +39,7 @@ console.log(new Food('cheese', 5).name); // cheese
 ```js
 const array = ['a', 'b'];
 const elements = [0, 1, 2];
-array.push.apply(array, elements);
+Array.push.apply(array, elements);
 console.info(array); // ["a", "b", 0, 1, 2]
 ```
 
@@ -110,7 +113,6 @@ function bar(name, age) {
 bar.myCall(foo, 'black', '18') // black 18 1
 ```
 
-
 # 手写apply
 
 语法：`apply(thisArg)`，`apply(thisArg, argsArray)`
@@ -145,7 +147,7 @@ Function.prototype.myApply = function (context) {
 
 `bind`特点：
 
-1. 会创建一个新函数。
+1. 会返回一个新函数。
 2. 当这个新函数被调用时，第一个参数将作为它运行时的 this，之后的一序列参数将会在传递的实参前传入作为它的参数。
 3. 不会立即执行
 
@@ -155,7 +157,7 @@ Function.prototype.myBind = function (context) {
   if(typeof this !== 'function') throw new TypeError('error');
 
   // 获取参数，为了传给调用者
-  let args = [...arguments].slice(1);
+  let args = Array.prototype.slice.call(arguments, 1);
 
   // 构建一个干净的函数，用于保存原函数的原型
   let tmp = function() {};
@@ -183,4 +185,104 @@ Function.prototype.myBind = function (context) {
   
   return resFn;
 }
+```
+
+# New
+
+new 运算符创建一个用户定义的对象类型的实例或具有构造函数的内置对象的实例。
+
+new 的结果是一个新对象
+
+```js
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+var person = new Person("Alice", 23);
+var person2 = new Person("wanwan",18);
+
+person == person2 // false
+```
+
+假如构造函数有`返回值`
+
+1. 该返回值是`对象`，则实例只能访问返回的对象中的属性。
+2. 该返回值是`基本类型的值`，相当于没有返回值进行处理。
+
+```js
+function Otaku (name, age) {
+    this.strength = 60;
+    this.age = age;
+
+    return {
+        name: name,
+        habit: 'Games'
+    }
+}
+
+var person = new Otaku('Kevin', '18');
+
+console.log(person.name) // Kevin
+console.log(person.habit) // Games
+console.log(person.strength) // undefined
+console.log(person.age) // undefined
+
+function Otaku2 (name, age) {
+    this.strength = 60;
+    this.age = age;
+
+    return 'handsome boy';
+}
+
+var person2 = new Otaku('Kevin', '18');
+console.log(person.name) // undefined
+console.log(person.habit) // undefined
+console.log(person.strength) // 60
+console.log(person.age) // 18
+```
+
+## new生成一个对象的过程
+
+1. **创建一个空对象**，从堆内存里**开辟了一块内存**。`var obj = new Object();`
+2. **绑定新对象的this**：让Person(构造函数)中的this指向这个空对象obj，并执行Person构造函数的函数体。`var result = Person.call(obj);`
+3. **设置原型链**：将obj的__proto__成员指向了Person构造函数对象的prototype成员对象。`obj.__proto__ = Person.prototype;`
+4. **返回新对象**：将初始化完毕的新对象地址，保存到等号左边的变量中。判断Person(构造函数)的返回值类型，如果是值类型，返回obj(新对象)。如果是引用类型，就返回这个引用类型的对象。
+`typeof(result) === "object" ? result : obj`
+
+## 手写new
+
+```js
+function myNew() {
+    let obj = {}; // 创建对象
+
+    let constructor = [].shift.call(arguments); // 获取构造函数,shift()把数组的第一个元素从其中删除,并返回第一个元素的值。
+
+    obj.__proto__ = constructor.prototype; // 设置原型链：构造函数链接到新对象
+    
+    let ret = constructor.apply(obj, arguments); // 改变this指向，并执行构造函数
+
+    return ret === 'object' ? ret : obj; // 如果函数没有返回对象类型Object(包含Functoin, Array, Date, RegExg, Error)，那么new表达式中的函数调用将返回该对象引用。
+}
+```
+
+```js
+// test1, 返回对象
+function a (a,b) {
+ this.A = a,
+ this.B = b
+}
+let b = new a("test","haha");
+let c = myNew(a)
+let d = myNew(a,2,4);
+console.log(b, c, d); // a {A: 'test', B: 'haha'} a {A: undefined, B: undefined} a {A: 2, B: 4}
+
+// test2 返回基础数据
+function Otaku (name, age) {
+    this.strength = 60;
+    this.age = age;
+
+    return 'handsome boy';
+}
+
+var person = myNew(Otaku, 'Kevin', '18');
 ```
