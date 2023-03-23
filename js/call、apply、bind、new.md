@@ -249,6 +249,13 @@ console.log(person.age) // 18
 4. **返回新对象**：将初始化完毕的新对象地址，保存到等号左边的变量中。判断Person(构造函数)的返回值类型，如果是值类型，返回obj(新对象)。如果是引用类型，就返回这个引用类型的对象。
 `typeof(result) === "object" ? result : obj`
 
+> mdn解释：
+>
+> 1. **创建一个新的js空对象（即 {}）**, 从堆内存里**开辟了一块内存**
+> 2. 为步骤 1 新创建的对象添加属性 `__proto__`，将该属性链接至构造函数的原型 对象；
+> 3. 将步骤 1 新创建的对象作为 `this` 的上下文；
+> 4. 如果该函数没有返回**对象**，则返回 `this`。
+
 ## 手写new
 
 ```js
@@ -257,9 +264,9 @@ function myNew() {
 
     let constructor = [].shift.call(arguments); // 获取构造函数,shift()把数组的第一个元素从其中删除,并返回第一个元素的值。
 
+    let ret = constructor.apply(obj, arguments); // 绑定新对象的this。并执行构造函数，得到构造函数返回数据
+
     obj.__proto__ = constructor.prototype; // 设置原型链：构造函数链接到新对象
-    
-    let ret = constructor.apply(obj, arguments); // 改变this指向，并执行构造函数
 
     return ret === 'object' ? ret : obj; // 如果函数没有返回对象类型Object(包含Functoin, Array, Date, RegExg, Error)，那么new表达式中的函数调用将返回该对象引用。
 }
