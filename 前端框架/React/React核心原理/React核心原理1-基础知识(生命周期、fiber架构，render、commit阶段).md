@@ -16,6 +16,7 @@
       - [代数效应和Fiber](#代数效应和fiber)
     - [Fiber架构的实现原理](#fiber架构的实现原理)
     - [Fiber架构的工作原理 - 双缓存 :heavy\_exclamation\_mark:](#fiber架构的工作原理---双缓存-heavy_exclamation_mark)
+- [React生命周期](#react生命周期)
   - [专业术语解释， render阶段、commit阶段等与总结 :heavy\_exclamation\_mark:](#专业术语解释-render阶段commit阶段等与总结-heavy_exclamation_mark)
 - [Render阶段 :heavy\_exclamation\_mark:](#render阶段-heavy_exclamation_mark)
   - [流程概览](#流程概览)
@@ -28,12 +29,14 @@
   - [before mutation阶段（执行DOM操作前）](#before-mutation阶段执行dom操作前)
   - [mutation阶段（执行DOM操作）](#mutation阶段执行dom操作)
   - [layout阶段（执行DOM操作后）](#layout阶段执行dom操作后)
-- [Diff算法](#diff算法)
 
 > 参考资料：React技术揭秘：https://react.iamkasong.com/preparation/idea.html#react%E7%90%86%E5%BF%B5
 
+
 # React理念
+
 ## React理念
+
 React理念是：构建快速响应的大型 Web 应用程序。
 
 但由于以下两个瓶颈会制约应用的响应速度：
@@ -118,7 +121,6 @@ React核心团队成员Sebastian Markbåge（React Hooks的发明者）说：我
 [代数效应](https://overreacted.io/zh-hans/algebraic-effects-for-the-rest-of-us/)：是函数式编程中的一个概念，用于将副作用从函数调用中分离。也就是说能够将副作用从函数中逻辑中分离，使得函数关注点保持存粹。
 
 #### 代数效应在React中的应用 - `Hooks`
-代数效应在React中最明显的例子就是`Hooks`
 
 对于类似useState、useReducer、useRef这样的Hook，我们不需要关注FunctionComponent的state在Hook中是如何保存的，React会为我们处理。
 
@@ -168,23 +170,52 @@ React应用的根节点通过使`current`指针在不同`Fiber树`的`rootFiber`
 
 `每次状态更新`都会产生`新`的workInProgress Fiber树，通过`current`与`workInProgress`的`替换`，完成`DOM`更新。
 
-fiber树的构建/替换分为`mount时`， `update时`。
+fiber树的**构建/替换**分为`mount时`， `update时`。
+
+
+# React生命周期
+
+<img src="./pictures/lifeCycle.png"/>
 
 ## 专业术语解释， render阶段、commit阶段等与总结 :heavy_exclamation_mark:
+
+[参考链接](https://github.com/mbaxszy7/blog/issues/16)
+
+- **Render阶段**
+  - 在render阶段，React将**更新**应用于通过`setState或render`方法触发的组件，并确定需要在用户屏幕上做哪些更新--哪些节点需要插入，更新或删除，哪些组件需要调用其生命周期方法。
+  - 最终的这些更新信息被保存在一个叫`effect list`的`fiber 节点树上
+  - 当然，在首次渲染时，React不需要产生任何更新信息，而是会给每个从render方法返回的element生成一个fiber节点，最终生成一个fiber节点树， 后续的更新也是复用了这棵fiber树。
+- **Commit阶段**
+  - 在这个阶段时，React内部会有2个fiber树和一个list：
+    1. `current fiber tree`: 在首次渲染时，React不需要产生任何更新信息，而是会给每个从render方法返回的element生成一个fiber节点，最终生成一个fiber节点树， 后续的更新也是复用了这棵fiber树。
+    2. `workInProgress fiber tree`: 所有的更新计算工作都在workInProgress tree的fiber上执行。当React 遍历current fiber tree时，它为每个current fiber 创建一个替代（alternate）节点，这样的alternate节点构成了workInProgress tree
+    3. `effect list`: 是workInProgress fiber tree 的子树，它的作用是串联了标记具有更新的节点
+  - Commit阶段会遍历effect list，把所有更新都commit到DOM树上。具体如下
+    1. 首先会有一个pre-commit阶段，主要是执行getSnapshotBeforeUpdate方法，可以获取当前DOM的快照（snap）
+    2. 然后给需要卸载的组件执行componentWillUnmount方法
+    3. 接着会把current fiber tree 替换为workInProgress fiber tree
+    4. 最后执行DOM的插入、更新和删除，给更新的组件执行componentDidUpdate，给插入的组件执行componentDidMount
+  - 重点要注意的是，这一阶段是**同步执行的，不能中止**。
+
+----
+
 * `Reconciler（协调器）`工作的阶段被称为`render阶段`。因为在该阶段会调用组件的render方法。
-* `Renderer（渲染器）`工作的阶段被称为`commit阶段`。commit阶段会把render阶段提交的信息渲染在页面上。
+* `Renderer（渲染器）`工作的阶段被称为`commit阶段`。commit阶段会把render阶段提交的信息**渲染**在页面上。
 * render与commit阶段统称为`work`，即React在工作中。相对应的，如果任务正在`Scheduler(调度器)`内调度，就不属于work。
 
-_____
+----
 
 * `Scheduler（调度器）`—— 调度任务的优先级，高优任务优先进入Reconciler。会在浏览器空闲时触发回调的功能，还会执行其他操作。Scheduler是一个独立于React的包
 * `Reconciler（协调器）`—— 负责找出变化的组件。在此引用了`Fiber架构`，目的是为了实现将**同步**的更新变为**可中断的异步**更新。
 * `Renderer（渲染器）`—— 负责将变化的组件渲染到页面上
 
 # Render阶段 :heavy_exclamation_mark:
+
 本章我们会讲解`Fiber节点`是如何被创建并构建`Fiber树`的。
 
 ## 流程概览
+
+在render阶段，React将更新应用于通过setState或render方法触发的组件，并确定需要在用户屏幕上做哪些更新--哪些节点需要插入，更新或删除，哪些组件需要调用其生命周期方法。
 
 `render阶段`开始于`performSyncWorkOnRoot`或`performConcurrentWorkOnRoot`方法的调用。这取决于本次更新是同步更新还是异步更新。
 ```js
@@ -231,7 +262,7 @@ function App() {
 
 ReactDOM.render(<App />, document.getElementById("root"));
 ```
-<img src='./picture/ReactCore/reactRender.png' width=60%/>
+<img src='./pictures/reactRender.png' width=60%/>
 
 ## “递”阶段 - beginWork
 [源码在此](https://github.com/facebook/react/blob/1fb18e22ae66fdb1dc127347e169e73948778e5a/packages/react-reconciler/src/ReactFiberBeginWork.new.js#L3075)
@@ -304,7 +335,7 @@ function beginWork(
   ```
 
 
-<img src='./picture/reactCore/beginWork.png'/>
+<img src='./pictures/beginWork.png'/>
 
 
 ## "归"阶段 - completeWork
@@ -312,10 +343,12 @@ completeWork的目的就是为了`创建好对应的dom节点`插入对应的`�
 
 completeWork的上层函数`completeUnitOfWork`中，每个执行完completeWork且存在`effectTag`的Fiber节点会被保存在一条被称为`effectList`的单向链表中。effectList中保存所有的effectTag。
 
-<img src='./picture/reactCore/completeWork.png'/>
-
+<img src='./pictures/completeWork.png'/>
 
 # commit阶段
+
+
+
 一些`副作用`对应的DOM操作、一些生命周期钩子（componentDidXXX）、某些hook（useEffect）都在commit阶段执行
 
 commit阶段的主要工作（即Renderer的工作流程）分为三部分：
@@ -340,4 +373,3 @@ mutation阶段会遍历 `effectList`，依次执行`commitMutationEffects`。该
 ## layout阶段（执行DOM操作后）
 layout阶段会遍历 `effectList`，依次执行`commitLayoutEffects`。该方法的主要工作为根据`effectTag`调用不同的处理函数`处理Fiber`并更新`ref`。
 
-# Diff算法
