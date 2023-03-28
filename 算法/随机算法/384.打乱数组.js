@@ -1,0 +1,57 @@
+/*
+ * @lc app=leetcode.cn id=384 lang=javascript
+ *
+ * [384] 打乱数组
+ * 洗牌算法： 随机打乱一个数组
+ * 分析洗牌算法正确性的准则：产生的结果必须有 n! 种可能。这个很好解释，因为一个长度为 n 的数组的全排列就有 n! 种，也就是说打乱结果总共有 n! 种
+ * 所以：
+ * 对于 nums[0]，我们把它随机换到了索引 [0, n) 上，共有 n 种可能性；
+ * 对于 nums[1]，我们把它随机换到了索引 [1, n) 上，共有 n - 1 种可能性；
+ * 对于 nums[2]，我们把它随机换到了索引 [2, n) 上，共有 n - 2 种可能性；
+ * 
+ * 因此在处理第i个元素的时候，只需生成一个 [i, n-1] 区间内的随机整数r， 然后交换nums[i]和nums[r]即可
+ */
+
+// @lc code=start
+/**
+ * @param {number[]} nums
+ */
+var Solution = function(nums) {
+    // 缓存nums数组
+    this.nums = nums;
+    // 缓存数组长度
+    this.length = nums.length;
+};
+
+/**
+ * @return {number[]}
+ */
+Solution.prototype.reset = function() {
+    return this.nums;
+};
+
+/**
+ * @return {number[]}
+ */
+Solution.prototype.shuffle = function() {
+    // 深拷贝数组，避免修改原数组
+    let copy = [...this.nums];
+
+    // 打乱数组，生成一个 [i, n-1] 区间内的随机整数r， 然后交换copy[i]和copy[r]
+    for (let i = 0; i < this.length; i++) {
+        let r = Math.floor(Math.random() * (this.length - i)) + i;
+        let tpm = copy[i];
+        copy[i] = copy[r];
+        copy[r] = tpm;
+    }
+    return copy;
+};
+
+/**
+ * Your Solution object will be instantiated and called as such:
+ * var obj = new Solution(nums)
+ * var param_1 = obj.reset()
+ * var param_2 = obj.shuffle()
+ */
+// @lc code=end
+
