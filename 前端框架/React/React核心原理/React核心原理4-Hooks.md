@@ -7,6 +7,7 @@
   - [模拟React调度更新流程](#模拟react调度更新流程)
   - [计算state](#计算state)
 - [总结](#总结)
+- [修改state引起重渲染原理? :star:](#修改state引起重渲染原理-star)
 - [常用钩子](#常用钩子)
 
 >[React Hooks原理探究，看完不懂，你打我
@@ -151,7 +152,7 @@ isMount = true;
 function schedule() {
   // 更新前将workInProgressHook重置为fiber保存的第一个Hook
   workInProgressHook = fiber.memoizedState;
-  // 触发组件render
+  // 触发组件render!!!!!!!
   fiber.stateNode();
   // 组件首次render为mount，以后再触发的更新为update
   isMount = false;
@@ -194,6 +195,10 @@ React将同一个Hooks的多个update通过**环状单向链表**关联起来，
 <img src="./pictures/hooks.png"/>
 
 `dispatcher` 是一个包含了 hooks 函数的共享对象。它将基于 ReactDOM 的渲染阶段被动态地分配或清理，并且它将确保用户无法在React组件外访问到Hooks
+
+# 修改state引起重渲染原理? :star:
+详见[《React核心原理3-状态更新》](../../../%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6//React/React%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86/React%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%863-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0.md)
+
 
 # 常用钩子
 
