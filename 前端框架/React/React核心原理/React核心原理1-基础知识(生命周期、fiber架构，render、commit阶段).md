@@ -159,8 +159,8 @@ Fiber包含三层含义：
 React使用`“双缓存”`来完成`Fiber树`的构建与替换 —— 对应着`DOM树`的创建与更新。
 
 在React中最多会同时存在两棵Fiber树。
-* 当前屏幕上`显示内容`对应的Fiber树称为`current Fiber树`，其对应节点为`current fiber`
-* `正在内存中构建`的Fiber树称为`workInProgress Fiber树`，其对应节点为`workInProgress fiber`
+* 当前屏幕上`显示内容`对应的Fiber树称为`current Fiber tree`，其对应节点为`current fiber`
+* `正在内存中构建`的Fiber树称为`workInProgress Fiber tree`，其对应节点为`workInProgress fiber`
 
 `current fiber`和`workInProgress fiber`通过`alternate`属性连接。
 
@@ -183,15 +183,15 @@ fiber树的**构建/替换**分为`mount时`， `update时`。
 
 - **Render阶段**
   - 在render阶段，React将**更新**应用于通过`setState或render`方法触发的组件，并确定需要在用户屏幕上做哪些更新--哪些节点需要插入，更新或删除，哪些组件需要调用其生命周期方法。
-  - 最终的这些更新信息被保存在一个叫`effect list`的`fiber 节点树上
+  - 最终的这些更新信息被保存在一个叫`effect list`的`fiber` 节点树上
   - 当然，在首次渲染时，React不需要产生任何更新信息，而是会给每个从render方法返回的element生成一个fiber节点，最终生成一个fiber节点树， 后续的更新也是复用了这棵fiber树。
 - **Commit阶段**
   - 在这个阶段时，React内部会有2个fiber树和一个list：
-    1. `current fiber tree`: 在首次渲染时，React不需要产生任何更新信息，而是会给每个从render方法返回的element生成一个fiber节点，最终生成一个fiber节点树， 后续的更新也是复用了这棵fiber树。
-    2. `workInProgress fiber tree`: 所有的更新计算工作都在workInProgress tree的fiber上执行。当React 遍历current fiber tree时，它为每个current fiber 创建一个替代（alternate）节点，这样的alternate节点构成了workInProgress tree
+    1. `current fiber tree`: 表示`显示内容`对应的Fiber树。在首次渲染时，React不需要产生任何更新信息，而是会给每个从render方法返回的element生成一个fiber节点，最终生成一个fiber节点树， 后续的更新也是复用了这棵fiber树。
+    2. `workInProgress fiber tree`: 表示`正在内存中构建`的Fiber树。所有的更新计算工作都在workInProgress tree的fiber上执行。当React 遍历current fiber tree时，它为每个current fiber 创建一个替代（alternate）节点，这样的alternate节点构成了workInProgress tree
     3. `effect list`: 是workInProgress fiber tree 的子树，它的作用是串联了标记具有更新的节点
-  - Commit阶段会遍历effect list，把所有更新都commit到DOM树上。具体如下
-    1. 首先会有一个pre-commit阶段，主要是执行getSnapshotBeforeUpdate方法，可以获取当前DOM的快照（snap）
+  - Commit阶段会遍历effect list，把所有更新都commit到`DOM树`上。具体如下
+    1. 首先会有一个pre-commit阶段，主要是执行`getSnapshotBeforeUpdate`方法，可以获取当前DOM的快照（snap）
     2. 然后给需要卸载的组件执行componentWillUnmount方法
     3. 接着会把current fiber tree 替换为workInProgress fiber tree
     4. 最后执行DOM的插入、更新和删除，给更新的组件执行componentDidUpdate，给插入的组件执行componentDidMount
@@ -347,29 +347,33 @@ completeWork的上层函数`completeUnitOfWork`中，每个执行完completeWork
 
 # commit阶段
 
-
-
 一些`副作用`对应的DOM操作、一些生命周期钩子（componentDidXXX）、某些hook（useEffect）都在commit阶段执行
 
 commit阶段的主要工作（即Renderer的工作流程）分为三部分：
+
 * before mutation阶段（执行DOM操作前）
 * mutation阶段（执行DOM操作）
 * layout阶段（执行DOM操作后）
 
 另外，
+
 * 在before mutation之前：主要做一些变量赋值，状态重置的工作。
 * 在layout阶段之后：1. useEffect相关处理 2. 性能追踪相关 3. 执行同步任务, 比如在 componentDidMount 中执行 setState 创建的更新会在这里被同步执行, useLayoutEffect、useEffect的回调方法也会在这里被执行
 
 
 ## before mutation阶段（执行DOM操作前）
+
 在before mutation阶段，会遍历`effectList`（保存effectTag的单向链表），并调用`commitBeforeMutationEffects`函数，依次执行：
+
 1. 处理DOM节点渲染/删除后的 autoFocus、blur逻辑
 2. 调用getSnapshotBeforeUpdate生命周期钩子
 3. 调度useEffect
    
 ## mutation阶段（执行DOM操作）
+
 mutation阶段会遍历 `effectList`，依次执行`commitMutationEffects`。该方法的主要工作为根据`effectTag`调用不同的处理函数`处理Fiber`
 
 ## layout阶段（执行DOM操作后）
+
 layout阶段会遍历 `effectList`，依次执行`commitLayoutEffects`。该方法的主要工作为根据`effectTag`调用不同的处理函数`处理Fiber`并更新`ref`。
 
