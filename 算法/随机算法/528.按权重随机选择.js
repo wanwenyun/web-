@@ -1,0 +1,61 @@
+/*
+ * @lc app=leetcode.cn id=528 lang=javascript
+ *
+ * [528] 按权重随机选择
+ */
+
+// @lc code=start
+/**
+ * 前缀和 + 二分查找
+ * @param {number[]} w
+ */
+var Solution = function(w) {
+    this.preSum = [];
+
+    // 构建前缀和数组，偏移一位留给 preSum[0]
+    this.preSum[0] = 0;
+    // 构造前缀和
+    for(let i = 1; i <= w.length; i++) {
+        this.preSum[i] = this.preSum[i - 1] + w[i - 1];
+    }
+};
+
+/**
+ * @return {number}
+ */
+Solution.prototype.pickIndex = function() {
+    let n = this.preSum.length;
+    // JavaScript 的 Math.random() 方法生成一个 [0, 1) 的随机实数
+    // 再乘上前缀和数组 preSum[n - 1]
+    // 这样在 [0, preSum[n - 1]) 区间内等概率随机选取一个值
+    let target = Math.floor(Math.random() * this.preSum[n - 1]) + 1;
+    // 获取 target 在前缀和数组 preSum 中的索引
+    // 别忘了前缀和数组 preSum 和原始数组 w 有一位索引偏移
+    return this.find_left(this.preSum, target) - 1;
+};
+
+Solution.prototype.find_left = function(nums, target) {
+    if (nums.length === 0) return -1;
+    let left = 0, right = nums.length;
+    while (left < right) {
+        let mid = left + Math.floor((right - left) / 2);
+        if(nums[mid] < target){
+            // 搜索区间变为 [mid+1, right]
+            left = mid + 1;
+        } else if (nums[mid] > target) {
+            // 搜索区间变为 [left, mid-1]
+            right = mid;
+        } else if (nums[mid] === target) {
+            // 收缩右侧边界
+            right = mid;
+        }
+    }
+    return left;
+}
+/**
+ * Your Solution object will be instantiated and called as such:
+ * var obj = new Solution(w)
+ * var param_1 = obj.pickIndex()
+ */
+// @lc code=end
+
