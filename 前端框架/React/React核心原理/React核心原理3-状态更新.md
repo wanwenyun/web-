@@ -1,8 +1,9 @@
 - [流程概览](#流程概览)
+- [心智模式（同步，并发更新React）](#心智模式同步并发更新react)
 - [触发状态更新，Update分类](#触发状态更新update分类)
 - [Update :exclamation:](#update-exclamation)
   - [Update的结构](#update的结构)
-  - [Update与Fiber的联系](#update与fiber的联系)
+  - [Update与Fiber的联系 - updateQueue](#update与fiber的联系---updatequeue)
   - [updateQueue](#updatequeue)
   - [例子:star:](#例子star)
 - [调度更新，深入理解优先级](#调度更新深入理解优先级)
@@ -35,6 +36,20 @@ render阶段（`performSyncWorkOnRoot` 或 `performConcurrentWorkOnRoot`）
     v
 commit阶段（`commitRoot`）
 ```
+
+# 心智模式（同步，并发更新React）
+
+将**更新机制**类比**代码版本控制**。
+
+- 同步更新React：如果线上有个紧急bug需要修复(红色节点)，必须先将之前的代码提交。没有优先级的概念
+  <img src="./pictures/git1.png" />
+
+- 并发更新React：紧急线上bug需要修复时，我们暂存当前分支的修改，在master分支修复bug并紧急上线。然后开发分支基于修复bug的版本继续开发。
+  <figure class="third">
+    <img src="./pictures/git2.png" width='50%' /><img src="./pictures/git3.png" width='50%' />
+  </figure>
+
+  待高优更新完成后，`低优更新`基于`高优更新的结果`重新更新。
 
 # 触发状态更新，Update分类
 
@@ -71,7 +86,7 @@ const update: Update<*> = {
 };
 ```
 
-## Update与Fiber的联系
+## Update与Fiber的联系 - updateQueue
 
 Update存在一个连接其他Update形成**链表**的字段next。
 
@@ -79,8 +94,8 @@ Update存在一个连接其他Update形成**链表**的字段next。
 
 从《fiber架构-双缓存机制》一节我们知道，Fiber节点组成Fiber树，页面中最多同时存在两棵Fiber树：
 
-- 代表当前页面状态的current Fiber树
-- 代表正在render阶段的workInProgress Fiber树
+- 代表当前页面状态的`current Fiber`树
+- 代表正在`render阶段`的`workInProgress Fiber`树
 
 类似Fiber节点组成Fiber树，Fiber节点上的**多个Update**会组成**链表**并被包含在`fiber.updateQueue`中。
 
@@ -215,7 +230,7 @@ shared.pending: A1 --> B2 --> C1 --> D2
     render阶段使用的Update: [A1, C1]
     memoizedState: 'AC'
     ```
-    其中B2由于优先级为2，低于当前优先级，所以他及其后面的所有Update会被保存在baseUpdate中作为下次更新的Update（即`B2 C1 D2`）。
+    其中B2由于优先级为2，低于当前优先级，所以他及其后面的**所有Update**会被保存在baseUpdate中作为下次更新的Update（即`B2 C1 D2`）。
 2. 第二次render，优先级为2。
    ```js
    baseState: 'A'

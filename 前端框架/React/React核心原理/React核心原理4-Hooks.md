@@ -8,6 +8,7 @@
   - [计算state](#计算state)
 - [总结](#总结)
 - [修改state引起重渲染原理? :star:](#修改state引起重渲染原理-star)
+- [](#)
 - [常用钩子](#常用钩子)
 
 >[React Hooks原理探究，看完不懂，你打我
@@ -186,7 +187,70 @@ function useState(initialState) {
 
 Hooks的第一个核心原理：**闭包**，是的Hooks返回的state和setState方法，在hooks内部都是利用闭包实现的
 
-// TODO： 没太看懂，多看几遍
+**完整代码**
+
+```js
+// App组件对应的fiber对象
+const fiber = {
+  // 保存该FunctionComponent对应的Hooks链表
+  memoizedState: null,
+  // 指向App函数
+  stateNode: App
+};
+
+// 组件render时会调用useState
+function useState(initialState) {
+  let hook;
+
+  if (isMount) { // 是否首次渲染，组件首次render为mount，以后再触发的更新为update
+    // mount时为该useState生成hook
+    hook = {
+      queue: { // 保存当前hook对应update的quene
+        pending: null
+      },
+      memoizedState: initialState, // 保存hook对应的state
+      next: null // 与下一个Hook连接形成单向无环链表
+    }
+    // 将hook插入fiber.memoizedState链表末尾
+    if (!fiber.memoizedState) {
+      fiber.memoizedState = hook;
+    } else {
+      workInProgressHook.next = hook;
+    }
+    // 移动workInProgressHook指针
+    workInProgressHook = hook;
+  } else { // update时
+    // 找到对应hook
+    hook = workInProgressHook;
+    // 移动workInProgressHook指针
+    workInProgressHook = workInProgressHook.next;
+  }
+
+  // update执行前的初始state
+  let baseState = hook.memoizedState;
+  if (hook.queue.pending) {
+    // 获取update环状单向链表中第一个update
+    let firstUpdate = hook.queue.pending.next;
+
+    do {
+      // 执行update action
+      const action = firstUpdate.action;
+      baseState = action(baseState);
+      firstUpdate = firstUpdate.next;
+
+      // 最后一个update执行完后跳出循环
+    } while (firstUpdate !== hook.queue.pending.next)
+
+    // 清空queue.pending
+    hook.queue.pending = null;
+  }
+
+  // 将update action执行完后的state作为memoizedState
+  hook.memoizedState = baseState;
+
+  return [baseState, dispatchAction.bind(null, hook.queue)];
+}
+```
 
 # 总结
 
@@ -199,6 +263,7 @@ React将同一个Hooks的多个update通过**环状单向链表**关联起来，
 # 修改state引起重渲染原理? :star:
 详见[《React核心原理3-状态更新》](../../../%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6//React/React%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86/React%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%863-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0.md)
 
+# 
 
 # 常用钩子
 

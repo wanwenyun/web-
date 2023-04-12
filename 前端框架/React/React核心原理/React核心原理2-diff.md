@@ -51,9 +51,9 @@ export const Deletion = /*                 */ 0b0000000000100
 
 因此React的diff会预设3个限制：
 
-1. 只对同级元素进行Diff。如果一个DOM节点在前后两次更新中跨越了层级，那么React不会尝试复用他。
-2. 两个不同类型的元素会产生出不同的树。如果元素由div变为p，React会销毁div及其子孙节点，并新建p及其子孙节点。
-3. 开发者可以通过 key prop来暗示哪些子元素在不同的渲染下能保持稳定。
+1. **只对同级元素进行Diff**。如果一个DOM节点在前后两次更新中跨越了层级，那么React不会尝试复用他。
+2. **两个不同类型的元素会产生出不同的树**。如果元素由div变为p，React会销毁div及其子孙节点，并新建p及其子孙节点。
+3. 开发者可以通过 `key prop`来暗示哪些子元素在不同的渲染下能保持稳定。
 
   ```js
   // 更新前
@@ -75,7 +75,7 @@ export const Deletion = /*                 */ 0b0000000000100
 
 ### Diff是如何实现的
 
-我们从Diff的入口函数[reconcileChildFibers](https://github.com/facebook/react/blob/1fb18e22ae66fdb1dc127347e169e73948778e5a/packages/react-reconciler/src/ReactChildFiber.new.js#L1280)出发，该函数会根据newChild（即JSX对象）类型调用不同的处理函数。
+我们从Diff的入口函数[reconcileChildFibers](https://github.com/facebook/react/blob/1fb18e22ae66fdb1dc127347e169e73948778e5a/packages/react-reconciler/src/ReactChildFiber.new.js#L1280)出发，该函数会根据newChild（即**JSX对象**）类型调用不同的处理函数。
 
 ```js
 // 根据newChild类型选择不同diff函数处理
@@ -127,7 +127,7 @@ function reconcileChildFibers(
 
 核心在于**如何判断DOM节点是否可以复用？**
 
-1. React通过先判断key是否相同，如果`key`相同则判断`type`是否相同，只有都相同时一个DOM节点才能复用。
+1. React通过先判断key是否相同，如果`key`相同则判断`type`是否相同，只有**都**相同时一个DOM节点才能复用。
 2. key相同，
    1. type也相同表示可以复用，返回复用的fiber
    2. type不相同。将该fiber及其兄弟fiber标记为删除
@@ -227,7 +227,7 @@ function reconcileChildFibers(
 
 过程如下：
 
-1. let `i = 0`，遍历newChildren，将`newChildren[i]`与oldFiber比较，判断DOM节点是否可复用。
+1. let `i = 0`，遍历newChildren，将`newChildren[i]`与`oldFiber[i]`比较，判断DOM节点是否可复用。
 2. 如果**可复用**，`i++`，继续比较`newChildren[i]与oldFiber.sibling`(sibling表示兄弟节点)，可以复用则继续遍历。
 3. 如果**不可复用**，分两种情况
    - `key`不同导致不可复用，立即跳出整个遍历，**第一轮遍历结束**。
@@ -320,13 +320,13 @@ function reconcileChildFibers(
 
 由于有节点在这次**更新中改变了位置**，所以不能再用位置索引`i`对比前后的节点，而要用到`key`。
 
-为了快速的找到key对应的oldFiber，我们将所有还未处理的oldFiber存入以key为key，oldFiber为value的Map中。
+为了快速的找到key对应的oldFiber，我们将所有还未处理的oldFiber存入**以key为key，oldFiber为value的Map中**。
 
 ```js
 const existingChildren = mapRemainingChildren(returnFiber, oldFiber);
 ```
 
-接下来遍历剩余的newChildren，通过`newChildren[i].key`就能在existingChildren中找到key相同的oldFiber。
+接下来遍历剩余的newChildren，通过`newChildren[i].key`就能在existingChildren中找到key相同的`oldFiber`。
 
 既然我们的目标是寻找移动的节点，那么我们需要明确：**节点是否移动是以什么为参照物？**
 
