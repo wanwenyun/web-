@@ -396,6 +396,7 @@ layout阶段也会遍历 `effectList`，依次执行`commitLayoutEffects`。该�
          console.log("i am update~");
        });
        ```
+
     - 对于`FunctionComponent`及`相关类型`，他会调用`useLayoutEffect hook`的回调函数，调度`useEffect`的销毁与回调函数
         > `相关类型`指特殊处理后的FunctionComponent，比如ForwardRef、React.memo包裹的FunctionComponent
 2. `commitAttachRef`（赋值 ref）: **获取DOM实例，更新ref**
