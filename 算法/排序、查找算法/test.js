@@ -1,23 +1,14 @@
-function quickSort(arr) {
-    let len = arr.length
-    if(len < 2) return arr;
-    
-    let mid = Math.floor(len / 2);
-    let value = arr[mid];
-    arr.splice(mid,1); // 删除mid
-    let left = [];
-    let right = [];
-
-    for(let i = 0; i < len - 1; i++) {
-        if(arr[i] < value){
-            left.push(arr[i]);
-        }else {
-            right.push(arr[i]);
-        }
+var binarySearch = function (nums, target) {
+    let len = nums.length;
+    let left = 0, right = len - 1;
+    while(left <= right) {
+        let mid = Math.round(left + (right - left) / 2);
+        if(nums[mid] === target) return mid;
+        if(nums[mid] < target) left = mid + 1;
+        if(nums[mid] > target) right = mid - 1;
     }
-
-    return [...quickSort(left), value, ...quickSort(right)]
+    return false
 }
 
-let arr = [2,5,44,19,24,66,48,9,10,31];
-console.log(quickSort(arr))
+let arr = [2,5,9,10,19,24,31,44,48,66];
+console.log(binarySearch(arr, 19))
