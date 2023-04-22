@@ -27,7 +27,7 @@
 
 # Fiber架构
 
-详见[《React核心原理1-基础知识(React15、fiber架构)》](./React%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%861-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86(React15%E3%80%81fiber%E6%9E%B6%E6%9E%84).md)
+详见[《React核心原理1-理念(React15、fiber架构)》](./React%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%861-%E7%90%86%E5%BF%B5(React15%E3%80%81fiber%E6%9E%B6%E6%9E%84))
 
 # Scheduler调度器的原理与实现
 
