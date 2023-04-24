@@ -287,4 +287,4 @@ ReactDOM.render(<App/>, document.getElementById('root'));
 
 ## react源码如何调试？
 
-[参考步骤](https://react.iamkasong.com/preparation/source.html#%E5%88%9B%E5%BB%BA%E9%A1%B9%E7%9B%AE)
+[参考步骤](https://xiaochen1024.com/courseware/60b1b2f6cf10a4003b634718/60b1b32ecf10a4003b63471c)
