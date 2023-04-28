@@ -7,7 +7,7 @@
   - [Render（渲染器）commit阶段](#render渲染器commit阶段)
   - [例子](#例子)
   - [总结 :heavy\_exclamation\_mark:](#总结-heavy_exclamation_mark)
-- [React16协调器架构 -- Fiber](#react16协调器架构----fiber)
+- [React16协调器(render阶段)架构 -- Fiber](#react16协调器render阶段架构----fiber)
   - [Fiber架构的心智模型](#fiber架构的心智模型)
   - [Fiber的三层含义](#fiber的三层含义)
     - [架构层面](#架构层面)
@@ -134,7 +134,7 @@ Renderer根据Reconciler为虚拟DOM打的标记，同步执行对应的DOM操�
 - Reconciler(协调器)内部采用了`Fiber`的架构。目的是为了实现将**同步**的更新变为**可中断的异步**更新。
 - Scheduler（调度器）和 Reconcile(协调器)的工作不会被用户看见。只有Render（渲染器）会更新页面上的Dom。所以，即使有被中断的更新，用户也不会看到更新不完全的视图。
 
-## React16协调器架构 -- Fiber
+## React16协调器(render阶段)架构 -- Fiber
 
 React16**协调器**采用了`Fiber架构`，实现了`异步的可中断更新`。
 
