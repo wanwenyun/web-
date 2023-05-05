@@ -47,7 +47,7 @@ export const Deletion = /*                 */ 0b0000000000100
 
 ### Diff的瓶颈以及React如何应对
 
-由于Diff操作本身也会带来性能损耗，React文档中提到，即使在最前沿的算法中，将前后两棵树完全比对的算法的复杂程度为 O(n 3 )，其中n是树中元素的数量。开销过于高昂。
+由于Diff操作本身也会带来性能损耗，即使在最前沿的算法中，将前后两棵树完全比对的算法的复杂程度为 O(n^3)，其中n是树中元素的数量。开销过于高昂。
 
 因此React的diff会预设3个限制：
 
@@ -75,7 +75,7 @@ export const Deletion = /*                 */ 0b0000000000100
 
 ### Diff是如何实现的
 
-我们从Diff的入口函数[reconcileChildFibers](https://github.com/facebook/react/blob/1fb18e22ae66fdb1dc127347e169e73948778e5a/packages/react-reconciler/src/ReactChildFiber.new.js#L1280)出发，该函数会根据newChild（即**JSX对象**）类型调用不同的处理函数。
+我们从Diff的入口函数[`reconcileChildFibers`](https://github.com/facebook/react/blob/1fb18e22ae66fdb1dc127347e169e73948778e5a/packages/react-reconciler/src/ReactChildFiber.new.js#L1280)出发，该函数会根据newChild（即**JSX对象**）类型调用不同的处理函数。
 
 ```js
 // 根据newChild类型选择不同diff函数处理
@@ -127,7 +127,7 @@ function reconcileChildFibers(
 
 核心在于**如何判断DOM节点是否可以复用？**
 
-1. React通过先判断key是否相同，如果`key`相同则判断`type`是否相同，只有**都**相同时一个DOM节点才能复用。
+1. React通过先判断key是否相同，如果`key`相同，再判断`type`是否相同，只有**都**相同时一个DOM节点才能复用。
 2. key相同，
    1. type也相同表示可以复用，返回复用的fiber
    2. type不相同。将该fiber及其兄弟fiber标记为删除
@@ -200,14 +200,7 @@ function reconcileChildFibers(
 
 ### Diff思路
 
-一般想到的思路如下
-
-1. 判断当前节点的更新属于哪种情况
-2. 如果是新增，执行新增逻辑
-3. 如果是删除，执行删除逻辑
-4. 如果是更新，执行更新逻辑
-
-但在日常开发中，相较于新增和删除，**更新**组件发生的频率更高。所以Diff会**优先**判断当前节点是否属于更新。
+在日常开发中，相较于新增和删除，**更新**组件发生的频率更高。所以Diff会**优先**判断当前节点是否属于更新。
 
 >在我们做数组相关的算法题时，经常使用双指针从数组头和尾同时遍历以提高效率，但是这里却不行。
 >
@@ -217,7 +210,7 @@ function reconcileChildFibers(
 >
 >所以无法使用双指针优化。
 
-基于以上原因，`Diff`算法的整体逻辑会经历两轮遍历：
+基于以上原因，`Diff`算法的整体逻辑会经历**两轮遍历**：
 
 第一轮遍历：处理**更新**的节点。
 
@@ -225,62 +218,65 @@ function reconcileChildFibers(
 
 ### 第一轮遍历
 
-过程如下：
+**过程如下：**
 
 1. let `i = 0`，遍历newChildren，将`newChildren[i]`与`oldFiber[i]`比较，判断DOM节点是否可复用。
 2. 如果**可复用**，`i++`，继续比较`newChildren[i]与oldFiber.sibling`(sibling表示兄弟节点)，可以复用则继续遍历。
 3. 如果**不可复用**，分两种情况
-   - `key`不同导致不可复用，立即跳出整个遍历，**第一轮遍历结束**。
-   - key相同`type`不同导致不可复用，会将oldFiber标记为`DELETION`(删除)，并继续遍历
+   - `key`不同导致不可复用（属于“节点位置变化”的情况），立即跳出整个遍历，**第一轮遍历结束**。
+   - key相同，但`type`不同导致不可复用，会创建一个新的fiber节点且标记为`Placement(插入)`，并将oldFiber标记为`DELETION`(删除)，并继续遍历
 4. 如果newChildren遍历完(即i === newChildren.length - 1)或者oldFiber遍历完(oldFiber.sibling === null)，跳出遍历，**第一轮遍历结束**。
 
-**步骤3跳出的遍历**
+**当第一轮遍历结束后，会有两种结果：**
 
-此时`newChildren`没有遍历完，`oldFiber`也没有遍历完。
+1. 由步骤3跳出的遍历
 
-如下例：
+   此时`newChildren`没有遍历完，`oldFiber`也没有遍历完。
 
-```jsx
-// 之前
-<li key="0">0</li>
-<li key="1">1</li>
-<li key="2">2</li>
-            
-// 之后
-<li key="0">0</li>
-<li key="2">1</li>
-<li key="1">2</li>
-```
+   如下例：
 
-第一个节点可复用，遍历到key === 2的节点发现key改变，不可复用，**跳出遍历，等待第二轮遍历处理**。
+   ```jsx
+   // 之前
+   <li key="0">0</li>
+   <li key="1">1</li>
+   <li key="2">2</li>
+               
+   // 之后
+   <li key="0">0</li>
+   <li key="2">1</li>
+   <li key="1">2</li>
+   ```
 
-此时`oldFiber`剩下key === 1、key === 2未遍历，`newChildren`剩下key === 2、key === 1未遍历。
+   第一个节点可复用，遍历到key === 2的节点发现key改变，不可复用，**跳出遍历，等待第二轮遍历处理**。
 
-**步骤4跳出的遍历**
+   此时`oldFiber`剩下key === 1、key === 2未遍历，`newChildren`剩下key === 2、key === 1未遍历。
 
-可能newChildren遍历完，或oldFiber遍历完，或他们同时遍历完。
+2. 步骤4跳出的遍历
 
-```jsx
-// 之前
-<li key="0" className="a">0</li>
-<li key="1" className="b">1</li>
-            
-// 之后 情况1 —— newChildren与oldFiber都遍历完
-<li key="0" className="aa">0</li>
-<li key="1" className="bb">1</li>
-            
-// 之后 情况2 —— newChildren没遍历完，oldFiber遍历完
-// newChildren剩下 key==="2" 未遍历
-<li key="0" className="aa">0</li>
-<li key="1" className="bb">1</li>
-<li key="2" className="cc">2</li>
-            
-// 之后 情况3 —— newChildren遍历完，oldFiber没遍历完
-// oldFiber剩下 key==="1" 未遍历
-<li key="0" className="aa">0</li>
-```
+   可能newChildren遍历完，或oldFiber遍历完，或他们同时遍历完。
 
-总结，第一次遍历结束后，会有如下4种情况：
+   ```jsx
+   // 之前
+   <li key="0" className="a">0</li>
+   <li key="1" className="b">1</li>
+               
+   // 之后 情况1 —— newChildren与oldFiber都遍历完
+   <li key="0" className="aa">0</li>
+   <li key="1" className="bb">1</li>
+               
+   // 之后 情况2 —— newChildren没遍历完，oldFiber遍历完
+   // newChildren剩下 key==="2" 未遍历
+   <li key="0" className="aa">0</li>
+   <li key="1" className="bb">1</li>
+   <li key="2" className="cc">2</li>
+               
+   // 之后 情况3 —— newChildren遍历完，oldFiber没遍历完
+   // oldFiber剩下 key==="1" 未遍历
+   <li key="0" className="aa">0</li>
+   ```
+
+**总结**
+第一次遍历结束后，会有如下4种情况：
 
 1. newChildren与oldFiber同时遍历完
 
@@ -406,10 +402,10 @@ d节点位置不变
 key === b 在 oldFiber中存在
 const oldIndex = b（之前）.index;
 oldIndex 1 < lastPlacedIndex 3 // 之前节点为 abcd，所以b.index === 1
-则 b节点需要向右移动
+则 b节点需要**向右**移动
 ===第二轮遍历结束===
 
-最终acd 3个节点都没有移动，b节点被标记为移动
+最终acd 3个节点都没有移动，b节点被标记为移动。 // 怎么确定b移动到哪里去呢？
 ```
 
 例子2:
@@ -452,7 +448,7 @@ key === a 在 oldFiber中存在
 const oldIndex = a（之前）.index; // 之前节点为 abcd，所以a.index === 0
 此时 oldIndex === 0;
 oldIndex 0 < lastPlacedIndex 3
-所以 a节点需要向右移动
+所以 a节点需要**向右**移动
 
 继续遍历剩余newChildren
 
@@ -463,7 +459,7 @@ key === b 在 oldFiber中存在
 const oldIndex = b（之前）.index; // 之前节点为 abcd，所以b.index === 1
 此时 oldIndex === 1;
 oldIndex 1 < lastPlacedIndex 3
-所以 b节点需要向右移动
+所以 b节点需要**向右**移动
 
 继续遍历剩余newChildren
 
@@ -474,13 +470,13 @@ key === c 在 oldFiber中存在
 const oldIndex = c（之前）.index; // 之前节点为 abcd，所以c.index === 2
 此时 oldIndex === 2;
 oldIndex 2 < lastPlacedIndex 3
-则 c节点需要向右移动
+则 c节点需要**向右**移动
 
 ===第二轮遍历结束===
 ```
 
-可以看到，我们以为从 abcd 变为 dabc，只需要将d移动到前面。
+可以看到，我们以为从 abcd 变为 dabc，只需要将d**向左**移动到前面。
 
-但实际上React**保持d不变**，将abc分别移动到了d的后面。
+但实际上React**保持d不变**，将abc分别**向右**移动到了d的后面。
 
 从这点可以看出，**考虑性能**，我们要尽量减少将节点从后面移动到前面的操作。(:star:**React性能优化Tips**)
