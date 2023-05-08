@@ -1,1 +1,0 @@
-import{_ as s,o as n,c as a,d as l}from"./app.8cb9dc40.js";const D=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"算法/二叉树/226.翻转二叉树.md"}'),t={name:"算法/二叉树/226.翻转二叉树.md"},e=l("",1),o=[e];function p(c,i,r,y,f,d){return n(),a("div",null,o)}const E=s(t,[["render",p]]);export{D as __pageData,E as default};

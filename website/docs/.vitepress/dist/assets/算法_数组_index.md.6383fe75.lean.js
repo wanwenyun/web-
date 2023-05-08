@@ -1,1 +1,0 @@
-import{_ as t,o as e,c as o,d as s}from"./app.8cb9dc40.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"算法/数组/index.md"}'),n={name:"算法/数组/index.md"},r=s("",4),_=[r];function a(c,i,p,d,l,g){return e(),o("div",null,_)}const u=t(n,[["render",a]]);export{m as __pageData,u as default};

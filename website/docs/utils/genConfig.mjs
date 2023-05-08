@@ -65,7 +65,7 @@ function getAllSideBar(dir) {
 const data = {
   sidebar: {},
 };
-const dir = ["算法", "js", "前端框架", "工程化"];
+const dir = ["其他"];
 dir.forEach((item, index) => {
   const res = getAllSideBar(`../${item}`);
   data.sidebar[`/${item}`] = [];

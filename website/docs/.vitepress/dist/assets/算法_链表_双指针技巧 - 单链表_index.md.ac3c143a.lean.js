@@ -1,1 +1,0 @@
-import{_ as t,o as e,c as s,d as o}from"./app.8cb9dc40.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"算法/链表/双指针技巧 - 单链表/index.md"}'),i={name:"算法/链表/双指针技巧 - 单链表/index.md"},l=o("",2),_=[l];function a(n,r,c,d,p,f){return e(),s("div",null,_)}const L=t(i,[["render",a]]);export{m as __pageData,L as default};

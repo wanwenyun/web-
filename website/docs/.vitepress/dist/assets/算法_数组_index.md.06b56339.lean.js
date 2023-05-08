@@ -1,0 +1,1 @@
+import{_ as t,o as e,c as o,V as s}from"./chunks/framework.75331a37.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"算法/数组/index.md","filePath":"算法/数组/index.md"}'),n={name:"算法/数组/index.md"},r=s("",4),_=[r];function a(i,c,d,p,l,f){return e(),o("div",null,_)}const u=t(n,[["render",a]]);export{m as __pageData,u as default};

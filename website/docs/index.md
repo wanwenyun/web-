@@ -11,7 +11,7 @@ hero:
   actions:
     - theme: brand
       text: 快速开始
-      link: /算法/动态规划/62.不同路径.md
+      link: /浏览器/宏观(1)-多进程架构、从输入URL到展示.md
     - theme: alt
       text: 查看Github
       link: https://github.com/wanwenyun/
@@ -21,7 +21,7 @@ features:
     title: 个人简历
     details: 腾讯前端开发工程师
   - icon: 🖖
-    title: 学习小结
+    title: 学习小记
     details: 前端知识总结
   - icon: 🛠️
     title: 其它
