@@ -4,12 +4,12 @@ export default {
   themeConfig: {
     logo: "/images/logo.png",
     nav: [
-      { text: "个人履历", link: "/guide" },
+      { text: "个人简历", link: "/guide" },
       {
         text: "学习引导",
         items: [
           {
-            text: "算法小册",
+            text: "LC刷题笔记",
             link: "/算法/112.路径总和.md",
           },
           { text: "JS基础", link: "/js/call、apply、bind、new.md" },

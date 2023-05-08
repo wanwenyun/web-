@@ -18,14 +18,6 @@ const members = [
       { icon: 'github', link: 'https://github.com/wanwenyun/' },
     ]
   },
-    {
-    avatar: 'https://www.github.com/ZhichaoOuyang.png',
-    name: 'Zhichao Ouyang',
-    title: 'Support',
-    links: [
-      { icon: 'github', link: 'https://github.com/ZhichaoOuyang' },
-    ]
-  },
 ]
 </script>
 
@@ -35,7 +27,7 @@ const members = [
       团队成员
     </template>
     <template #lead>
-      感谢以下两位同学对本网站的开发支持
+      多谢关注，多多指教
     </template>
   </VPTeamPageTitle>
   <VPTeamMembers
