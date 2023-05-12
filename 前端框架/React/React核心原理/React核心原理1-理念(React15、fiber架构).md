@@ -63,8 +63,8 @@ React15的缺点
 React16架构可以分为三层：
 
 - `Scheduler（调度器）`—— 调度任务的优先级，高优任务优先进入Reconciler。:pushpin:
-- `Reconciler（协调器）`—— 负责找出变化的组件 :pushpin:
-- `Renderer（渲染器）`—— 负责将变化的组件渲染到页面上
+- `Reconciler（协调器）`—— 负责找出变化的组件, **render阶段** :pushpin:
+- `Renderer（渲染器）`—— 负责将变化的组件渲染到页面上 **commit 阶段**
 
 **可以看到，相较于React15，React16中新增了Scheduler（调度器），让我们来了解下他。**
 
@@ -239,7 +239,7 @@ this.lastEffect = null;
 
 React使用`“双缓存”`来完成`Fiber树`的构建与替换 —— 对应着`DOM树`的创建与更新。
 
-在React中最多会同时存在两棵Fiber树。
+在React中最多会同时存在两棵Fiber树（用**链表**数据结构来实现的）。
 
 - 当前屏幕上`显示内容`对应的Fiber树称为`current Fiber tree`，其对应节点为`current fiber`
 - `正在内存中构建`的Fiber树称为`workInProgress Fiber tree`，其对应节点为`workInProgress fiber`

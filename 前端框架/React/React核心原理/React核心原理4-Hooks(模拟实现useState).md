@@ -1,4 +1,5 @@
 - [Hooks的优势](#hooks的优势)
+- [Hooks原理](#hooks原理)
 - [极简实现useState](#极简实现usestate)
   - [useState做了什么？](#usestate做了什么)
   - [update数据结构](#update数据结构)
@@ -6,11 +7,10 @@
   - [Hook数据结构](#hook数据结构)
   - [模拟React调度更新流程](#模拟react调度更新流程)
   - [计算state](#计算state)
+  - [完整代码](#完整代码)
 - [总结](#总结)
-- [修改state引起重渲染原理? :star:](#修改state引起重渲染原理-star)
-- [](#)
+- [useState与useReducer](#usestate与usereducer)
 - [常用钩子](#常用钩子)
-
 >[React Hooks原理探究，看完不懂，你打我
 ](https://juejin.cn/post/6891577820821061646#heading-4)
 # Hooks的优势
@@ -25,6 +25,8 @@
 >2. 只有 函数定义组件 和 hooks 可以调用 hooks，避免在 类组件 或者 普通函数 中调用；
 >3. 不能在useEffect中使用useState，React 会报错提示；
 >4. 类组件不会被替换或废弃，不需要强制改造类组件，两种方式能并存；
+
+# Hooks原理
 
 
 
@@ -187,9 +189,12 @@ function useState(initialState) {
 
 Hooks的第一个核心原理：**闭包**，是的Hooks返回的state和setState方法，在hooks内部都是利用闭包实现的
 
-**完整代码**
+## 完整代码
 
 ```js
+let isMount = false;
+let workInProgressHook = null;
+
 // App组件对应的fiber对象
 const fiber = {
   // 保存该FunctionComponent对应的Hooks链表
@@ -198,10 +203,41 @@ const fiber = {
   stateNode: App
 };
 
+function run() {
+  workInProgressHook = fiber.memoizedState;
+  const App = fiber.stateNode();
+  isMount = false;
+  return App;
+}
+
+function dispatchAction(queue, action) {
+  // 创建update
+  const update = {
+    action,
+    next: null
+  }
+
+  // 环状单向链表操作
+  if (queue.pending === null) {
+    update.next = update;
+  } else {
+    update.next = queue.pending.next;
+    queue.pending.next = update;
+  }
+  queue.pending = update;
+
+  // 模拟React开始调度更新
+  // schedule();
+  run();
+}
+
+
 // 组件render时会调用useState
 function useState(initialState) {
   let hook;
 
+
+  // 获取hook对象
   if (isMount) { // 是否首次渲染，组件首次render为mount，以后再触发的更新为update
     // mount时为该useState生成hook
     hook = {
@@ -220,7 +256,7 @@ function useState(initialState) {
     // 移动workInProgressHook指针
     workInProgressHook = hook;
   } else { // update时
-    // 找到对应hook
+    // update时从workInProgressHook中取出该useState对应的hook
     hook = workInProgressHook;
     // 移动workInProgressHook指针
     workInProgressHook = workInProgressHook.next;
@@ -228,6 +264,7 @@ function useState(initialState) {
 
   // update执行前的初始state
   let baseState = hook.memoizedState;
+  // 执行update，基于baseState计算memoizedState
   if (hook.queue.pending) {
     // 获取update环状单向链表中第一个update
     let firstUpdate = hook.queue.pending.next;
@@ -250,6 +287,11 @@ function useState(initialState) {
 
   return [baseState, dispatchAction.bind(null, hook.queue)];
 }
+
+function App() {
+  const [num, updateNum] = useState(0);
+  return <p onClick={() => updateNum(num => num + 1)}>{num}</p>;
+}
 ```
 
 # 总结
@@ -260,19 +302,21 @@ React将同一个Hooks的多个update通过**环状单向链表**关联起来，
 
 `dispatcher` 是一个包含了 hooks 函数的共享对象。它将基于 ReactDOM 的渲染阶段被动态地分配或清理，并且它将确保用户无法在React组件外访问到Hooks
 
-# 修改state引起重渲染原理? :star:
-详见[《React核心原理3-状态更新》](../../../%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6//React/React%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86/React%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%863-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0.md)
+对于不同的`hook`来说，区别在于**触发的时机不同**以及**memoizedState保存的数据不同**，但hook的计算过程却是完全一致的。
 
-# 
+# useState与useReducer
+
+本质来说，`useState`只是预置了`reducer`的`useReducer`。
 
 # 常用钩子
 
 - `useState`: 用于定义组件的 State，对标到类组件中this.state的功能
 - `useEffect`：通过依赖触发的钩子函数，常用于模拟类组件中的componentDidMount，componentDidUpdate，componentWillUnmount方法
+- `useLayoutEffect`：DOM更新同步钩子。用法与useEffect类似，只是区别于执行时间点的不同。useEffect属于异步执行，并不会等待 DOM 真正渲染后执行（**commit阶段，before mutation阶段（执行DOM操作前）**），而useLayoutEffect则会真正渲染后才触发（**commit阶段，layout阶段（执行DOM操作后）**）；可以获取更新后的 state；
+- `useRef`: 获取组件的真实节点；
+- `useImperativeHandle`: 子组件利用useImperativeHandle可以让父组件输出任意数据。
 - `useContext`: 获取 context 对象
 - `useReducer`: 类似于 Redux 思想的实现，但其并不足以替代 Redux，可以理解成一个组件内部的 redux，并不是持久化存储，会随着组件被销毁而销毁；属于组件内部，各个组件是相互隔离的，单纯用它并无法共享数据；配合useContext的全局性，可以完成一个轻量级的 Redux
 - `useCallback`: 缓存回调函数，避免传入的回调每次都是新的函数实例而导致依赖组件重新渲染，具有性能优化的效果；
 useMemo: 用于缓存传入的 props，避免依赖的组件每次都重新渲染；
-- `useRef`: 获取组件的真实节点；
-- `useLayoutEffect`：DOM更新同步钩子。用法与useEffect类似，只是区别于执行时间点的不同。useEffect属于异步执行，并不会等待 DOM 真正渲染后执行，而useLayoutEffect则会真正渲染后才触发；可以获取更新后的 state；
 - `自定义钩子(useXxxxx)`: 基于 Hooks 可以引用其它 Hooks 这个特性，我们可以编写自定义钩子。

@@ -9,7 +9,9 @@
 - [调度更新，深入理解优先级](#调度更新深入理解优先级)
   - [如何保证Update不丢失](#如何保证update不丢失)
   - [如何保证状态依赖的连续性](#如何保证状态依赖的连续性)
-- [ReactDOM.render](#reactdomrender)
+- [ReactDOM.render全过程](#reactdomrender全过程)
+  - [全过程](#全过程)
+  - [React应用的三种模式](#react应用的三种模式)
 - [this.setState](#thissetstate)
 
 >[状态更新](https://react.iamkasong.com/state/prepare.html#%E5%87%A0%E4%B8%AA%E5%85%B3%E9%94%AE%E8%8A%82%E7%82%B9)
@@ -53,7 +55,7 @@ commit阶段（`commitRoot`）
 
 # 触发状态更新，Update分类
 
-我们将可以**触发更新的方法**所隶属的组件分类：
+在React中，有以下方法可以触发状态的更新：
 
 - ReactDOM.render —— HostRoot
 - this.setState —— ClassComponent
@@ -97,7 +99,7 @@ Update存在一个连接其他Update形成**链表**的字段next。
 - 代表当前页面状态的`current Fiber`树
 - 代表正在`render阶段`的`workInProgress Fiber`树
 
-类似Fiber节点组成Fiber树，Fiber节点上的**多个Update**会组成**链表**并被包含在`fiber.updateQueue`中。
+类似Fiber节点组成Fiber树，Fiber节点上的**多个Update**会组成**头尾相连的链表**并被包含在`fiber.updateQueue`中。
 
 > 什么情况下一个Fiber节点会存在多个Update？
 > 比如：
@@ -118,6 +120,8 @@ Fiber节点最多同时存在**两个updateQueue**：
 在commit阶段完成页面渲染后，workInProgress Fiber树变为current Fiber树，workInProgress Fiber树内Fiber节点的updateQueue就变成current updateQueue。
 
 ## updateQueue
+
+`HostComponent`的UpdateQueue在《React核心原理2-架构(render,commit阶段，生命周期)》- completework中介绍过。
 
 `ClassComponent与HostRoot`使用的UpdateQueue结构如下：
 
@@ -241,15 +245,116 @@ shared.pending: A1 --> B2 --> C1 --> D2
 
 通过以上例子我们可以发现，React保证最终的状态一定和用户触发的交互一致，但是中间过程状态可能由于设备不同而不同。
 
-# ReactDOM.render
+# ReactDOM.render全过程
 
-1. 创建update
-   
-   从双缓存机制一节我们知道，首次执行`ReactDOM.render`会创建`fiberRootNode`和`rootFiber`。其中`fiberRootNode`是整个应用的根节点，`rootFiber`是要渲染组件所在组件树的根节点。
+## 全过程
+到目前为止，我们终于可以完整的走通ReactDOM.render完成页面渲染的整个流程。
 
-2. 创建fiber
+**创建fiber**
 
-   这一步发生在`updateContainer`方法中。
+从《双缓存机制》一节我们知道，首次执行`ReactDOM.render`会创建fiberRootNode和rootFiber。其中fiberRootNode是整个应用的根节点，rootFiber是要渲染组件所在组件树的根节点。
+
+这一步发生在调用`ReactDOM.render`后进入的`legacyRenderSubtreeIntoContainer`方法中。
+```js
+// container指ReactDOM.render的第二个参数（即应用挂载的DOM节点）
+root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
+  container,
+  forceHydrate,
+);
+fiberRoot = root._internalRoot;
+```
+
+`legacyCreateRootFromDOMContainer`方法内部会调用`createFiberRoot`方法完成`fiberRootNode`和`rootFiber`的创建以及关联。并初始化`updateQueue`。
+
+```
+export function createFiberRoot(
+  containerInfo: any,
+  tag: RootTag,
+  hydrate: boolean,
+  hydrationCallbacks: null | SuspenseHydrationCallbacks,
+): FiberRoot {
+  // 创建fiberRootNode
+  const root: FiberRoot = (new FiberRootNode(containerInfo, tag, hydrate): any);
+  
+  // 创建rootFiber
+  const uninitializedFiber = createHostRootFiber(tag);
+
+  // 连接rootFiber与fiberRootNode
+  root.current = uninitializedFiber;
+  uninitializedFiber.stateNode = root;
+
+  // 初始化updateQueue
+  initializeUpdateQueue(uninitializedFiber);
+
+  return root;
+}
+```
+
+**创建update**
+
+我们已经做好了组件的初始化工作，接下来就等待创建Update来开启一次更新。
+
+这一步发生在updateContainer方法中。
+
+```js
+export function updateContainer(
+  element: ReactNodeList,
+  container: OpaqueRoot,
+  parentComponent: ?React$Component<any, any>,
+  callback: ?Function,
+): Lane {
+  // ...省略与逻辑不相关代码
+
+  // 创建update
+  const update = createUpdate(eventTime, lane, suspenseConfig);
+  
+  // update.payload为需要挂载在根节点的组件
+  update.payload = {element};
+
+  // callback为ReactDOM.render的第三个参数 —— 回调函数
+  callback = callback === undefined ? null : callback;
+  if (callback !== null) {
+    update.callback = callback;
+  }
+
+  // 将生成的update加入updateQueue
+  enqueueUpdate(current, update);
+  // 调度更新
+  scheduleUpdateOnFiber(current, lane, eventTime);
+
+  // ...省略与逻辑不相关代码
+}
+```
+
+**完整流程**
+```
+创建fiberRootNode、rootFiber、updateQueue（`legacyCreateRootFromDOMContainer`）
+    |
+    v
+创建Update对象（`updateContainer`）
+    |
+    v
+从fiber到root（`markUpdateLaneFromFiberToRoot`）
+    |
+    v
+调度更新（`ensureRootIsScheduled`）
+    |
+    v
+render阶段（`performSyncWorkOnRoot` 或 `performConcurrentWorkOnRoot`）
+    |
+    v
+commit阶段（`commitRoot`）
+```
+
+## React应用的三种模式
+
+当前React共有三种模式：
+
+- `legacy`，这是当前React使用的方式。当前没有计划删除本模式，但是这个模式可能不支持一些新功能。 -- 由`ReactDOM.render(<App />, rootNode)`开启
+
+- `blocking`，开启部分concurrent模式特性的中间模式。目前正在实验中。作为迁移到concurrent模式的第一个步骤。 -- 由`ReactDOM.createBlockingRoot(rootNode).render(<App />)`开启
+
+- `concurrent`，面向未来的开发模式。我们之前讲的`任务中断/任务优先级`都是针对`concurrent`模式 -- 由`ReactDOM.createRoot(rootNode).render(<App />)`开启
 
 # this.setState
 
