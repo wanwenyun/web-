@@ -17,7 +17,7 @@
 
 # 总起
 
-**DFS 算法（深度优先搜索算法）**就是`回溯算法`
+**DFS 算法（深度优先搜索算法）** 就是`回溯算法`
 
 解决一个回溯问题，实际上就是一个决策树的遍历过程，站在回溯树的一个节点上，你只需要思考 3 个问题：
 
@@ -81,6 +81,8 @@ var traverse = function(root) {
 
 ### 子集/组合（元素无重,不可复选）
 
+**重点：使用 `start` 参数控制树枝的生长避免产生重复的子集（也就是说，使用 start 变量保证元素`nums[start]` 之后只会出现 `nums[start+1..]` 中的元素，通过固定元素的相对位置保证不出现重复的子集），用 `track` 记录根节点到每个节点的路径的值，同时在前序位置把每个节点的路径值收集起来，完成回溯树的遍历就收集了所有子集**
+
 [78. 子集](https://leetcode.cn/problems/subsets/)
 [77. 组合](https://leetcode.cn/problems/combinations/)
 
@@ -106,6 +108,8 @@ var backtrack = function(nums, start) {
 ```
 
 ### 排列（元素无重,不可复选）
+
+**排列问题本身就是让你穷举元素的位置，`nums[i]` 之后也可以出现 `nums[i] 左边`的元素，所以之前 “排列/组合” 的那一套玩不转了，需要额外使用 `used` 数组来标记哪些元素还可以被选择。**
 
 [46. 全排列](https://leetcode.cn/problems/permutations/)
 
@@ -140,6 +144,8 @@ var backtrack = function(nums) {
 
 ### 子集/组合（元素可重,不可复选）
 
+**重点：在代码上，需要先进行排序，让相同的元素靠在一起，如果发现 `nums[i] == nums[i-1]`，则跳过：**
+
 [40. 组合总和 II](https://leetcode.cn/problems/combination-sum-ii/)
 [90. 子集 II](https://leetcode.cn/problems/subsets-ii/)
 
@@ -169,6 +175,8 @@ var backtrack = function(nums, start) {
 ```
 
 ### 排列（元素可重,不可复选）
+
+**对比普通全排列问题： 多了“排序”和“剪枝”逻辑**
 
 [47. 全排列 II](https://leetcode.cn/problems/permutations-ii/)
 
@@ -201,7 +209,7 @@ var backtrack = function(nums) {
 
 ## 元素无重,可复选
 
-即 nums 中的元素都是唯一的，每个元素可以被使用若干次，相比较于元素无重,可复选类型的题目，只要`删掉去重逻辑`即可。
+即 nums 中的元素都是唯一的，每个元素可以被使用若干次，相比较于元素无重,可复选类型的题目，只要 **删掉去重逻辑（即， 只要把 `i + 1` 改成 `i` 即可）** 即可。
 
 ### 子集/组合（元素无重,可复选）
 
