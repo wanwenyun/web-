@@ -39,7 +39,7 @@ var minWindow = function(s, t) {
         // 进行窗口内数据的一系列更新
         if(need[c]) { //如果当前字符在need字符中 更新window中字符数
             window[c] = (window[c] || 0) + 1;
-            if (window[c] == need[c]) {//如果当前窗口和需要的字符数量一致时，字符种类+1
+            if (window[c] == need[c]) {//如果当前窗口和需要的字符数量一致时，符合要求的字符种类+1
                 valid++;
             }
         }
@@ -51,7 +51,7 @@ var minWindow = function(s, t) {
         // 判断左侧窗口是否要收缩
         while (valid == Object.keys(need).length) { //字符种类与需要的字符个数一致时，即窗口中的字符串包含了t中的所有字符，就收缩窗口
             const newRes = s.substring(left, right);
-            if( !res || newRes.length < res.length ) res = newRes;
+            if( !res || newRes.length < res.length ) res = newRes; // 更新结果
 
             // d 是将移出窗口的字符
             let d = s[left];

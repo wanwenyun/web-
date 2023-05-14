@@ -34,7 +34,7 @@ var slidingWindow = function(s, t) {
     const need = {}; // 用来记录t中字符出现次数，方便后续的判断
     const window = {}; // 记录「窗口」中的相应字符的出现次数。
     for (let a of t) {
-        need[a] = (need[a] || 0) m+ 1;//统计t中字符频数
+        need[a] = (need[a] || 0) + 1;//统计t中字符频数
     }
 
     let left = 0, right = 0;
