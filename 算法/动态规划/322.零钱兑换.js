@@ -65,7 +65,7 @@ var coinChange2 = function(coins, amount) {
             if (i - coin < 0) {
                 continue;
             }
-            dp[i] = Math.min(dp[i], dp[i-coin]+1);
+            dp[i] = Math.min(dp[i], dp[i-coin]+1); // 选择面值为coin的硬币
         }
     }
     return (dp[amount] == Infinity) ? -1 : dp[amount];
