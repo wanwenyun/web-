@@ -14,6 +14,7 @@
  */
 
 // 滑动窗口解法
+// 在窗口内元素之和大于等于 0 时扩大窗口，在窗口内元素之和小于 0 时缩小窗口，在每次移动窗口时更新答案。
 var maxSubArray = function(nums) {
     let left = 0, right = 0;
 

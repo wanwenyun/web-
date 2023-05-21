@@ -21,7 +21,12 @@ var lengthOfLIS = function(nums) {
 
     for(let i = 0 ; i < nums.length; i++){
         for (let j = 0; j < i; j++) {
-            if(nums[i] > nums[j]) dp[i] = Math.max(dp[i], dp[j]+1)
+            // 寻找 nums[0..j-1] 中比 nums[i] 小的元素
+            if(nums[i] > nums[j]) {
+                // 把 nums[i] 接在后面，即可形成长度为 dp[j] + 1，
+                // 且以 nums[i] 为结尾的递增子序列
+                dp[i] = Math.max(dp[i], dp[j]+1)
+            }
         }
     }
 

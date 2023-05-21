@@ -8,6 +8,7 @@
 /**
  * @param {string} s
  * @return {number}
+ * dp定义：在子串 s[i..j] 中，最长回文子序列的长度为 dp[i][j]
  */
 var longestPalindromeSubseq = function(s) {
     let n = s.length;
