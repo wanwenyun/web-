@@ -22,9 +22,9 @@
 
 # Hash模式
 
-`hash` 就是指 url 后的 `#` 号以及后面的字符。比如说 "www.baidu.com/#hashhash" ，其中 "#hashhash" 就是我们期望的 `hash` 值。
+是通过**监听浏览器 URL 中的 hash 值的变化来实现路由的切换**。`hash` 就是指 url 后的 `#` 号以及后面的字符。比如说 "www.baidu.com/#hashhash" ，其中 "#hashhash" 就是我们期望的 `hash` 值。
 
-**由于 hash 值的变化不会导致浏览器像服务器发送请求**，而且 hash 的改变会触发 `hashchange` 事件，浏览器的前进后退也能对其进行控制，所以在 H5 的 history 模式出现之前，基本都是使用 hash 模式来实现前端路由。
+**由于 hash 值的变化不会导致浏览器像服务器发送请求**，而且 hash 的改变会触发 `hashchange` 事件，因此可以通过监听这个事件来实现路由的切换。
 
 使用 Hash 模式的好处是，**可以避免因为路由变化而导致整个页面的刷新**，因为 hash 只会影响到 URL 的一部分，不会触发完整的页面重新加载。这也是单页面应用中常用的一种路由模式。
 
@@ -46,7 +46,7 @@ React 路由的 Hash 模式指的是 URL 地址中以 # 开头的部分用于匹
 
 # history模式
 
-这种模式充分利用了`html5 history interface` 中新增的 `pushState()` 和 `replaceState()` 方法。这两个方法应用于浏览器记录栈，在当前已有的 `back、forward、go`基础之上，它们提供了对历史记录修改的功能。这些方法通常与`window.onpopstate` 配合使用。只是当它们执行修改时，虽然改变了当前的 URL ，但**浏览器不会立即向后端发送请求**。
+是通过**浏览器提供的 history API 来控制 URL 的变化**。history API 可以添加、修改和删除浏览器的访问历史记录，从而实现上一步、下一步和手动跳转页面。基于此，前端路由库可以使用新增的 `history.pushState()` 和 `history.replaceState()` 方法来控制 URL 的变化，在当前已有的 `back、forward、go`基础之上，它们提供了对历史记录修改的功能。然后通过监听 `popstate` 事件来实现路由的切换。只是当它们执行修改时，虽然改变了当前的 URL ，但**浏览器不会立即向后端发送请求**。
 
 history.pushState() 和 history.replaceState() 的区别在于：
 
