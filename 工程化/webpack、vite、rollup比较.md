@@ -47,7 +47,7 @@ Vite主要特点如下：
 
 ## webpack和vite的区别
 **构建理念不同**
-* `Vite`：依赖预构建，开发期间启动一个服务器，index.html 作为入口文件，所以 index.html 中需要有 <script type="module" src="./src/main.tsx"></script> ；index.html 为源码和模块图的一部分。
+* `Vite`：依赖预构建，开发期间启动一个服务器，index.html 作为入口文件，所以 index.html 中需要有 `<script type="module" src="./src/main.tsx"></script> `，index.html 为源码和模块图的一部分。
 * `Webpack`：会在内部构建依赖图。webpack 会默认将 ./src/index.js 作为构建的开始；进入入口后，webpack 找出有哪些模块和库是入口起点（直接和间接）依赖的。
 
 `Vite`：

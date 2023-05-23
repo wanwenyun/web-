@@ -2,6 +2,9 @@
 - [webpack核心概念](#webpack核心概念)
   - [Entry](#entry)
   - [Output](#output)
+    - [filename](#filename)
+    - [path](#path)
+    - [publicPath](#publicpath)
   - [Module](#module)
   - [Chunk](#chunk)
   - [Loader](#loader)
@@ -10,10 +13,10 @@
     - [自定义Loader](#自定义loader)
     - [自定义Plugin](#自定义plugin)
 - [webpack打包流程？](#webpack打包流程)
+- [如何理解module，chunk 和 bundle？](#如何理解modulechunk-和-bundle)
 - [sourceMap是什么？](#sourcemap是什么)
-- [webpack-dev-server（待细看）](#webpack-dev-server待细看)
 - [Webpack热更新HMR（存疑，待细看)](#webpack热更新hmr存疑待细看)
-- [Webpack Proxy工作原理](#webpack-proxy工作原理)
+- [Webpack Proxy工作原理 (webpack-dev-server)](#webpack-proxy工作原理-webpack-dev-server)
   - [浏览器跨域判定的原理](#浏览器跨域判定的原理)
   - [webpack proxy原理](#webpack-proxy原理)
   - [实际项目举例](#实际项目举例)
@@ -23,11 +26,24 @@
 >https://juejin.cn/post/6943468761575849992#heading-5
 >
 >https://segmentfault.com/a/1190000041100811
+>
+> [姜瑞涛：webpack教程](https://www.jiangruitao.com/webpack)
+
+
+## 模块化相关的知识：
+
+Webpack支持`ES6 Module`、`CommonJS`和`AMD`等模块化方法，目前常用的是ES6 Module和CommonJS。
+- `ES6 Module`通过`export`导出模块，`import … from '…'`或`import '…'`导入模块。
+- `CommonJS`通过`module.exports`导出模块，`require('…')`导入模块。
+- `ES6 Module`通过`import()`函数动态导入模块，`CommonJS`通过`require.ensure`动态导入模块，现在推荐使用import()函数动态导入模块。
+
+<img src="./picture/webpack/module.png" />
 
 # webpack的作用是什么？
 * **模块打包：** 可以将**不同模块的文件打包整合**在一起，提高项目性能，可维护性，解决浏览器频繁请求文件的问题。
 * **编译兼容：** 通过webpack的`Loader`机制，解决**浏览器兼容**问题，并可以编译转换诸如`.less, .vue, .jsx`这类在浏览器无法识别的格式文件，提高开发效率。
 * **能力扩展：** 通过webpack的`Plugin`机制，进一步实现诸如**按需加载，代码压缩**等一系列功能，提高项目的自动化程度，工程效率以及打包输出的质量。
+* **混淆代码**，代码打包的同时进行混淆，提高代码的安全性
 
 
 # webpack核心概念
@@ -37,9 +53,116 @@
 进入入口起点后,webpack 会找出有哪些模块和库是入口起点（直接和间接）依赖的。
 每个依赖项随即被处理,最后输出到称之为 `bundles` 的文件中。(个人将bunles理解为结果文件)
 
+entry：它有三种形式的值:
+- **字符串**：是最简单的形式，表示打包的入口JS件。
+- **数组**
+  ```js
+  module.exports = {
+    entry: ['core-js/stable', 'regenerator-runtime/runtime', './a.js'],
+  };
+  ```
+  等效于：
+  ```js
+    // a.js
+    import 'core-js/stable';
+    import 'regenerator-runtime/runtime';
+  ```
+  ```js
+  // webpack.config.js
+  module.exports = {
+    entry: './a.js',
+  };
+  ```
+- **对象**：又称之为多入口配置。本质上打包后生成个JS文件。
+  ```js
+  var path = require('path');  
+  module.exports = {
+    entry: {
+      app: ['core-js/stable', 'regenerator-runtime/runtime', './a.js'],
+      vendor: './vendor'
+    },
+    output: {
+      path: path.resolve(__dirname, ''),
+      filename: '[name].js'
+    },
+    mode: 'none'
+  };
+  ```
+  上方的配置分别从两个入口文件打包，每个入口文件自寻找自己依赖的文件模块打包成一个JS文件，最终得两个JS文件。
+
 ## Output
 output 属性告诉 webpack 在哪里输出它所创建的 bundles， 以及如何命名这些文件,默认值为 ./dist。
 也就是说，output定义了打包的`输出`。
+
+### filename
+filename有以下几种形式：
+- **字符串**表示**资源名称**，如`bundle.js`
+- **相对地址**，例如`./js/bundljs`。
+- filename支持类似变量的方式生成**动态文件名**
+  - 特定动态值`[hash]`，例如[hash]-bundle.js，其中方括号很像占位符，`hash`表  示特定的动态值。例如：
+    ```js
+      var path = require('path');  
+      module.exports = {
+        entry: './a.js',
+        output: {
+          path: path.resolve(__dirname, ''),
+          filename: '[hash].js'
+        },
+        ...
+        mode: 'none'
+      };
+    ```
+    我们执行npx webpack打包，控制台显示如下。
+    <img src='./picture/webpack/filename-hash.png' width=60%/>
+    `1620cdcbd73ea3873287`表示本次打包的hash值，因此生成的文件名就是      eaf163aa8342f012d6ee.js。
+
+  - 特定动态值`[name]`。[name]表示的是chunk的名称，打包过程中，一个资源入代表 一个chunk，一个异步模块资源也代表一个chunk。这里的`chunk`与资源入口有关。
+    - entry形式为`字符串`和`数组`，output.filename的[name]值都是`main`。
+      ```js
+      module.exports = {
+        entry: './a.js',
+        output: {
+          path: path.resolve(__dirname, ''),
+          filename: '[name].js'
+        },
+        mode: 'none'
+      };
+      ```
+      <img src='./picture/webpack/webpack-output-filename.png'  width=60%/>
+    - entry形式为`对象`（即多入口），[name]的值是对象的属性名，对应每一个口文件。
+      ```js
+      module.exports = {
+        entry: {
+          app1: './a.js',
+          app2: './f.js',
+        },
+        output: {
+          path: path.resolve(__dirname, ''),
+          filename: '[name].js'
+        },
+        mode: 'none'
+      };
+      ```
+      <img src='./picture/webpack/webpack-output-filename-2.png'   width=60%/>
+
+### path
+
+path表示资源打包后输出的位置，该位置地址要是绝对路径。如果你不设置它，webpack4默认为`dist`目录。
+
+需要注意的是，path输出路径表示的是在**磁盘上构建生成的真实文件存放地址**。
+
+我们在开发时，一般会用`webpack-dev-server`开启一个本地服务器，这个服务器可以`自动刷新和热加载`等，它生成的文件是在`内存`中而不是在电脑磁盘。该内存中的文件路径，我们会用Webpack配置文件的`devServer`配置项的publicPath表示，它虚拟映射了电脑磁盘路径。
+
+### publicPath
+
+output中的publicPath表示的是资源访问路径。
+
+path和publicPath的区别：
+
+* path(资源输出位置)：表示的是本次打包完成后，资源存放的磁盘位置。是一个本地路径
+* publicPath(资源访问路径)：代表的是，之后要引入的js css 这些的路径`前缀`。一般来说会写cdn的url。
+
+publicPath的表现形式有两类：`相对路径和绝对路径`
 
 ## Module
 模块,在 Webpack 里一切皆模块,一个模块对应着一个文件。Webpack 会从配置的 Entry 开始递归找出所有依赖的模块。
@@ -89,7 +212,7 @@ module.exports = {
 
 
 ## Plugin
-loader 被用于转换某些类型的模块,而插件则可以用于执行范围更广的任务。比如：按需加载，代码压缩，文件管理、环境注入等。
+loader 被用于转换某些类型的模块,而插件则可以用于执行范围更广的任务。比如：**按需加载，代码压缩，文件管理、环境注入**等。
 
 在 Webpack 运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在合适的时机通过 Webpack 提供的 API 改变输出结果。
 
@@ -116,8 +239,9 @@ Plugin从本质上来说，就是一个具有apply方法Javascript对象。apply
 
 
 ## Loader和Plugin的区别，以及如何自定义Loader和Plugin？
-* Loader 运行在打包文件**之前**，Loader在 module.rules 中配置，作为模块的解析规则，类型为数组。每一项都是一个 Object，内部包含了 test(类型文件)、loader、options (参数)等属性。
-* Plugins 在**整个编译周期**都起作用，Plugin在 plugins 中单独配置，类型为数组，每一项是一个 Plugin 的实例，参数都通过构造函数传入。
+
+* `loader`：用来处理webpack无法处理的模块（即非js、json文件），然后你就可以利用 webpack 的打包能力，对它们进行处理。运行在打包文件**之前**。Loader在 module.rules 中配置，作为模块的解析规则，类型为**数组**。每一项都是一个 **Object**，内部包含了 test(类型文件)、loader、options (参数)等属性。
+* `plugin`：可以执行比转换更复杂的任务。比如打包优化、文件管理、环境注入等……在**整个编译周期**都起作用。Plugin在 plugins 中单独配置，类型为**数组**，每一项是一个 Plugin 的**实例**，参数都通过构造函数传入。
 
 >PS：loader是翻译官，plugin是干活滴
 ### 自定义Loader
@@ -187,23 +311,23 @@ class MyPlugin {
 # webpack打包流程？
 Webpack 的运行流程是一个串行的过程,从启动到结束会依次执行以下流程 :
 1. 读取webpack的`配置参数`；
-2.启动webpack，创建`Compiler`对象并开始解析项目；
-3.从`入口`文件（entry）开始解析，并且找到其导入的依赖模块，递归遍历分析，形成`依赖关系树`；
-4.对不同文件类型的依赖模块文件使用对应的`Loader`进行编译，最终转为Javascript文件；
+2. 启动webpack，创建`Compiler`对象并开始解析项目；
+3. 从`入口`文件（entry）开始解析，并且找到其导入的依赖模块，递归遍历分析，形成`依赖关系树`；
+4. 对不同文件类型的依赖模块文件使用对应的`Loader`进行编译，最终转为Javascript文件；
 5. 整个过程中webpack会通过**发布订阅模式**，向外抛出一些`hooks`，而webpack的插件即可通过监听这些关键的事件节点，执行`插件任务`进而达到干预输出结果的目的。
 6. 根据入口和模块之间的依赖关系,组装成一个个包含多个模块的 `Chunk`,再把每个 Chunk 转换成一个单独的文件加入到输出列表，再根据配置确定输出的路径和文件名，把文件内容写入到文件系统。
 
+# 如何理解module，chunk 和 bundle？
+module，chunk 和 bundle 其实就是同一份逻辑代码在不同转换场景下的取了三个名字：
+
+我们直接写出来的是 module，webpack`处理时`是 chunk，最后生成浏览器可以直接运行的结果是`bundle`。
 
 # sourceMap是什么？
-sourceMap是一项将编译、打包、压缩后的代码映**射回源代码**的技术，由于打包压缩后的代码并没有阅读性可言，一旦在开发中报错或者遇到问题，直接在混淆代码中debug问题会带来非常糟糕的体验，sourceMap可以帮助我们快速定位到源代码的位置，提高我们的开发效率。
+sourceMap是**一项将编译、打包、压缩后的代码映射回源代码的技术**，由于打包压缩后的代码并没有阅读性可言，一旦在开发中报错或者遇到问题，直接在混淆代码中debug问题会带来非常糟糕的体验，sourceMap可以帮助我们快速定位到源代码的位置，提高我们的开发效率。
 
 在webpack.config.js中设置`devtool: 'none'`来关闭source map功能。devtool属性可以接受以下值：
 
 <img src="./picture/webpack/devtool.png" width=60%/>
-
-
-# webpack-dev-server（待细看）
-webpack-dev-server是 webpack 官方推出的一款**开发工具**，将自动编译和自动刷新浏览器等一系列对开发友好的功能全部集成在了一起。同时，为了提高开发者日常的开发效率，只适用在开发阶段。
 
 
 # Webpack热更新HMR（存疑，待细看)
@@ -238,8 +362,15 @@ webpack热更新步骤如下：
 * `bundle.js`：构建输出的文件
 * 在HMR Runtime 和 HMR Server之间建立 `websocket`，即图上4号线，用于实时更新文件变化
 
-# Webpack Proxy工作原理
+# Webpack Proxy工作原理 (webpack-dev-server)
 在项目开发中不可避免会遇到跨越问题，Webpack中的`Proxy`就是解决前端`跨域`的方法之一。所谓代理，指的是在接收客户端发送的请求后**转发**给其他服务器的行为，webpack中提供服务器的工具为`webpack-dev-server`。
+
+> webpack-dev-server是 webpack 官方推出的一款**开发工具**，将自动编译和自动刷新浏览器等一系列对开发友好的功能全部集成在了一起。同时，为了提高开发者日常的开发效率，只适用在开发阶段。
+> 其功能有：
+>    - 支持文件监听和浏览器自动刷新
+>    - 模块热替换
+>    - 可开启本地HTTP服务器，一来可以请求处理和转发，二是就不需要使用本地文件预览了
+>    - 支持Source Map，方便调试工作
 
 
 配置如下：
@@ -275,6 +406,7 @@ module.exports = {
 4. 注意，请求和响应都不包含 cookie 信息。
 
    
+
 PS：如果需要包含 `cookie` 信息，ajax 请求需要设置 xhr 的属性 `withCredentials` 为 true，服务器需要设置响应头部 `Access-Control-Allow-Credentials`: true。
 
 
@@ -334,5 +466,6 @@ proxy工作原理实质上是利用`http-proxy-middleware` 这个http代理中�
 * 代码分离：默认情况下，所有的JavaScript代码（业务代码、第三方依赖、暂时没有用到的模块）在首页全部都加载，就会影响首页的加载速度。如果可以分出出更小的bundle，以及控制资源加载优先级，从而优化加载性能。例如：`splitChunksPlugin`
 * 内联 chunk：一些必须加载的代码可以用webpack来实现内联chunk。
   
+
 总结一下，Webpack对前端性能的优化，主要是通过**文件体积大小**入手，主要的措施有**分包**、**减少Http请求次数**等。
 
