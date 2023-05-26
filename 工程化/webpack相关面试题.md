@@ -21,6 +21,9 @@
   - [webpack proxy原理](#webpack-proxy原理)
   - [实际项目举例](#实际项目举例)
 - [如何借助Webpack来优化性能？](#如何借助webpack来优化性能)
+- [webpack5 和 4 的区别？](#webpack5-和-4-的区别)
+- [如何优化 Webpack 的构建速度？](#如何优化-webpack-的构建速度)
+- [Babel原理？](#babel原理)
 
 
 >https://juejin.cn/post/6943468761575849992#heading-5
@@ -331,6 +334,9 @@ sourceMap是**一项将编译、打包、压缩后的代码映射回源代码的
 
 
 # Webpack热更新HMR（存疑，待细看)
+
+>https://zhuanlan.zhihu.com/p/30669007
+
 Webpack的热更新（Hot Module Replacement），缩写为`HMR`。这个机制可以做到不用刷新浏览器而将新变更的模块替换掉旧的模块。
 
 在Webpack中配置开启热模块也非常的简单，只需要添加如下代码即可。
@@ -345,7 +351,7 @@ module.exports = {
 }
 ```
 
-webpack热更新步骤如下：
+<!-- webpack热更新步骤如下：
 1. 通过webpack-dev-server创建两个服务器：提供静态资源的服务（express server）和Socket服务
     * `express server` 负责直接提供静态资源的服务（打包后的资源直接被浏览器请求和解析）
     * `socket server` 是一个 websocket 的长连接，双方可以通信
@@ -360,7 +366,25 @@ webpack热更新步骤如下：
 * `Bundle Server`：静态资源文件服务器，提供文件访问路径
 * `HMR Runtime`：socket服务器，会被注入到浏览器，更新文件的变化
 * `bundle.js`：构建输出的文件
-* 在HMR Runtime 和 HMR Server之间建立 `websocket`，即图上4号线，用于实时更新文件变化
+* 在HMR Runtime 和 HMR Server之间建立 `websocket`，即图上4号线，用于实时更新文件变化 -->
+
+webpack热更新流程如下：
+图是webpack 配合 webpack-dev-server 进行应用开发的模块热更新流程图。
+ <img src='./picture/webpack/HMR-new.png' width=80%/>
+
+其中：
+- 红色框内是服务端，橙色框是浏览器端。
+- 绿色的方框是 webpack 代码控制的区域。蓝色方框是 webpack-dev-server 代码控制的区域，洋红色的方框是文件系统，文件修改后的变化就发生在这，而青色的方框是应用本身。
+
+1. 第一步，在 webpack 的 watch 模式下，文件（代码文件）发生修改，webpack 监听到文件变化，根据配置文件对模块重新编译打包，并将打包后的代码通过JS对象保存在**内存**中。
+2. 第二步，是 `webpack-dev-server` 和 webpack 之间的接口交互，具体是dev-server 的中间件 `webpack-dev-middleware` 和 `webpack` 之间的交互，中间间用 webpack 暴露的 API对代码变化进行监控，并且告诉 webpack，将代码打包到内存中。
+3. 第三步是 `webpack-dev-server` 对文件（静态文件，与第一步监控不同）变化的一个监控。当配置文件中的devServer.watchContentBase 为 true 的时，Server 会监听这些配置文件夹中静态文件的变化，通知浏览器端对应用进行 `live reload`。注意，这儿是**浏览器刷新**，和 HMR 是两个概念。
+4. 第四步,通过 `sockjs`（`webpack-dev-server `的依赖）在浏览器端和服务端之间建立一个 **websocket 长连接**，将 webpack 编译打包的各个阶段的状态信息告知浏览器端，同时也包括第三步中 Server 监听静态文件变化的信息。浏览器端根据这些 socket 消息进行不同的操作。当然服务端传递的最主要信息还是新模块的 `hash` 值，后面的步骤根据这一 hash 值来进行模块热替换。
+5. 第五步，由于webpack-dev-server/client 端并不能够请求更新的代码，也不会执行热更模块操作，所以把这些工作又交回给了 webpack。`webpack/hot/dev-server`根据 webpack-dev-server/client 传给它的信息以及 dev-server 的配置决定是刷新浏览器呢还是进行模块热更新。
+6. 第六步，`HotModuleReplacement.runtime` 是客户端 HMR 的中枢，它接收到上一步传递给他的新模块的 hash 值，它通过 `JsonpMainTemplate.runtime `向 server 端发送 `Ajax` 请求，服务端返回一个 json，该 json 包含了所有要更新的模块的 hash 值，获取到更新列表后，该模块再次通过 `jsonp` 请求，获取到最新的模块代码。这就是上图中 7、8、9 步骤。
+7. 第十步，`HotModulePlugin` 将会对新旧模块进行对比，决定是否更新模块，在决定更新模块后，检查模块之间的依赖关系，更新模块的同时更新模块间的依赖引用。
+8. 最后一步，当 HMR 失败后，回退到 `live reload` 操作，也就是进行**浏览器刷新**来获取最新打包代码。
+
 
 # Webpack Proxy工作原理 (webpack-dev-server)
 在项目开发中不可避免会遇到跨越问题，Webpack中的`Proxy`就是解决前端`跨域`的方法之一。所谓代理，指的是在接收客户端发送的请求后**转发**给其他服务器的行为，webpack中提供服务器的工具为`webpack-dev-server`。
@@ -469,3 +493,24 @@ proxy工作原理实质上是利用`http-proxy-middleware` 这个http代理中�
 
 总结一下，Webpack对前端性能的优化，主要是通过**文件体积大小**入手，主要的措施有**分包**、**减少Http请求次数**等。
 
+
+
+# webpack5 和 4 的区别？
+1. 性能优化： Webpack 5对构建性能进行了优化，构建速度比Webpack 4更快。
+   1. 压缩：webpack5支持多线程压缩，压缩速度更快
+   2. 模块传递：webpack4中，办法是尽可能的压缩代码。webpack5使用**模块树**传递的方式，将每个模块构建前的 meta 信息进行了**缓存，尝试减少不必要的构建**。
+   3. webpack5默认使用 `webassembly` ，webpack4 则默认使用 jsonp。webassembly 比 jsonp 更快
+
+2. 改进的缓存： Webpack 5中默认使用持久性缓存，这样每次构建后，只会编译和打包更改的代码，从而提高了构建速度。
+   
+6. 支持Web Assembly： Webpack 5可以支持Web Assembly模块类型，从而可以更快地加载和启动。
+
+7. 现代代码处理： Webpack 5可以支持将现代代码打包为现代浏览器和旧版浏览器两个版本，以便旧版本浏览器也可以顺利加载现代代码。
+
+8. 改进的代码分割： Webpack 5中的代码分割默认使用ES module语法，这使得代码生成更加智能且效率更高。
+
+6. 移除废弃特性： Webpack 5移除了一些废弃的特性，比如Loader特性，以便更好地支持新的模块类型。
+
+# 如何优化 Webpack 的构建速度？
+
+# Babel原理？
