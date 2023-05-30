@@ -1,11 +1,25 @@
-# 参考资料：
-1. [一杯茶的时间，上手Node.js](https://zhuanlan.zhihu.com/p/97413574)
+- [node架构](#node架构)
+- [什么是Node？](#什么是node)
+- [如何运行 Node 代码](#如何运行-node-代码)
+  - [在 REPL 中交互式输入和运行；](#在-repl-中交互式输入和运行)
+  - [Node 解释器执行](#node-解释器执行)
+- [Node全局对象](#node全局对象)
+- [Node模块机制](#node模块机制)
+- [Node的异步I/O 事件循环机制](#node的异步io-事件循环机制)
+- [内存控制 - 垃圾回收机制，内存泄露](#内存控制---垃圾回收机制内存泄露)
+- [进程管理](#进程管理)
+  - [pm2](#pm2)
+- [内置类库](#内置类库)
+  - [EventEmitter 事件](#eventemitter-事件)
+  - [Stream 流](#stream-流)
+  - [文件系统](#文件系统)
+  - [网络](#网络)
+  - [Buffer 缓冲区](#buffer-缓冲区)
 
-2. [狼叔：如何正确学习node.js](https://cnodejs.org/topic/5ab3166be7b166bb7b9eccf7)
-
-2. [Node.js学习指南](https://blog.poetries.top/node-learning-notes/notes/base/01-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.html#%E8%AE%A4%E8%AF%86-node-js)
-
-3. [Node.js官网文档](http://nodejs.cn/learn/introduction-to-nodejs)
+>1. [一杯茶的时间，上手Node.js](https://zhuanlan.zhihu.com/p/97413574)
+>2. [狼叔：如何正确学习node.js](https://cnodejs.org/topic/5ab3166be7b166bb7b9eccf7)
+>3. [Node.js学习指南](https://blog.poetries.top/node-learning-notes/notes/base/01-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.html#%E8%AE%A4%E8%AF%86-node-js)
+>4. [Node.js官网文档](http://nodejs.cn/learn/introduction-to-nodejs)
 ---
 # node架构
 <img src='./picture/Node-学习笔记.assets/node.png' width=50%>
@@ -13,9 +27,7 @@
 Node.js 是基于 Chrome V8引擎构建的，由事件循环（Event Loop）分发 I/O 任务，最终工作线程（Work Thread）将任务丢到线程池（Thread Pool）里去执行，而事件循环只要等待执行结果就可以了。
 - Chrome V8 解释并执行 JavaScript 代码（这就是为什么浏览器能执行 JavaScript 原因）
 - libuv 由事件循环和线程池组成，负责所有 I/O 任务的分发与执行
----
-# 起步
-## 什么是Node？
+# 什么是Node？
 Node（或者说 Node.js，两者是等价的）是 JavaScript 的一种运行环境。
 
 我们知道 JavaScript 都是在浏览器中执行的，用于给网页添加各种动态效果，那么可以说浏览器也是 JavaScript 的运行环境。两个运行环境差异如下图所示：
@@ -29,24 +41,79 @@ Node（或者说 Node.js，两者是等价的）是 JavaScript 的一种运行�
 
 Node.js 则是包括V8引擎(Chrome 浏览器中的JS引擎)。而 Node.js 则进一步将 V8 引擎加工成可以在任何操作系统中运行 JavaScript 的平台。
 
-## 运行 Node 代码
+# 如何运行 Node 代码
 运行 Node 代码通常有两种方式：
-1. 在 REPL 中交互式输入和运行；
 
-    <img src='./picture/Node-学习笔记.assets/REPL.png' width=50%>
+## 在 REPL 中交互式输入和运行；
 
-2. 将代码写入 JS 文件，并用 Node 执行。
+<img src='./picture/Node-学习笔记.assets/REPL.png' >
+
+例子： **命令行开发：接受输入参数, 通过 process.argv 读取命令行参数**
+有以下4个文件
+```js
+// info.js
+const os = require('os');
+
+function printProgramInfo() {
+  console.log('当前用户', os.userInfo().username);
+  console.log('当前进程 ID', process.pid);
+  console.log('当前脚本路径', __filename);
+}
+
+module.exports = printProgramInfo;
+```
+```js
+function getCurrentTime() {
+  const time = new Date();
+  return time.toLocaleString();
+}
+
+exports.getCurrentTime = getCurrentTime;
+```
+```js
+const printProgramInfo = require('./info');
+const datetime = require('./datetime');
+
+// 读取命令行参数
+const waitTime = Number(process.argv[3]);
+const message = process.argv[5];
+
+setTimeout(() => {
+  console.log(message);
+}, waitTime*1000);
+
+printProgramInfo();
+console.log('当前时间', datetime.getCurrentTime());
+```
+```js
+console.log(process.argv);
+```
+在REPL中分别执行这两行命令：
+1. `node args.js --time 5 --message "hi wanwan"`
+<img src='./picture/Node-学习笔记.assets/args.png' width=50%>
+1. `node timer.js --time 5 --message "hi wanwan"`，输出如下：
+    ```
+    当前用户 wanwan
+    当前进程 ID 46631
+    当前脚本路径 /Users/wanwan/Desktop/ node-test/info.js
+    当前时间 2022/5/9 下午7:42:28
+    hi wanwan
+    ```
+
+## Node 解释器执行
+
+将代码写入 JS 文件，并用 Node 执行。
 创建test.js文件，里面代码内容为：`console.log('Hello World!');`
 然后用 Node 解释器执行这个文件：
-    ```
-    $ node test.js
-    Hello World!
-    ```
-    来对比一下，在浏览器和 Node 环境中执行这行代码有什么区别：
-    - 在浏览器运行 console.log 调用了 BOM，实际上执行的是 `window.console.log('Hello World!')`
-    - Node 首先在所处的操作系统中创建一个新的进程，然后向标准输出打印了指定的字符串， 实际上执行的是 `process.stdout.write('Hello World!\n')`
+```
+$ node test.js
+Hello World!
+```
+来对比一下，在浏览器和 Node 环境中执行这行代码有什么区别：
+- 在浏览器运行 console.log 调用了 BOM，实际上执行的是 `window.console.log('Hello World!')`
+- Node 首先在所处的操作系统中创建一个新的进程，然后向标准输出打印了指定的字符串， 实际上执行的是 `process.stdout.write('Hello World!\n')`
 
-## Node全局对象
+# Node全局对象
 JavaScript在各个运行环境下的全局对象的比较：
 
 <img src='./picture/Node-学习笔记.assets/js-global-object.jpeg' width=50%>
@@ -103,7 +170,7 @@ Hello World!
 
 在 setTimeout 等待的 3 秒内，程序并没有阻塞，而是继续向下执行，这就是 Node.js 的`异步非阻塞`!
 
-## Node模块机制
+# Node模块机制
 在ES2015之前，js语言本身没有模块化的机制，构建复杂应用也没有统一的接口标准。人们通常使用一系列的`<script>` 标签来导入相应的模块（依赖），如下：
 ```js
 <head>
@@ -127,7 +194,6 @@ Hello World!
 >
 > – import 是编译时调用，因此必须放在文件开头；
 
-### Node 模块机制浅析
 Node 模块可分为两大类：
 - 核心模块：Node 提供的内置模块，在安装 Node 时已经被编译成二进制可执行文件
 - 文件模块：用户编写的模块，可以是自己写的，也可以是通过 npm 安装的。
@@ -165,82 +231,21 @@ module对象有以下字段:
 
 ps：[exports、module.exports和export、export default的区别](https://segmentfault.com/a/1190000010426778)
 
-**命令行开发：接受输入参数, 通过 process.argv 读取命令行参数**
-有以下4个文件
-```js
-// info.js
-const os = require('os');
 
-function printProgramInfo() {
-  console.log('当前用户', os.userInfo().username);
-  console.log('当前进程 ID', process.pid);
-  console.log('当前脚本路径', __filename);
-}
 
-module.exports = printProgramInfo;
-```
-```js
-function getCurrentTime() {
-  const time = new Date();
-  return time.toLocaleString();
-}
+# Node的异步I/O 事件循环机制
 
-exports.getCurrentTime = getCurrentTime;
-```
-```js
-const printProgramInfo = require('./info');
-const datetime = require('./datetime');
+# 内存控制 - 垃圾回收机制，内存泄露
 
-// 读取命令行参数
-const waitTime = Number(process.argv[3]);
-const message = process.argv[5];
+node.js的内存控制得益于`V8引擎`。因此这部分的内容详见[《V8-垃圾回收机制，内存泄露》](../../Google%20V8/V8(3)%20-%20%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6%EF%BC%8C%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2.md)
 
-setTimeout(() => {
-  console.log(message);
-}, waitTime*1000);
+# 进程管理
 
-printProgramInfo();
-console.log('当前时间', datetime.getCurrentTime());
-```
-```js
-console.log(process.argv);
-```
-在REPL中分别执行这两行命令：
-1. `node args.js --time 5 --message "hi wanwan"`
-<img src='./picture/Node-学习笔记.assets/args.png' width=50%>
-2. `node timer.js --time 5 --message "hi wanwan"`，输出如下：
-    ```
-    当前用户 wanwan
-    当前进程 ID 46631
-    当前脚本路径 /Users/wanwan/Desktop/ node-test/info.js
-    当前时间 2022/5/9 下午7:42:28
-    hi wanwan
-    ```
-### npm
-在前面timer.js 所在的文件夹运行`npm init`，会生成**package.json 文件**， 安装两个包，`npm install commander ora`
-```
-{
-  "name": "test",
-  "version": "1.0.0",
-  "description": "a cool time",
-  "main": "timer.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "wanwan",
-  "license": "ISC",
-  "dependencies": {
-    "commander": "^9.2.0",
-    "ora": "^6.1.0"
-  }
-}
-```
-**npm scripts，也就是 npm 脚本**
-在 package.json 中有个字段叫 scripts，这个字段就定义了全部的 npm scripts。npm scripts分两大类：
-1. 预定义脚本： test、start、install、publish 等等，直接通过 `npm scriptName` 运行，例如 npm test，所有预定义的脚本可查看[文档](https://docs.npmjs.com/cli/v8/using-npm/scripts)
-2. 自定义脚本：需通过`npm run <scriptName>`运行
+## pm2
 
-## 监听exit事件
+
+# 内置类库
+## EventEmitter 事件
 回调函数和事件机制共同组成了 Node 的异步世界。
 Node 中的事件都是通过 `events` 核心模块中的 `EventEmitter` 这个类实现的。该类包括两个最关键的方法：
 
@@ -259,10 +264,16 @@ emitter.on('connect', function (username) {
 emitter.emit('connect', 'wanwan');
 ```
 
----
+## Stream 流
+
+## 文件系统
+
+## 网络
+
+## Buffer 缓冲区
 
 
-# 跟着官网文档学习
+<!-- # 跟着官网文档学习
 
 ## 使用Node.js输出到命令行
 Node.js 提供了 console 模块，该模块提供了大量非常有用的与命令行交互的方法。
@@ -494,4 +505,4 @@ WebAssembly 并`不是一门编程语言`，而是一份字节码标准，需要
 # 进阶node
 
 ## node内存分配，内存溢出
-// TODO：学习node内存相关知识
+// TODO：学习node内存相关知识 -->
