@@ -28,3 +28,5 @@ var canJump = function(nums) {
 };
 // @lc code=end
 
+console.log(canJump([3,0,8,2,0,0,1]));
+

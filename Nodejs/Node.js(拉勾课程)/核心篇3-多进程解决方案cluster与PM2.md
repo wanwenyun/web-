@@ -134,6 +134,8 @@ if (cluster.isMaster) {
 
  cluster 模块应用 child_process 来创建子进程，子进程通过复写掉 cluster._getServer 方法，从而在 server.listen 来保证只有主进程监听端口，主子进程通过 IPC 进行通信，其次主进程根据平台或者协议不同，应用两种不同模块（round_robin_handle.js 和 shared_handle.js）进行请求分发给子进程处理。
 
+ 这种通过 Master 启多个 Worker 的模式就是主从模式，进程被分为主进程和工作进程。主进程不负责具体的业务，而是负责调度和管理工作进程，它是趋于稳定的。
+
 # PM2原理
 
 PM2 是**守护进程管理器**，可以帮助你管理和保持应用程序在线。PM2 入门非常简单，它是一个简单直观的 CLI 工具，可以通过 NPM 安装。
