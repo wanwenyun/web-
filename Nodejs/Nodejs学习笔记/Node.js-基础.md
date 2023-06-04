@@ -1,16 +1,19 @@
 - [node架构](#node架构)
 - [什么是Node？](#什么是node)
+- [Node.js特点及应用场景](#nodejs特点及应用场景)
 - [如何运行 Node 代码](#如何运行-node-代码)
   - [在 REPL 中交互式输入和运行；](#在-repl-中交互式输入和运行)
   - [Node 解释器执行](#node-解释器执行)
 - [Node全局对象](#node全局对象)
 - [Node模块机制](#node模块机制)
 - [Node的异步I/O 事件循环机制](#node的异步io-事件循环机制)
+  - [例子](#例子)
+  - [Node.js事件循环](#nodejs事件循环)
+  - [浏览器与Node的Event Loop 差异](#浏览器与node的event-loop-差异)
+  - [Node10+的宏任务和微任务](#node10的宏任务和微任务)
 - [内存控制 - 垃圾回收机制，内存泄露](#内存控制---垃圾回收机制内存泄露)
 - [内置类库](#内置类库)
   - [EventEmitter 事件](#eventemitter-事件)
-  - [Stream 流](#stream-流)
-  - [文件系统](#文件系统)
   - [网络](#网络)
 
 >1. [一杯茶的时间，上手Node.js](https://zhuanlan.zhihu.com/p/97413574)
@@ -37,6 +40,19 @@ Node（或者说 Node.js，两者是等价的）是 JavaScript 的一种运行�
 浏览器端 JavaScript 还包括了：BOM(即浏览器Browser对象，包含Window对象、Navigator对象、Screen对象、History对象、Location对象、存储对象等)、DOM(即html的DOM)
 
 Node.js 则是包括V8引擎(Chrome 浏览器中的JS引擎)。而 Node.js 则进一步将 V8 引擎加工成可以在任何操作系统中运行 JavaScript 的平台。
+
+# Node.js特点及应用场景
+**特点**
+1. **异步非阻塞I/O**：Node.js的事件模型和I/O模型使得它能够高效地处理大量并发连接，从而提高了应用程序的性能和吞吐量。
+
+2. **事件驱动**：Node.js基于事件驱动的编程模型，通过响应事件来进行异步编程，避免了传统同步阻塞式编程中的线程死锁和资源争用等问题。
+3. **单线程**：node.js是**多进程单线程**的语言，利用`child_process`技术来克服单线程的劣势。通过`master-worker`的管理方式来管理各个工作进程。 
+4. **跨平台**：Node是基于`libuv`实现跨平台的。
+   <img src="./picture/pic3.png" width='50%' />
+
+**应用场景**
+1. I/O密集型
+2. 非CPU密集型
 
 # 如何运行 Node 代码
 运行 Node 代码通常有两种方式：
@@ -232,6 +248,76 @@ ps：[exports、module.exports和export、export default的区别](https://segme
 
 # Node的异步I/O 事件循环机制
 
+> [事件循环](https://zhuanlan.zhihu.com/p/100090251)
+
+## 例子
+```js
+setTimeout(() => {
+  console.log('timer1');
+  Promise.resolve().then(function() {
+    console.log('promise1');
+  });
+}, 0);
+setTimeout(() => {
+  console.log('timer2');
+  Promise.resolve().then(function() {
+    console.log('promise2');
+  });
+}, 0);
+```
+这段代码在浏览器环境中的输出结果是`timer1 promise1 timer2 promise`。详见[《V8-事件循环机制》](../../Google%20V8/V8(2)%20-%20%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E6%9C%BA%E5%88%B6.md)
+用`node10`之前的版本运行这段代码时输出的结果是出人意料的`timer1 timer2 promise1 promise2`。
+
+很明显node的事件循环机制和浏览器的存在不同
+
+## Node.js事件循环
+和JavaScript类似，Node.js 在主线程里维护了一个**事件队列**，当接到请求后，就将该请求作为一个事件放入这个队列中，然后继续接收其他请求。
+
+而当主线程空闲时(没有请求接入时)，就开始循环事件队列，检查队列中是否有要处理的事件，这时要分两种情况：
+
+- 如果是`非 I/O 任务`，就亲自处理，并通过回调函数返回到上层调用；
+- 如果是 `I/O 任务`，就从 线程池 中拿出一个`线程`来处理这个事件，并指定回调函数，然后继续循环队列中的其他事件。
+- 当线程中的 I/O 任务完成以后，就执行指定的回调函数，并把这个完成的事件放到事件队列的尾部，等待事件循环，当主线程再次循环到该事件时，就直接处理并返回给上层调用。（I/O 处理方面Node使用了`Libuv`，Libuv 是一个基于事件驱动的跨平台抽象层，封装了不同操作系统一些底层特性，对外提供统一的 API，事件循环机制也是它里面的实现。）
+  
+<img src="./picture/pic4.png"/>
+
+一流程包含 6 个阶段，每个阶段代表的含义如下所示。
+
+1. `timers`：本阶段执行已经被 `setTimeout()` 和 `setInterval()`调度的回调函数，简单理解就是由这两个函数启动的回调函数。
+2. `pending callbacks`：处理上一轮循环中的**异步I/O操作的回调函数**。
+3. `idle、prepare`：仅系统内部使用，你只需要知道有这 2 个阶段就可以。在这个阶段中，Node.js会在事件循环中保持阻塞状态，等待额外的I/O事件或者计时器回调函数被加入到队列中。
+4. **`poll`**：检索新的 `I/O` 事件，执行与 I/O 相关的回调，其他情况 Node.js 将在适当的时候在此阻塞。这也是最复杂的一个阶段，所有的事件循环以及回调处理都在这个阶段执行，接下来会详细分析这个过程。
+5. `check`：执行`setImmediate()` 回调函数，setImmediate 并不是立马执行，而是当事件循环 poll 中没有新的事件处理时就执行该部分
+6. `close callbacks`：处理socket的close事件`socket.on('close', ...)`，以及其他关闭的回调函数。
+
+除了上述6个阶段，还存在`process.nextTick`，其不属于事件循环的任何一个阶段，它属于该阶段与下阶段之间的过渡, 即本阶段执行结束, 进入下一个阶段前, 所要执行的回调，类似**插队**。
+
+流程图如下所示：
+<img src="./picture/pic5.png"/>
+
+## 浏览器与Node的Event Loop 差异
+<img src='./picture/pic6.png'/>
+
+- **浏览器环境**下，微任务队列是每个宏任务执行完之后执行。
+- 在 **Node.js** 微任务会在事件循环的各个阶段之间执行，也就是一个阶段执行完毕，就会去执行微任务队列的任务。
+
+所以，回到上面的例子，过程如下：
+1. 主代码执行，将 2 个 定时器 依次放入 I/O任务队列最后进入timer队列，
+2. 主代码执行完毕，调用栈空闲，开始进行事件循环首先进入 timers 阶段
+3. 执行 timer1 的回调函数，打印 `timer1`，并将 promise1.then 回调放入 microtask 队列，同样的步骤执行 timer2，打印 `timer2`；
+4. 至此，timer 阶段执行结束，event loop 进入下一个阶段之前，执行 microtask 队列的所有任务，依次打印 `promise1、promise2`。
+
+
+而`node10+`之后，node在setTimeOut执行后会**手动清空微任务队列，以保证结果贴近浏览器**。
+
+## Node10+的宏任务和微任务
+在Node中，同样存在宏任务和微任务，与浏览器中的事件循环相似:
+- **微任务**：`process.nextTick` 和 `Promise`。微任务在事件循环中优先级是最高的，因此在同一个事件循环中有其他任务存在时，优先执行微任务队列。并且process.nextTick 和 Promise 也存在优先级，**process.nextTick 高于 Promise**。
+- **宏任务**：`setTimeout、setInterval、setImmediate 和 I/O`。宏任务在微任务执行之后执行，因此在同一个事件循环周期内，如果既存在微任务队列又存在宏任务队列，那么**优先将微任务队列清空，再执行宏任务队列**。
+
+
+
+
 # 内存控制 - 垃圾回收机制，内存泄露
 
 node.js的内存控制得益于`V8引擎`。因此这部分的内容详见[《V8-垃圾回收机制，内存泄露》](../../Google%20V8/V8(3)%20-%20%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6%EF%BC%8C%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2.md)
@@ -258,29 +344,6 @@ emitter.on('connect', function (username) {
 emitter.emit('connect', 'wanwan');
 ```
 
-## Stream 流
-> https://juejin.cn/post/6945280047662465037
-
-`Stream` 是支持 Node.js 应用程序的基本概念之一。是一种有效地处理读/写文件、网络通信或任何类型的端到端信息交换的方法。
-其独特之处在于，它不像传统程序那样 一次性 将文件读入内存，而是**逐块读取数据块，处理其内容而不会将其全部保存在内存中。**
-
-这使得 stream 在处理大量数据时非常强大。比如视频网站的”流媒体“ 服务为例：这些服务不会让你一次性下载整个视频和音频。相反，你的浏览器会接收到连续不断的视频片段，让接收人立即开始观看。
-
-stream 不仅仅与媒体或大数据打交道。它们还为我们的代码提供了 ”可组合性“ 的能力。在 node.js 中，可以使用 stream 将数据传输到各个较小的代码片段中，它们可以自由携带与组合，从而编写出功能强大的代码片段。
-
-优点：
-- **内存效率**：在你处理数据之前，你不需要在内存中加载大量（或整个）数据
-- **时间效率**：一旦有了数据，就可以开始处理，这大大减少开始处理数据的时间，而不必等到整个数据加载完毕再进行处理。
-
-**node.js 中的 4 种 stream**
-
-- `Writable ：可写的数据流。例如，`fs.createWriteStream()`允许我们使用流将数据写入文件。
-- `Readable ：可读的数据流。例如，`fs.createReadStream()`允许我们读取文件内容。
-- `Duplex ：既可读又可写的双工流。 例如`net.Socket`。
-- `Transform  ：可以在读写数据时修改或转换数据的转换流。例如，在文件压缩的实例中（一个已压缩的文件），你可以在写入压缩的数据时，从文件中读取解压缩后的数据。
-
-
-## 文件系统
 
 ## 网络
 
