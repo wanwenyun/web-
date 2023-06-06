@@ -291,6 +291,26 @@ setTimeout(() => {
 6. `close callbacks`：处理socket的close事件`socket.on('close', ...)`，以及其他关闭的回调函数。
 
 除了上述6个阶段，还存在`process.nextTick`，其不属于事件循环的任何一个阶段，它属于该阶段与下阶段之间的过渡, 即本阶段执行结束, 进入下一个阶段前, 所要执行的回调，类似**插队**。
+```js
+setTimeout(() => {
+ console.log('timer1')
+ Promise.resolve().then(function() {
+   console.log('promise1')
+ })
+}, 0)
+process.nextTick(() => {
+ console.log('nextTick')
+ process.nextTick(() => {
+   console.log('nextTick')
+   process.nextTick(() => {
+     console.log('nextTick')
+   })
+ })
+})
+```
+对于以上代码，永远都是先把` nextTick `全部打印出来。
+
+
 
 流程图如下所示：
 <img src="./picture/pic5.png"/>
