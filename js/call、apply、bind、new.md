@@ -16,7 +16,7 @@ call、apply、bind都可以改变函数的this指向。
 
 ## call
 
-使用一个指定的 this 值和单独给出的一个或多个参数来调用一个函数。
+使用一个指定的 this 值和单独给出的一个或多个参数来调用一个函数。会立即执行函数
 
 ```js
 function Product(name, price) {
@@ -34,7 +34,7 @@ console.log(new Food('cheese', 5).name); // cheese
 
 ## apply
 
-调用一个具有给定 this 值的函数，以及以一个`数组`（或一个类数组对象）的形式提供的参数。效果与`call`相同
+调用一个具有给定 this 值的函数，以及以一个`数组`（或一个类数组对象）的形式提供的参数。效果与`call`相同。会立即执行函数。
 
 ```js
 const array = ['a', 'b'];
@@ -88,7 +88,7 @@ Function.prototype.myCall = function (context) {
   if(typeof this !== 'function') throw new TypeError('error');
   
   context = context || window; // this 参数可以传 null，当为 null 的时候，视为指向 window
-  let args = [...arguments].slice(1); // arguments是一种类数组结构，第一个元素是this，后面的才是真正意义上的参数
+  let args = [...arguments].slice(1); // 获取参数：arguments是一种类数组结构，第一个元素是this，后面的才是真正意义上的参数
   
   context.fn = this; //把函数绑定到目标对象上
   
@@ -157,7 +157,7 @@ Function.prototype.myBind = function (context) {
   if(typeof this !== 'function') throw new TypeError('error');
 
   // 获取参数，为了传给调用者
-  let args = Array.prototype.slice.call(arguments, 1);
+  let args = [...arguments].slice(1);
 
   // 构建一个干净的函数，用于保存原函数的原型
   let tmp = function() {};

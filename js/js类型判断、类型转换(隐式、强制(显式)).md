@@ -1,18 +1,23 @@
 - [js 数据类型](#js-数据类型)
+  - [为什么会有BigInt的提案？](#为什么会有bigint的提案)
 - [js 类型判断](#js-类型判断)
   - [typeOf](#typeof)
   - [Object.prototype.toString.call(\*\*\*)](#objectprototypetostringcall)
   - [instanceof](#instanceof)
     - [手写instanceof](#手写instanceof)
+- [判断数组的方式](#判断数组的方式)
+- [null和undefined区别](#null和undefined区别)
+- [0.1+0.2！==0.3](#010203)
 - [类型转换](#类型转换)
   - [抽象方法ToPrimitive](#抽象方法toprimitive)
     - [ToPrimitive 转换为原始值的规则](#toprimitive-转换为原始值的规则)
     - [`valueOf方法和toString方法解析`](#valueof方法和tostring方法解析)
   - [String、Boolean、Number、对象之间的相互转换](#stringbooleannumber对象之间的相互转换)
-    - [其他类型转为字符串类型](#其他类型转为字符串类型)
-    - [其他类型转为Number类型](#其他类型转为number类型)
+    - [其他类型转为字符串类型❗️](#其他类型转为字符串类型️)
+    - [其他类型转为Number类型❗️](#其他类型转为number类型️)
     - [其他类型转为Boolean类型](#其他类型转为boolean类型)
     - [对象转为其他类型（原始类型）](#对象转为其他类型原始类型)
+- [包装类型](#包装类型)
   - [隐式类型转换](#隐式类型转换)
     - [数学运算符中的隐式类型转换](#数学运算符中的隐式类型转换)
       - [减、乘、除](#减乘除)
@@ -22,7 +27,7 @@
       - [比较运算符](#比较运算符)
       - [使用 == 比较中的5条规则](#使用--比较中的5条规则)
     - [几道经典例题：](#几道经典例题)
-    - [== 和 ===有什么区别？](#-和-有什么区别)
+    - [==，===，Object.is()有什么区别？](#objectis有什么区别)
   - [显示类型转换](#显示类型转换)
     - [ToString](#tostring)
       - [`String()、toString()`的基本类型值的字符串化规则：](#stringtostring的基本类型值的字符串化规则)
@@ -34,7 +39,7 @@
 # js 数据类型
 js有8种数据类型：
 1. Null
-2. Nndefined，
+2. Undefined，
 3. Boolean，
 4. Number
 5. String，
@@ -45,6 +50,26 @@ js有8种数据类型：
 其中前7中为**基本（原始）数据类型**。
 
 Object为**引用类型**，包括：Object 类型、Array 类型、Date 类型、RegExp 类型、Function 类型 等。
+
+两种类型的区别在于存储位置的不同：
+
+- `原始数据类型`直接存储在`栈`（stack）中的简单数据段，占据空间小、大小固定，属于被频繁使用数据，所以放入栈中存储；
+- `引用数据类型`存储在`堆`（heap）中的对象，占据空间大、大小不固定。如果存储在栈中，将会影响程序运行的性能；引用数据类型在栈中存储了指针，该指针指向堆中该实体的起始地址。当解释器寻找引用值时，会首先检索其在栈中的地址，取得地址后从堆中获得实体。
+
+>堆和栈的概念存在于数据结构和操作系统内存中，在数据结构中：
+>
+>1. `栈`中数据的存取方式为先进后出。
+>2. `堆`是一个优先队列，是按优先级来进行排序的，优先级可以按照大小来规定。
+>
+>在操作系统中，内存被分为栈区和堆区：
+>
+>1. `栈`区内存由编译器自动分配释放，存放函数的参数值，局部变量的值等。其操作方式类似于数据结构中的栈。
+>2. `堆`区内存一般由开发着分配释放，若开发者不释放，程序结束时可能由垃圾回收机制回收。
+
+## 为什么会有BigInt的提案？
+
+JavaScript中Number.MAX_SAFE_INTEGER表示最⼤安全数字，计算结果是9007199254740991，即在这个数范围内不会出现精度丢失（⼩数除外）。但是⼀旦超过这个范围，js就会出现计算不准确的情况，这在⼤数计算的时候不得不依靠⼀些第三⽅库进⾏解决，因此官⽅提出了BigInt来解决此问题。
+
 # js 类型判断
 ## typeOf
 ```js
@@ -71,6 +96,8 @@ typeof NaN              ---> 'number'
 typeof是用来判断变量**基本类型**的关键字，但`typeof null==='object'`，是个js的老bug
 
 ## Object.prototype.toString.call(***)
+
+toString是Object的原型方法，而Array、function等类型作为Object的实例，都**重写了toString方法**。不同的对象类型调用toString方法时，根据原型链的知识，调用的是对应的重写之后的toString方法（function类型返回内容为函数体的字符串，Array类型返回元素组成的字符串…），而不会去调用Object上原型toString方法（返回对象的具体类型），因此可以得到正确的类型。
 ```js
 var number = 1;            // [object Number]
 var string = '123';        // [object String]
@@ -111,14 +138,14 @@ instanceof**无法判断数组、日期类型**
 function myInstanceof(left,right) {
     // left.__proto__ == Object.getPrototypeOf(left)
      // Object.getPrototypeOf() 方法返回指定对象的原型
-     let proto = left.__proto__;
-     let prototype = right.prototype
+     let proto = left.__proto__; // 获取对象的原型
+     let prototype = right.prototype // 获取构造函数的prototype对象
      while(true) {
          //查找到尽头，还没找到
          if(proto === null) return false;
          //找到相同的原型对象
          if(proto === prototype) return true;
-         proto = proto.__proto__;
+         proto = proto.__proto__; // 如果没有找到，就继续从其原型上找
      }
 }
 
@@ -135,6 +162,39 @@ console.log(myInstanceof(a, Student));
 console.log(myInstanceof(a, Teacher));
 ```
 
+# 判断数组的方式
+1. Object.prototype.toString.call()
+   `Object.prototype.toString.call(obj).slice(8,-1) === 'Array';`
+2. 通过原型链做判断
+   `obj.__proto__ === Array.prototype;`
+3. 通过ES6的Array.isArray()做判断
+   `Array.isArrray(obj);`
+4. 通过Array.prototype.isPrototypeOf
+   `Array.prototype.isPrototypeOf(obj)`
+
+# null和undefined区别
+- 首先 `Undefined` 和 `Null` 都是基本数据类型，这两个基本数据类型分别都只有一个值，就是 undefined 和 null。
+- `undefined` 代表的含义是未定义，`null` 代表的含义是空对象。一般变量声明了但还没有定义的时候会返回 undefined，null主要用于赋值给一些可能会返回对象的变量，作为初始化。
+- undefined 在 js 中不是一个**保留字**，这意味着可以使用 undefined 来作为一个变量名，这样的做法是非常危险的
+- 使用 typeof 进行判断时，Null 类型化会返回 “object”，这是一个历史遗留问题，因为在系统存储变量的方式中，000 开头代表是对象，然而 null 表示为全零。`typeof undefined`会返回undefined
+- 当使用双等号比较undefined与null时会返回 true，使用三个等号时会返回 false。
+
+# 0.1+0.2！==0.3
+
+计算机是通过二进制的方式存储数据的，所以计算机计算0.1+0.2的时候，实际上是计算的两个数的二进制的和。`0.1的`二进制是`0.0001100110011001100...`（1100循环），`0.2`的二进制是：`0.00110011001100...`（1100循环），这两个数的二进制都是无限循环的数。由于存储空间有限，最后计算机会舍弃后面的数值，所以我们最后就只能得到一个近似值。
+
+**这就导致了`精度丢失`**
+
+**因为两次`存储`时的`精度丢失`加上一次`运算`时的`精度丢失`，最终导致了 0.1 + 0.2 !== 0.3**
+
+**如何解决 0.1+0.2！=0.3**
+
+1. 将`浮点数`转化成`整数`
+  最好的方法就是我们想办法规避掉这类小数计算时的精度问题就好了，那么最常用的方法就是将`浮点数`转化成`整数`计算。因为整数都是可以精确表示的。
+  对于0.1 + 0.02 我们需要转化成 ( 10 + 2 ) / 1e2
+  对于0.1 * 0.02 我们则转化成 1 * 2 / 1e3
+2. 设置一个误差范围，通常称为**机器精度**
+   对js来说，这个值通常为`2-52`，在ES6中，提供了`Number.EPSILON`属性，而它的值就是2-52，只要判断0.1+0.2-0.3是否小于Number.EPSILON，如果小于，就可以判断为0.1+0.2 ===0.3
 
 # 类型转换
 
@@ -226,7 +286,7 @@ console.log(myInstanceof(a, Teacher));
   ```
 
 ## String、Boolean、Number、对象之间的相互转换
-###  其他类型转为字符串类型
+###  其他类型转为字符串类型❗️
 * `null`：转为`"null"`。
 * `undefined`：转为`"undefined"`。
 * `Boolean`：true转为"true"，false转为"false"。
@@ -238,7 +298,7 @@ console.log(myInstanceof(a, Teacher));
 * 函数：`function a(){}`转为字符串是"function a(){}"。
 * 一般对象：相当于调用对象的`toString()`方法，返回的是"[object,object]"。
 
-### 其他类型转为Number类型
+### 其他类型转为Number类型❗️
 * `null`：转为 `0`。
 * `undefined`：转为`NaN`。
 * `Boolean`：true转为1，false转为0。
@@ -260,7 +320,30 @@ console.log(myInstanceof(a, Teacher));
 * 如果valueOf()方法返回的是不是原始类型或者valueOf()方法不存在，则继续调用对象的toString()方法，如果toString()方法返回的是原始类型，则直接返回这个原始类型，如果不是原始类型，则直接报错`抛出异常`。
 * Date对象会先调用`toString()`
 
+# 包装类型
+在 JavaScript 中，基本类型是没有属性和方法的，但是为了便于操作基本类型的值，在调用基本类型的属性或方法时 JavaScript 会在后台隐式地将基本类型的值转换为对象，如：
+```js
+const a = "abc";
+a.length; // 3
+a.toUpperCase(); // "ABC"
+```
+在访问'abc'.length时，JavaScript 将'abc'在后台转换成String('abc')，然后再访问其length属性。
 
+ECMAScript 提供了 3 个特殊的引用类型：`Boolean`、`Number`和 `String`。
+
+引用类型与基本包装类型的区别在于对象的生存期：使用new操作符创建的引用类型的实例，在执行流离开当前作用域之前都一直保存在内存中，而自动创建的基本包装类型的对象，则只存在于一行代码的执行瞬间，然后立即销毁。
+
+使用new调用基本包装类型的构造函数，与直接调用同名的转型函数式不一样的。
+```js
+var value = "25";
+var number = Number(value);		//转型函数
+alert(typeof number);		//"number"
+
+var obj = new Number(value);	//构造函数
+alert(typeof obj);		//"object"
+```
+
+> https://static.kancloud.cn/a6065380280/learnjs/295727
 ## 隐式类型转换
 > 参考链接：https://www.freecodecamp.org/chinese/news/javascript-implicit-type-conversion/#--2
 
@@ -418,9 +501,9 @@ if (a == 1 && a == 2 && a == 3) {
  * */
 ```
 
-### == 和 ===有什么区别？
-* ===叫做严格相等，是指：左右两边不仅值要相等，`类型`也要相等，例如'1'===1的结果是false，因为一边是string，另一边是number。
-* ==不像===那样严格，对于一般情况，只要值相等，就返回true，但==还涉及一些`类型转换`，它的转换规则如下：
+### ==，===，Object.is()有什么区别？
+* === 叫做严格相等，是指：左右两边不仅值要相等，`类型`也要相等，例如'1'===1的结果是false，因为一边是string，另一边是number。
+* == 不像 === 那样严格，对于一般情况，只要值相等，就返回true，但==还涉及一些`类型转换`，它的转换规则如下：
 * 两边的类型是否相同，相同的话就比较值的大小，例如1==2，返回false
 * 判断的是否是null和undefined，是的话就返回true
 * 判断的类型是否是String和Number，是的话，把String类型转换成Number，再进行比较
@@ -430,6 +513,7 @@ if (a == 1 && a == 2 && a == 3) {
 console.log({a: 1} == true); // false
 console.log({a: 1} == "[object Object]"); // true
 ```
+* 使用 `Object.is` 来进行相等判断时，一般情况下和三等号的判断相同，它处理了一些特殊的情况，比如 **-0 和 +0 不再相等，两个 NaN 是相等**的。
 
 
 ## 显示类型转换

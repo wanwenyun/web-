@@ -2,8 +2,8 @@
 - [XMLHttpRequest](#xmlhttprequest)
   - [XMLHttpRequest 运作机制](#xmlhttprequest-运作机制)
     - [第一步：创建 XMLHttpRequest 对象](#第一步创建-xmlhttprequest-对象)
-    - [为 xhr 对象注册回调函数](#为-xhr-对象注册回调函数)
-    - [配置基础的请求信息](#配置基础的请求信息)
+    - [第二步：为 xhr 对象注册回调函数](#第二步为-xhr-对象注册回调函数)
+    - [第三步：配置基础的请求信息](#第三步配置基础的请求信息)
     - [第四步：发起请求](#第四步发起请求)
   - [XMLHttpRequest 三个重要的属性:onreadystatechange, readyState, status](#xmlhttprequest-三个重要的属性onreadystatechange-readystate-status)
   - [XMLHttpRequest 使用过程中的“坑”](#xmlhttprequest-使用过程中的坑)
@@ -90,7 +90,7 @@ XMLHttpRequest可以做到：
     xhr.setRequestHeader("X_TEST","time.geekbang")
 
     /**
-     * 5:发送请求
+     * 4:发送请求
      */
     xhr.send();
 }
@@ -100,7 +100,7 @@ XMLHttpRequest可以做到：
 
 当执行到`let xhr = new XMLHttpRequest()`后，JavaScript 会创建一个 XMLHttpRequest 对象 `xhr`，用来执行实际的网络请求操作。
 
-### 为 xhr 对象注册回调函数
+### 第二步：为 xhr 对象注册回调函数
 
 因为网络请求比较耗时，所以要注册回调函数，这样后台任务执行完成之后就会通过调用回调函数来告诉其执行结果。
 
@@ -109,15 +109,15 @@ XMLHttpRequest 的回调函数主要有下面几种：
 * `onerror`，用来监控出错信息，如果后台请求出错了，该函数会被调用；
 * `onreadystatechange`，用来监控后台请求过程中的状态，比如可以监控到 HTTP 头加载完成的消息、HTTP 响应体消息以及数据加载完成的消息等。
 
-### 配置基础的请求信息
+### 第三步：配置基础的请求信息
 
-首先要通过 open 接口配置一些基础的请求信息，包括请求的地址、请求方法（是 get 还是 post）和请求方式（同步还是异步请求）。
+首先要通过 `open` 接口配置一些基础的请求信息，包括请求的地址、请求方法（是 get 还是 post）和请求方式（同步还是异步请求）。
 
 然后通过 xhr 内部属性类配置一些其他可选的请求信息，你可以参考文中示例代码，我们通过xhr.timeout = 3000来配置超时时间，也就是说如果请求超过 3000 毫秒还没有响应，那么这次请求就被判断为失败了。
 
 ### 第四步：发起请求
 
-一切准备就绪之后，就可以调用xhr.send来发起网络请求了。你可以对照上面那张请求流程图，可以看到：
+一切准备就绪之后，就可以调用`xhr.send`来发起网络请求了。你可以对照上面那张请求流程图，可以看到：
 
 1. 渲染进程会将请求发送给网络进程，
 2. 然后网络进程负责资源的下载，

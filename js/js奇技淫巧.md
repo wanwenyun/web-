@@ -1,3 +1,8 @@
+- [label语法](#label语法)
+- [如何判断异步返回/判断Promise对象](#如何判断异步返回判断promise对象)
+- [类型判断](#类型判断)
+
+
 > 参考文章： [盘点六个阅读React源码后get到的基础知识](https://km.woa.com/group/571/articles/show/523272?kmref=search&from_page=1&no=2)
 
 ## label语法
