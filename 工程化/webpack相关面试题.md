@@ -538,3 +538,5 @@ proxy工作原理实质上是利用`http-proxy-middleware` 这个http代理中�
   ```
 
 # Babel原理？
+babel是什么？
+Babel是一个流行的JavaScript编译器，它可以把新的代码转换为向后兼容的JavaScript代码，使开发者可以无须担心不同浏览器的兼容性问题。

@@ -5,12 +5,13 @@
     - [listen](#listen)
     - [use](#use)
     - [callback](#callback)
-  - [koa-compose，洋葱圈模型核心](#koa-compose洋葱圈模型核心)
+  - [koa-compose，洋葱圈模型核心 :star:](#koa-compose洋葱圈模型核心-star)
   - [application.js - createContext](#applicationjs---createcontext)
   - [request.js和response.js](#requestjs和responsejs)
   - [application.js - handleRequest](#applicationjs---handlerequest)
   - [错误处理](#错误处理)
   - [总结](#总结)
+- [总结：koa洋葱模型怎么实现的？](#总结koa洋葱模型怎么实现的)
 - [Koa和express对比](#koa和express对比)
 - [简单实现一个洋葱圈模型？](#简单实现一个洋葱圈模型)
 
@@ -172,7 +173,7 @@ module.exports = class Application extends Emitter {
 2. createContext
 3. handleRequest
 
-## koa-compose，洋葱圈模型核心
+## koa-compose，洋葱圈模型核心 :star:
 
 [koa-compose](https://github.com/koajs/compose/blob/master/index.js)主要的作用就是将我们use进去的**中间件数组转化为洋葱模式**的执行方式的一个库。核心源码就是一个函数。
 
@@ -191,24 +192,19 @@ function compose (middleware) {
     if (typeof fn !== 'function') throw new TypeError('Middleware must be composed of functions!')
   }
 
-  /**
-   * @param {Object} context
-   * @return {Promise}
-   * @api public
-   */
-
+  // 返回一个匿名函数， next为可选参数
   return function (context, next) {
-    // last called middleware #
-    let index = -1
-    return dispatch(0) // 返回第一个被use的中间件函数
+    let index = -1 // 记录当前执行位置的游标
+    return dispatch(0) // 从第一个中间件开始，串起所有中间件
     function dispatch (i) {
+      // 为了不破坏洋葱圈模型，不允许在单个中间件中执行多次next函数
       if (i <= index) return Promise.reject(new Error('next() called multiple times'))
-      index = i
-      let fn = middleware[i] // 获取当前传入下标对应的中间件函数
-      if (i === middleware.length) fn = next
+      index = i // 更新游标
+      let fn = middleware[i] // 获取当前传入游标对应的中间件函数
+      if (i === middleware.length) fn = next // // 判断边界，假如已经到到边界了，可执行外部传入的回调
       if (!fn) return Promise.resolve()
       try {
-        // 洋葱模型的触发方式，中间件函数存在，就会执行中间件的处理函数，并传入当前的 context 对象和一个新的 dispatch 函数。这个新的 dispatch 函数的作用是将控制权交给下一个中间件函数。
+        // 核心处理逻辑：进入fn的执行上下文的时候，dispatch就是通过绑定下一个index，变成了next，进入到下一个中间件
         return Promise.resolve(fn(context, dispatch.bind(null, i + 1)))
       } catch (err) {
         return Promise.reject(err)
@@ -310,7 +306,37 @@ ctx.onerror = function {
 4. 对返回做统一处理
 5. 对ctx和全局的error做监听
 
+# 总结：koa洋葱模型怎么实现的？
+`app.use()` 把中间件函数存储在`middleware数组`中，最终会调用`koa-compose`导出的函数compose返回一个`promise`，中间函数的第一个参数`ctx`是包含响应和请求的一个对象，会不断传递给下一个中间件。`next`是一个函数，返回的是一个`promise`。
+
 # Koa和express对比
 
 
 # 简单实现一个洋葱圈模型？
+```js
+function compose (middleware) {
+  // 返回一个匿名函数，next为可选参数
+  return function (context, next) {
+    // 记录当前执行位置的游标
+    let index = -1
+    // 从第一个中间件开始，串起所有中间件
+    return dispatch(0)
+    function dispatch (i) {
+      // 为了不破坏洋葱圈模型，不允许在单个中间件中执行多次next函数
+      if (i &lt;= index) return Promise.reject(new Error('next() called multiple times'))
+      // 更新游标
+      index = i
+      let fn = middleware[i]
+      // 判断边界，假如已经到到边界了，可执行外部传入的回调
+      if (i === middleware.length) fn = next
+      if (!fn) return Promise.resolve()
+      try {
+        // 核心处理逻辑，进入fn的执行上下文的时候，dispatch就是通过绑定下一个index，变成了next，进入到下一个中间件
+        return Promise.resolve(fn(context, dispatch.bind(null, i + 1)))
+      } catch (err) {
+        return Promise.reject(err)
+      }
+    }
+  }
+}
+```

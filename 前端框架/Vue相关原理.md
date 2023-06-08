@@ -6,6 +6,7 @@
       - [对于`Array`来说](#对于array来说)
   - [缺陷](#缺陷)
   - [Vue3.0](#vue30)
+- [diff](#diff)
 
 
 [参考文档](https://tsejx.github.io/vue-guidebook/infrastructure/vue3/reactivity)
@@ -150,3 +151,15 @@ function createReactiveObject(
   return proxy;
 }
 ```
+
+# diff
+diff的过程是调用名为patch的函数，比较新旧节点，一边比较一边给真实DOM打补丁。
+时间复杂度是o（n）
+
+- 在采取diff算法比较新旧节点的时候，比较只会在同层级进行, 不会跨层级比较。
+- 当数据发生改变时，set方法会让消息订阅器Dep去通知所有订阅者Watcher，订阅者就会调用patch函数给真实的DOM打补丁，更新相应的视图
+
+- 同级比较，再比较子节点
+- 先判断一方有子节点一方没有子节点的情况(如果新的children没有子节点，将旧的子节点移除)
+- 比较都有子节点的情况(核心diff)
+- 递归比较子节点
