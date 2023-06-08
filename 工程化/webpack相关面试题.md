@@ -511,6 +511,30 @@ proxy工作原理实质上是利用`http-proxy-middleware` 这个http代理中�
 
 6. 移除废弃特性： Webpack 5移除了一些废弃的特性，比如Loader特性，以便更好地支持新的模块类型。
 
+> tcc项目是用的webpack4版本
 # 如何优化 Webpack 的构建速度？
+- **优化 Loader**：优化 Loader 的文件搜索范围，再将编译过的文件缓存起来。
+- `HappyPack`: 可以将 Loader 的同步执行转换为并行的，这样就能充分利用系统资源来加快打包效率了
+  ```json
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        include: [resolve('src')],
+        exclude: /node_modules/,
+        // id 后面的内容对应下面
+        loader: 'happypack/loader?id=happybabel'
+      }
+    ]
+  },
+  plugins: [
+    new HappyPack({
+      id: 'happybabel',
+      loaders: ['babel-loader?cacheDirectory'],
+      // 开启 4 个线程
+      threads: 4
+    })
+  ]
+  ```
 
 # Babel原理？
