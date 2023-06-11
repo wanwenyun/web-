@@ -77,7 +77,7 @@
 
 - 服务器环境：服务端渲染需要 Node.js 运行环境。
 - 构建工具：需要使用 Webpack 等工具来打包渲染的代码。
-- 渲染引擎：需要使用 React 官方提供的渲染引擎 ReactDOMServer.renderToString() 或者 ReactDOMServer.renderToStaticMarkup() 来进行渲染。
+- 渲染引擎：需要使用 React 官方提供的渲染引擎 `ReactDOMServer.renderToString()` 或者 `ReactDOMServer.renderToStaticMarkup()` 来进行渲染。
 - 路由处理：因为服务端渲染是针对某一个页面进行渲染的，需要服务端也能够正确的解析浏览器地址路由。
 
 ### react 服务端渲染如何处理路由

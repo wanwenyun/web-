@@ -7,8 +7,7 @@
   - [多节点Diff](#多节点diff)
     - [Diff思路](#diff思路)
     - [第一轮遍历](#第一轮遍历)
-    - [第二轮遍历](#第二轮遍历)
-      - [分析`newChildren`与`oldFiber`都没遍历完的情况（处理移动的节点）](#分析newchildren与oldfiber都没遍历完的情况处理移动的节点)
+    - [第二轮遍历 - 处理有节点移动的情况：`newChildren`与`oldFiber`都没遍历完的情况](#第二轮遍历---处理有节点移动的情况newchildren与oldfiber都没遍历完的情况)
 - [总结](#总结)
 
 # 前置知识
@@ -54,7 +53,7 @@ export const Deletion = /*                 */ 0b0000000000100
 
 1. **只对同级元素进行Diff**。如果一个DOM节点在前后两次更新中跨越了层级，那么React不会尝试复用他。
 2. **两个不同类型的元素会产生出不同的树**。如果元素由div变为p，React会销毁div及其子孙节点，并新建p及其子孙节点。
-3. 开发者可以通过 `key prop`来暗示哪些子元素在不同的渲染下能保持稳定。
+3. 开发者可以通过`key`来对元素diff的过程提供复用的线索。
 
   ```js
   // 更新前
@@ -77,6 +76,9 @@ export const Deletion = /*                 */ 0b0000000000100
 ### Diff是如何实现的
 
 我们从Diff的入口函数[`reconcileChildFibers`](https://github.com/facebook/react/blob/1fb18e22ae66fdb1dc127347e169e73948778e5a/packages/react-reconciler/src/ReactChildFiber.new.js#L1280)出发，该函数会根据newChild（即**JSX对象**）类型调用不同的处理函数。
+
+<details>
+<summary>diff算法入口源码</summary>
 
 ```js
 // 根据newChild类型选择不同diff函数处理
@@ -115,6 +117,9 @@ function reconcileChildFibers(
 }
 ```
 
+</details>
+
+
 我们可以从同级的节点数量将Diff分为两类：
 
 1. 当newChild类型为object、number、string，代表同级只有一个节点
@@ -128,11 +133,9 @@ function reconcileChildFibers(
 
 核心在于**如何判断DOM节点是否可以复用？**
 
-1. React通过先判断key是否相同，如果`key`相同，再判断`type`是否相同，只有**都**相同时一个DOM节点才能复用。
-2. key相同，
-   1. type也相同表示可以复用，返回复用的fiber
-   2. type不相同。将该fiber及其兄弟fiber标记为删除
-3. key不同，将该fiber标记为删除`DELETION`
+- `key`和`type`相同表示可以复用节点
+- `key`不同直接标记删除节点，然后新建节点
+- `key`相同`type`不同，标记删除该节点和兄弟节点，然后新创建节点
 
 例题，判断如下JSX对象对应的DOM元素是否可以复用：
 
@@ -203,13 +206,13 @@ function reconcileChildFibers(
 
 在日常开发中，相较于新增和删除，**更新**组件发生的频率更高。所以Diff会**优先**判断当前节点是否属于更新。
 
->在我们做数组相关的算法题时，经常使用双指针从数组头和尾同时遍历以提高效率，但是这里却不行。
+<!-- >在我们做数组相关的算法题时，经常使用双指针从数组头和尾同时遍历以提高效率，但是这里却不行。
 >
 >虽然本次更新的JSX对象 newChildren为数组形式，但是和newChildren中每个组件进行比较的是current fiber，同级的Fiber节点是由sibling指针链接形成的单链表，即不支持双指针遍历。
 >
 >即 newChildren[0]与fiber比较，newChildren[1]与fiber.sibling比较。
 >
->所以无法使用双指针优化。
+>所以无法使用双指针优化。 -->
 
 基于以上原因，`Diff`算法的整体逻辑会经历**两轮遍历**：
 
@@ -221,12 +224,12 @@ function reconcileChildFibers(
 
 **过程如下：**
 
-1. let `i = 0`，遍历newChildren，将`newChildren[i]`与`oldFiber[i]`比较，判断DOM节点是否可复用。
+1. let `i = 0`，遍历newChildren，将`newChildren[i]`与`oldFiber[i]`比较，判断DOM节点**是否可复用**。
 2. 如果**可复用**，`i++`，继续比较`newChildren[i]与oldFiber.sibling`(sibling表示兄弟节点)，可以复用则继续遍历。
 3. 如果**不可复用**，分两种情况
    - `key`不同导致不可复用（属于“节点位置变化”的情况），立即跳出整个遍历，**第一轮遍历结束**。
    - key相同，但`type`不同导致不可复用，会创建一个新的fiber节点且标记为`Placement(插入)`，并将oldFiber标记为`DELETION`(删除)，并继续遍历
-4. 如果newChildren遍历完(即i === newChildren.length - 1)或者oldFiber遍历完(oldFiber.sibling === null)，跳出遍历，**第一轮遍历结束**。
+4. 如果**newChildren遍历完**(即i === newChildren.length - 1)或者**oldFiber遍历完**(oldFiber.sibling === null)，跳出遍历，**第一轮遍历结束**。
 
 **当第一轮遍历结束后，会有两种结果：**
 
@@ -279,23 +282,6 @@ function reconcileChildFibers(
 **总结**
 第一次遍历结束后，会有如下4种情况：
 
-1. newChildren与oldFiber同时遍历完
-
-   <!-- 是最理想的情况：只需在第一轮遍历进行组件更新。此时**Diff结束**。 -->
-2. newChildren没遍历完，oldFiber遍历完：
-
-   <!-- 意味着本次更新有**新节点插入**，我们只需要遍历剩下的newChildren为生成的workInProgress fiber依次标记`Placement`(插入)。 -->
-3. newChildren遍历完，oldFiber没遍历完
-
-   <!-- 意味着本次更新比之前的节点数量少，**有节点被删除了**。所以需要遍历剩下的oldFiber，依次标记`Deletion`(删除)。 -->
-4. newChildren与oldFiber都没遍历完
-
-   <!-- 这意味着有节点在这次**更新中改变了位置**。这是Diff算法最精髓也是最难懂的部分。 -->
-
-### 第二轮遍历
-
-基于第一轮遍历结束后，产生的4种情况。进行第二轮遍历。
-
 1. `newChildren`与`oldFiber`同时遍历完
 
    是最理想的情况：只需在第一轮遍历进行组件更新。此时**Diff结束**。不进行第二次遍历。
@@ -304,7 +290,7 @@ function reconcileChildFibers(
    意味着本次更新有**新节点插入**
 
    **第二次遍历**的工作便是将剩下的newChildren为生成的workInProgress fiber依次标记`Placement`(插入)。
-3. `newChildren`遍历完，`oldFiber没遍历完
+3. `newChildren`遍历完，`oldFiber`没遍历完
 
    意味着本次更新比之前的节点数量少，**有节点被删除了**。
 
@@ -313,7 +299,7 @@ function reconcileChildFibers(
 
    这意味着有节点在这次**更新中改变了位置**。这是Diff算法最精髓也是最难懂的部分。
 
-#### 分析`newChildren`与`oldFiber`都没遍历完的情况（处理移动的节点）
+### 第二轮遍历 - 处理有节点移动的情况：`newChildren`与`oldFiber`都没遍历完的情况
 
 由于有节点在这次**更新中改变了位置**，所以不能再用位置索引`i`对比前后的节点，而要用到`key`。
 
@@ -406,8 +392,10 @@ oldIndex 1 < lastPlacedIndex 3 // 之前节点为 abcd，所以b.index === 1
 则 b节点需要**向右**移动
 ===第二轮遍历结束===
 
-最终acd 3个节点都没有移动，b节点被标记为移动。 // 怎么确定b移动到哪里去呢？
+最终acd 3个节点都没有移动，b节点被标记为移动。
 ```
+
+<img src='./pictures/diff1.png' />
 
 例子2:
 
@@ -475,7 +463,7 @@ oldIndex 2 < lastPlacedIndex 3
 
 ===第二轮遍历结束===
 ```
-
+<img src='./pictures/diff2.png'/>
 可以看到，我们以为从 abcd 变为 dabc，只需要将d**向左**移动到前面。
 
 但实际上React**保持d不变**，将abc分别**向右**移动到了d的后面。

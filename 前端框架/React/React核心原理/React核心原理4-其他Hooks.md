@@ -1,10 +1,8 @@
 - [useState与useReducer](#usestate与usereducer)
 - [useEffct与useLayoutEffect](#useeffct与uselayouteffect)
 - [useRef](#useref)
-  - [介绍](#介绍)
-  - [ref的工作流程](#ref的工作流程)
+  - [为什么使用useRef能够每次拿到新鲜的值？](#为什么使用useref能够每次拿到新鲜的值)
 - [useImperativeHandle](#useimperativehandle)
-- [useMemo与useCallBack](#usememo与usecallback)
 
 # useState与useReducer
 
@@ -44,8 +42,17 @@ ReactDom.render(
 当你点击div时，会出现短暂的闪烁，屏幕上会先出现0，然后出现useEffect中设定数字，但是使用useLayoutEffect则不会出现闪烁的情况，屏幕上会直接显示设定的字。
 
 # useRef
+其作用：
+1. 保存一个值,在整个生命周期中维持不变
+2. 重新赋值ref.current不会触发重新渲染
 
-## 介绍
+## 为什么使用useRef能够每次拿到新鲜的值？
+
+`useRef` 可以存储任意可变的值，而且每次更新组件后，`useRef` 的返回值都会是**同一个对象**。所以在函数组件中，当我们用 `useRef` 来保存一个变量时，即使进行了重新渲染，也只是当前渲染结果下的一个引用，所以可以每次拿到新鲜的值。
+
+还有一个值得注意的地方是，当我们修改 `useRef` 存储的值时，并不会重新渲染组件。
+
+<!-- ## 介绍
 
 `ref`是reference（引用）的缩写。在React中，我们习惯用ref保存`DOM`。
 
@@ -114,10 +121,11 @@ export const Ref = /*                          */ 0b0000000010000000;
    - 对于`mount`，`workInProgress.ref !== null`，即存在ref属性
    - 对于`update`，`current.ref !== workInProgress.ref`，即ref属性改变
 2. `commit`阶段为包含`Ref effectTag`的`fiber`执行对应操作
+ -->
+
 
 # useImperativeHandle
 
 子组件利用`useImperativeHandle`可以让父组件输出任意数据。
 
 
-# useMemo与useCallBack

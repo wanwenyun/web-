@@ -6,12 +6,9 @@
   - [Update与Fiber的联系 - updateQueue](#update与fiber的联系---updatequeue)
   - [updateQueue](#updatequeue)
   - [例子:star:](#例子star)
-- [调度更新，深入理解优先级](#调度更新深入理解优先级)
-  - [如何保证Update不丢失](#如何保证update不丢失)
-  - [如何保证状态依赖的连续性](#如何保证状态依赖的连续性)
+- [如何保证Update不丢失](#如何保证update不丢失)
+- [如何保证状态依赖的连续性](#如何保证状态依赖的连续性)
 - [ReactDOM.render全过程](#reactdomrender全过程)
-  - [全过程](#全过程)
-  - [React应用的三种模式](#react应用的三种模式)
 - [this.setState](#thissetstate)
 
 >[状态更新](https://react.iamkasong.com/state/prepare.html#%E5%87%A0%E4%B8%AA%E5%85%B3%E9%94%AE%E8%8A%82%E7%82%B9)
@@ -57,11 +54,11 @@ commit阶段（`commitRoot`）
 
 在React中，有以下方法可以触发状态的更新：
 
-- ReactDOM.render —— HostRoot
-- this.setState —— ClassComponent
-- this.forceUpdate —— ClassComponent
-- useState —— FunctionComponent
-- useReducer —— FunctionComponent
+- `ReactDOM.render` —— HostRoot
+- `this.setState` —— ClassComponent
+- `this.forceUpdate` —— ClassComponent
+- `useState` —— FunctionComponent
+- `useReducer` —— FunctionComponent
 
 一共三种组件（`HostRoot | ClassComponent | FunctionComponent`）可以触发更新。
 
@@ -172,7 +169,7 @@ fiber.updateQueue: UpdateQueue<State> = {
 };
 ```
 
-更新调度完成后进入**`render`阶段**。此时shared.pending的环被剪开并连接在updateQueue.lastBaseUpdate后面
+更新调度完成后进入 **`render`阶段** 。此时shared.pending的环被剪开并连接在updateQueue.lastBaseUpdate后面
 ```js
 fiber.updateQueue: UpdateQueue<State> = {
   baseState: u1 --> u2 --> u3 --> u4, 
@@ -190,23 +187,8 @@ state的变化在render阶段产生与上次更新不同的JSX对象，通过**D
 
 渲染完成后`workInProgress Fiber`树变为`current Fiber`树，整个更新流程结束。
 
-# 调度更新，深入理解优先级
 
-React根据**人机交互研究的结果**中用户对交互的预期顺序为交互产生的状态更新赋予不同优先级。
-
-具体如下：
-
-1. 生命周期方法：同步执行。
-2. 受控的用户输入：比如输入框内输入文字，同步执行。
-3. 交互事件：比如动画，高优先级执行。
-4. 其他：比如数据请求，低优先级执行。
-
-每当需要调度任务时，React会调用`Scheduler（调度器）`提供的方法runWithPriority。该方法接收一个优先级常量与一个回调函数作为参数。回调函数会以优先级高低为顺序排列在一个定时器中并在合适的时间触发。
-
-比如：
-<img src="./pictures/update-process.png"/>
-
-## 如何保证Update不丢失
+# 如何保证Update不丢失
 
 在render阶段，`shared.pending`的环被剪开并连接在`updateQueue.lastBaseUpdate`后面。
 
@@ -216,7 +198,7 @@ React根据**人机交互研究的结果**中用户对交互的预期顺序为�
 
 当`commit`阶段完成渲染，由于`workInProgress updateQueue.lastBaseUpdate中`保存了上一次的Update，所以 workInProgress Fiber树变成current Fiber树后也不会造成Update丢失。
 
-## 如何保证状态依赖的连续性
+# 如何保证状态依赖的连续性
 
 当某个Update由于优先级低而被跳过时，保存在`baseUpdate`中的不仅是该Update，还包括链表中该Update之后的所有Update。
 
@@ -247,7 +229,6 @@ shared.pending: A1 --> B2 --> C1 --> D2
 
 # ReactDOM.render全过程
 
-## 全过程
 到目前为止，我们终于可以完整的走通ReactDOM.render完成页面渲染的整个流程。
 
 **创建fiber**
@@ -345,16 +326,6 @@ render阶段（`performSyncWorkOnRoot` 或 `performConcurrentWorkOnRoot`）
     v
 commit阶段（`commitRoot`）
 ```
-
-## React应用的三种模式
-
-当前React共有三种模式：
-
-- `legacy`，这是当前React使用的方式。当前没有计划删除本模式，但是这个模式可能不支持一些新功能。 -- 由`ReactDOM.render(<App />, rootNode)`开启
-
-- `blocking`，开启部分concurrent模式特性的中间模式。目前正在实验中。作为迁移到concurrent模式的第一个步骤。 -- 由`ReactDOM.createBlockingRoot(rootNode).render(<App />)`开启
-
-- `concurrent`，面向未来的开发模式。我们之前讲的`任务中断/任务优先级`都是针对`concurrent`模式 -- 由`ReactDOM.createRoot(rootNode).render(<App />)`开启
 
 # this.setState
 

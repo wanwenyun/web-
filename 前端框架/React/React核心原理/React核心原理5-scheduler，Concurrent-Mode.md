@@ -13,13 +13,17 @@
 
 # 前言：React应用的三种模式
 
-当前React共有三种模式：
+当前React共有三种渲染模式：
 
-- `legacy`，这是当前React使用的方式。当前没有计划删除本模式，但是这个模式可能不支持一些新功能。 -- 由`ReactDOM.render(<App />, rootNode)`开启
+- `legacy`，这是当前React使用的方式。当前没有计划删除本模式，但是这个模式可能不支持一些新功能。 -- 由`ReactDOM.render(<App />, rootNode)`开启。
+  - 在该模式下，React使用**同步**的渲染方式，一旦开始渲染，将中断渲染其他任务和事件处理，直到渲染完成并提交 DOM 后再返回控制权。
 
-- `blocking`，开启部分concurrent模式特性的中间模式。目前正在实验中。作为迁移到concurrent模式的第一个步骤。 -- 由`ReactDOM.createBlockingRoot(rootNode).render(<App />)`开启
+- `blocking`，开启部分concurrent模式特性的中间模式。目前正在实验中。作为迁移到concurrent模式的第一个步骤。 -- 由`ReactDOM.createBlockingRoot(rootNode).render(<App />)`开启。
+  - 也称为异步模式，在该模式下，React会将渲染任务拆分成**多个小任务**，在每个小任务中交错执行渲染和浏览器事件处理，从而保证在渲染过程中不会阻塞用户事件的处理。
 
-- `concurrent`，面向未来的开发模式。我们之前讲的`任务中断/任务优先级`都是针对`concurrent`模式 -- 由`ReactDOM.createRoot(rootNode).render(<App />)`开启
+- `concurrent`，面向未来的开发模式。我们之前讲的`任务中断/任务优先级`都是针对`concurrent`模式 -- 由`ReactDOM.createRoot(rootNode).render(<App />)`开启。
+  - 是异步模式，在该模式下，React会根据**优先级**对不同任务进行排序，并进行部分渲染，以尽快实现内容的展示。
+  - 在此基础上，还可以**中断渲染以响应更高优先级的任务**，以此保证了用户交互的流畅性。
   
 
 

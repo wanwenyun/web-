@@ -1,18 +1,14 @@
 - [React生命周期](#react生命周期)
 - [专业术语解释， render阶段、commit阶段等与总结 :heavy\_exclamation\_mark](#专业术语解释-render阶段commit阶段等与总结-heavy_exclamation_mark)
-- [Render阶段 :heavy\_exclamation\_mark](#render阶段-heavy_exclamation_mark)
+- [Render阶段 :heavy\_exclamation\_mark:](#render阶段-heavy_exclamation_mark)
   - [流程概览](#流程概览)
-    - [“递”阶段 -- beginWork](#递阶段----beginwork)
-    - [“归”阶段 -- completeWork](#归阶段----completework)
-    - [例子](#例子)
   - [“递”阶段 - beginWork](#递阶段---beginwork)
     - [reconcileChildren](#reconcilechildren)
     - [effectTag](#effecttag)
-    - [总结](#总结)
   - ["归"阶段 - completeWork](#归阶段---completework)
-    - [HostComponen如何处理](#hostcomponen如何处理)
+    - [假设进入了HostComponent](#假设进入了hostcomponent)
     - [`effectList`](#effectlist)
-    - [总结](#总结-1)
+  - [Render阶段：beginWork-completeWork工作流程总结](#render阶段beginwork-completework工作流程总结)
 - [commit阶段](#commit阶段)
   - [before mutation阶段（执行DOM操作前）](#before-mutation阶段执行dom操作前)
   - [mutation阶段（执行DOM操作）](#mutation阶段执行dom操作)
@@ -29,37 +25,19 @@
 
 [参考链接](https://github.com/mbaxszy7/blog/issues/16)
 
-- **Render阶段 -- 确定更新细节**
-  - **在render阶段，React将**更新**应用于通过`setState或render`方法触发的组件，并确定需要在用户屏幕上做哪些更新--哪些节点需要插入，更新或删除，哪些组件需要调用其生命周期方法**。
-  - 最终的这些更新信息被保存在一个叫`effect list`的`fiber` 节点树上
-  - 当然，在首次渲染时，React不需要产生任何更新信息，而是会给每个从render方法返回的element生成一个fiber节点，最终生成一个fiber节点树， 后续的更新也是复用了这棵fiber树。
-- **Commit阶段 -- 将更新作用到Dom树上**
-  - 在这个阶段时，React内部会有2个fiber树和一个list：
-    1. `current fiber tree`: 表示`显示内容`对应的Fiber树。在首次渲染时，React不需要产生任何更新信息，而是会给每个从render方法返回的element生成一个fiber节点，最终生成一个fiber节点树， 后续的更新也是复用了这棵fiber树。
-    2. `workInProgress fiber tree`: 表示`正在内存中构建`的Fiber树。所有的更新计算工作都在workInProgress tree的fiber上执行。当React 遍历current fiber tree时，它为每个current fiber 创建一个替代（alternate）节点，这样的alternate节点构成了workInProgress tree
-    3. `effect list`: 是workInProgress fiber tree 的子树，它的作用是串联了标记具有更新的节点
-  - **Commit阶段会遍历effect list，把所有更新都commit到`DOM树`上**。具体如下
-    1. 首先会有一个pre-commit阶段，主要是执行`getSnapshotBeforeUpdate`方法，可以获取当前DOM的快照（snap）
-    2. 然后给需要卸载的组件执行componentWillUnmount方法
-    3. 接着会把current fiber tree 替换为workInProgress fiber tree
-    4. 最后执行DOM的插入、更新和删除，给更新的组件执行componentDidUpdate，给插入的组件执行componentDidMount
-  - 重点要注意的是，这一阶段是**同步执行的，不能中止**。
-
-----
-
 - `Scheduler（调度器）`—— 调度任务的优先级，高优任务优先进入Reconciler。会在浏览器空闲时触发回调的功能，还会执行其他操作。Scheduler是一个独立于React的包
 - `Reconciler（协调器）`—— **负责找出变化的组件，确定更新细节**。在此引用了`Fiber架构`，目的是为了实现将**同步**的更新变为**可中断的异步**更新。其工作的阶段被称为`render阶段`。因为在该阶段会调用组件的render方法。
 - `Renderer（渲染器）`—— 负责将变化的组件渲染到页面上其工作的阶段被称为`commit阶段`。commit阶段会把render阶段提交的信息**渲染**在页面上。
 
 render与commit阶段统称为`work`，即React在工作中。相对应的，如果任务正在`Scheduler(调度器)`内调度，就不属于work。
 
-# Render阶段 :heavy_exclamation_mark
+# Render阶段 :heavy_exclamation_mark:
 
-本章我们会讲解`Fiber节点`是如何被创建并构建`Fiber树`的。
+render阶段的主要工作是**构建Fiber树**和生成**effectList**。
 
 ## 流程概览
 
-在`render`阶段，React将更新应用于通过setState或render方法触发的组件，并确定需要在用户屏幕上做哪些更新--哪些节点需要插入，更新或删除，哪些组件需要调用其生命周期方法。
+在`render`阶段，React将更新应用于通过setState或render方法触发的组件，**并确定需要在用户屏幕上做哪些更新--哪些节点需要插入，更新或删除，哪些组件需要调用其生命周期方法**。
 
 `render阶段`开始于`performSyncWorkOnRoot`或`performConcurrentWorkOnRoot`方法的调用。这取决于本次更新是同步更新还是异步更新。
 
@@ -81,22 +59,22 @@ function workLoopConcurrent() {
 
 `performUnitOfWork`方法会创建下一个`Fiber节点`并赋值给`workInProgress`，并将workInProgress与已创建的Fiber节点连接起来构成Fiber树。
 
-Fiber Reconciler(协调器)通过遍历的方式实现可中断的递归，所以`performUnitOfWork`的工作可以分为两部分：`“递”和“归”`。
+Fiber Reconciler(协调器)通过遍历的方式实现可中断的递归，所以`performUnitOfWork`的工作可以分为两部分：`“递”和“归”`（深度优先遍历）。
 
-### “递”阶段 -- beginWork
+**其遍历过程如下：**
 
-- 首先从`rootFiber`开始向下**深度**优先遍历。为遍历到的每个Fiber节点调用`beginWork方法`。:clap: -- 该方法会根据传入的Fiber节点创建子Fiber节点，并将这两个Fiber节点连接起来。
-- 当遍历到叶子节点（即没有子组件的组件）时就会进入“归”阶段。
+-“递”阶段 -- beginWork
+  - 首先从`rootFiber`开始向下**深度**优先遍历。为遍历到的每个Fiber节点调用`beginWork方法`。:clap: -- 该方法会根据传入的Fiber节点创建**子Fiber节点**，并将这两个Fiber节点连接起来。
+  - 当遍历到叶子节点（即没有子组件的组件）时就会进入“归”阶段。
+- “归”阶段 -- completeWork
+  - 在“归”阶段会调用`completeWork`处理Fiber节点。:clap:
+  - 当某个Fiber节点执行完completeWork，如果其存在兄弟Fiber节点（即fiber.sibling !== null），会进入其`兄弟Fiber`的`递`阶段。
+  - 如果不存在兄弟Fiber，会进入`父级Fiber`的`归`阶段。
+  - `递`和`归`阶段会交错执行直到“归”到rootFiber。至此，render阶段的工作就结束了。
 
-### “归”阶段 -- completeWork
 
-- 在“归”阶段会调用`completeWork`处理Fiber节点。:clap:
-- 当某个Fiber节点执行完completeWork，如果其存在兄弟Fiber节点（即fiber.sibling !== null），会进入其`兄弟Fiber`的`递`阶段。
-- 如果不存在兄弟Fiber，会进入`父级Fiber`的`归`阶段。
-- `递`和`归`阶段会交错执行直到“归”到rootFiber。至此，render阶段的工作就结束了。
 
-### 例子
-
+**例子：**
 ```js
 function App() {
   return (
@@ -126,6 +104,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 9. App Fiber completeWork
 10. rootFiber completeWork
 ```
+  
 
 ## “递”阶段 - beginWork
 
@@ -137,7 +116,13 @@ beginWork的工作可以分为两部分：
 
 - **update时**：如果`current`存在，在**满足一定条件时可以复用current节点**，这样就能克隆current.child作为workInProgress.child，而不需要新建workInProgress.child。
 - **mount时**：除`fiberRootNode`以外，current === null。会根据`fiber.tag（组件类型，类组件、函数组件...）`不同，进入不同类型Fiber的创建逻辑。根据不同的tag，来创建当前fiber节点的第一个`子Fiber节点`。
-  
+
+
+对于我们常见的组件类型，如（FunctionComponent/ClassComponent/HostComponent），最终会进入`reconcileChildren`方法。
+
+<details>
+<summary>源码</summary>
+
 ```js
 function beginWork(
   current: Fiber | null, //当前组件对应的Fiber节点在上一次更新时的Fiber节点，即workInProgress.alternate
@@ -180,7 +165,8 @@ function beginWork(
 }
 ```
 
-对于我们常见的组件类型，如（FunctionComponent/ClassComponent/HostComponent），最终会进入`reconcileChildren`方法。
+</details>
+
 
 ### reconcileChildren
   
@@ -207,15 +193,16 @@ function beginWork(
   ...
   ```
 
-### 总结
-
-`beginWork`的工作是传入`当前Fiber`节点，根据`fiber.tag`来创建其`子Fiber`节点。并为Fiber节点带上`effectTag`属性。
-
-<img src='./pictures/beginWork.png'/>
 
 ## "归"阶段 - completeWork
 
+`completeWork`主要工作是处理fiber的`props`、创建`对应的dom节点`并为其添加`副作用（efftctTag）`标识、创建`effectList`。
+
+
 `completeWork`也是针对不同`fiber.tag(组件类型，类组件、函数组件...）`调用不同的处理逻辑。
+
+<details>
+<summary>源码</summary>
 
 ```js
 function completeWork(
@@ -253,7 +240,9 @@ function completeWork(
   // ...省略
 ```
 
-### HostComponen如何处理
+</details>
+
+### 假设进入了HostComponent
 
 我们重点关注页面渲染所必须的`HostComponent`（即原生DOM组件对应的Fiber节点）
 
@@ -265,20 +254,20 @@ function completeWork(
   - 处理DANGEROUSLY_SET_INNER_HTML prop
   - 处理children prop
   
-  ```js
-  if (current !== null && workInProgress.stateNode != null) {
-    // update的情况
-    updateHostComponent(
-      current,
-      workInProgress,
-      type,
-      newProps,
-      rootContainerInstance,
-    );
-  }
-  ```
+    ```js
+    if (current !== null && workInProgress.stateNode != null) {
+      // update的情况
+      updateHostComponent(
+        current,
+        workInProgress,
+        type,
+        newProps,
+        rootContainerInstance,
+      );
+    }
+    ```
 
-  在`updateHostComponent`内部，被处理完的props会被赋值给`workInProgress.updateQueue`，并最终会在`commit阶段`被渲染在页面上。
+    在`updateHostComponent`内部，被处理完的props会被赋值给`workInProgress.updateQueue`，并最终会在`commit阶段`被渲染在页面上。
 - `mount`时：主要有以下三个逻辑
   - 为Fiber节点生成对应的`DOM节点`
   - 将子孙DOM节点插入刚生成的DOM节点中
@@ -301,17 +290,25 @@ rootFiber.firstEffect -----------> fiber -----------> fiber
 
 这样，在`commit阶段`只需要遍历`effectList`就能执行所有`effect`了。
 
-### 总结
 
-completeWork的目的就是为了`创建对应的dom节点`插入对应的`父级节点`的dom节点, 为其添加`副作用`标识。
+## Render阶段：beginWork-completeWork工作流程总结
+render阶段的主要工作是**构建Fiber树**和生成**effectList**。
 
-<img src='./pictures/completeWork.png'/>
+- `beginWork`的工作是传入`当前Fiber`节点，根据`fiber.tag`来创建其`子Fiber`节点。并为Fiber节点带上`effectTag`属性。
+- `completeWork`主要工作是处理fiber的`props`、创建`对应的dom节点`并为其添加`副作用（efftctTag）`标识、创建`effectList`。
+
+`render阶段`开始于`performSyncWorkOnRoot`或`performConcurrentWorkOnRoot`方法的调用。这取决于本次更新是同步更新还是异步更新。
+
+<img src='./pictures/render.png' />
 
 # commit阶段
 
-在`rootFiber.firstEffect`上保存了一条`需要执行副作用`的Fiber节点的单向链表effectList，这些Fiber节点的`updateQueue`中保存了变化的props。
 
-一些`副作用`对应的DOM操作、一些生命周期钩子（componentDidXXX）、某些hook（useEffect）都在commit阶段执行
+在render阶段的末尾会调用`commitRoot(root)`进入commit阶段
+
+
+- 会遍历render阶段生成的`effectList`(effectList单向链表上的Fiber节点保存着对应的props变化)。
+- 之后进行对应的`dom操作`和`生命周期`、`hooks回调`或`销毁
 
 commit阶段的主要工作（即Renderer的工作流程）分为三部分：
 
@@ -329,7 +326,7 @@ commit阶段的主要工作（即Renderer的工作流程）分为三部分：
 
 ## before mutation阶段（执行DOM操作前）
 
-在before mutation阶段，会遍历`effectList`（保存effectTag的单向链表），并调用`commitBeforeMutationEffects`函数，依次执行：
+在before mutation阶段，会遍历`effectList`（保存effectTag的单向链表），并调用`commitBeforeMutationEffects()`函数，依次执行：
 
 1. 处理DOM节点渲染/删除后的 autoFocus、blur逻辑
 2. 调用`getSnapshotBeforeUpdate`生命周期钩子
@@ -352,7 +349,7 @@ commit阶段的主要工作（即Renderer的工作流程）分为三部分：
 
 ## mutation阶段（执行DOM操作）
 
-mutation阶段会遍历 `effectList`，依次执行`commitMutationEffects`。该方法的主要工作为根据`effectTag`调用不同的处理函数`处理Fiber`，执行DOM操作。
+mutation阶段会遍历 `effectList`，依次执行`commitMutationEffects()`。该方法的主要工作为根据`effectTag`调用不同的处理函数`处理Fiber`，执行DOM操作。
 
 对每个`Fiber`节点执行如下三个操作：
 
@@ -398,7 +395,7 @@ mutation阶段会遍历 `effectList`，依次执行`commitMutationEffects`。该
 
 ## layout阶段（执行DOM操作后）
 
-layout阶段也会遍历 `effectList`，依次执行`commitLayoutEffects`。该方法的主要工作为根据`effectTag`调用不同的处理函数`处理Fiber`并更新`ref`。
+layout阶段也会遍历 `effectList`，依次执行`commitLayoutEffects()`。该方法的主要工作为根据`effectTag`调用不同的处理函数`处理Fiber`并更新`ref`。
 
 `commitLayoutEffects`一共做了两件事：
 
@@ -412,7 +409,7 @@ layout阶段也会遍历 `effectList`，依次执行`commitLayoutEffects`。该�
        });
        ```
 
-    - 对于`FunctionComponent`及`相关类型`，他会调用`useLayoutEffect hook`的回调函数，调度`useEffect`的销毁与回调函数
+    - 对于`FunctionComponent`及`相关类型`，他会调用`useLayoutEffect hook`的回调函数
         > `相关类型`指特殊处理后的FunctionComponent，比如ForwardRef、React.memo包裹的FunctionComponent
 2. `commitAttachRef`（赋值 ref）: **获取DOM实例，更新ref**
 
