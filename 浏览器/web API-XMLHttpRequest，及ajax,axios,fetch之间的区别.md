@@ -5,7 +5,7 @@
     - [第二步：为 xhr 对象注册回调函数](#第二步为-xhr-对象注册回调函数)
     - [第三步：配置基础的请求信息](#第三步配置基础的请求信息)
     - [第四步：发起请求](#第四步发起请求)
-  - [XMLHttpRequest 三个重要的属性:onreadystatechange, readyState, status](#xmlhttprequest-三个重要的属性onreadystatechange-readystate-status)
+  - [XMLHttpRequest 4个重要的属性:onreadystatechange, readyState, status，withCredentials](#xmlhttprequest-4个重要的属性onreadystatechange-readystate-statuswithcredentials)
   - [XMLHttpRequest 使用过程中的“坑”](#xmlhttprequest-使用过程中的坑)
 - [Ajax](#ajax)
 - [Axios](#axios)
@@ -129,10 +129,11 @@ XMLHttpRequest 的回调函数主要有下面几种：
 * 如果超时了，就会执行 xhr.ontimeout；
 * 如果是正常的数据接收，就会执行 `onreadystatechange` 来反馈相应的状态。
 
-## XMLHttpRequest 三个重要的属性:onreadystatechange, readyState, status
+## XMLHttpRequest 4个重要的属性:onreadystatechange, readyState, status，withCredentials
 
 <img src="./picture/webAPI/pic2.png"/>
-
+- `withCredentials`：指定在涉及到**跨域请求**的时候，是否携带`cookie`信息，默认值为false。(写在客户端)
+  
 ## XMLHttpRequest 使用过程中的“坑”
 
 1. 跨域问题 (然如何解决跨域问题，相见[《安全-页面安全(跨域，网站攻击)》](../浏览器/安全-页面安全(跨域，网站攻击))章节)

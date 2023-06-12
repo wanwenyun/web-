@@ -1,3 +1,4 @@
+- [模块化相关的知识：](#模块化相关的知识)
 - [webpack的作用是什么？](#webpack的作用是什么)
 - [webpack核心概念](#webpack核心概念)
   - [Entry](#entry)
@@ -15,11 +16,11 @@
 - [webpack打包流程？](#webpack打包流程)
 - [如何理解module，chunk 和 bundle？](#如何理解modulechunk-和-bundle)
 - [sourceMap是什么？](#sourcemap是什么)
-- [Webpack热更新HMR（存疑，待细看)](#webpack热更新hmr存疑待细看)
 - [Webpack Proxy工作原理 (webpack-dev-server)](#webpack-proxy工作原理-webpack-dev-server)
   - [浏览器跨域判定的原理](#浏览器跨域判定的原理)
   - [webpack proxy原理](#webpack-proxy原理)
   - [实际项目举例](#实际项目举例)
+- [Webpack热更新HMR](#webpack热更新hmr)
 - [如何借助Webpack来优化性能？](#如何借助webpack来优化性能)
 - [webpack5 和 4 的区别？](#webpack5-和-4-的区别)
 - [如何优化 Webpack 的构建速度？](#如何优化-webpack-的构建速度)
@@ -33,7 +34,7 @@
 > [姜瑞涛：webpack教程](https://www.jiangruitao.com/webpack)
 
 
-## 模块化相关的知识：
+# 模块化相关的知识：
 
 Webpack支持`ES6 Module`、`CommonJS`和`AMD`等模块化方法，目前常用的是ES6 Module和CommonJS。
 - `ES6 Module`通过`export`导出模块，`import … from '…'`或`import '…'`导入模块。
@@ -91,14 +92,14 @@ entry：它有三种形式的值:
     mode: 'none'
   };
   ```
-  上方的配置分别从两个入口文件打包，每个入口文件自寻找自己依赖的文件模块打包成一个JS文件，最终得两个JS文件。
+  上方的配置分别从两个入口`app`，`vendor`文件打包，每个入口文件自寻找自己依赖的文件模块打包成一个JS文件，最终得两个JS文件。
 
 ## Output
 output 属性告诉 webpack 在哪里输出它所创建的 bundles， 以及如何命名这些文件,默认值为 ./dist。
-也就是说，output定义了打包的`输出`。
+也就是说，output定义了打包的`输出`。output对象有`filename、path、publicPath`属性
 
 ### filename
-filename有以下几种形式：
+filename表示输出的文件名，有以下几种形式：
 - **字符串**表示**资源名称**，如`bundle.js`
 - **相对地址**，例如`./js/bundljs`。
 - filename支持类似变量的方式生成**动态文件名**
@@ -163,7 +164,7 @@ output中的publicPath表示的是资源访问路径。
 path和publicPath的区别：
 
 * path(资源输出位置)：表示的是本次打包完成后，资源存放的磁盘位置。是一个本地路径
-* publicPath(资源访问路径)：代表的是，之后要引入的js css 这些的路径`前缀`。一般来说会写cdn的url。
+* publicPath(资源访问路径)：代表的是，之后要引入的js css 这些的路径`前缀`。一般来说会写**cdn的url**。
 
 publicPath的表现形式有两类：`相对路径和绝对路径`
 
@@ -232,7 +233,11 @@ module.exports = {
 };
 ```
 
-Plugin从本质上来说，就是一个具有apply方法Javascript对象。apply 方法会被 webpack compiler 调用，并且在整个编译生命周期都可以访问 compiler 对象。
+Plugin从本质上来说，就是一个具有`apply`方法Javascript对象。apply 方法会被 webpack compiler 调用，并且在整个编译生命周期都可以访问 `compiler` 对象。
+
+Webpack编译会创建两个核心对象：`compiler和compilation`。
+* `compiler`：包含了 Webpack 环境的所有的配置信息，包括 options，loader 和 plugin，和 webpack 整个生命周期相关的钩子.这个对象在 Webpack 启动时候被实例化，它是**全局唯一**的，可以简单地把它理解为 **Webpack 实例**
+* `compilation`：作为 Plugin 内置事件回调函数的参数，包含了当前的**模块资源、编译生成资源、变化的文件以及被跟踪依赖的状态信息**。当检测到一个文件变化，一次新的 Compilation 将被创建。
 
 
 常用的plugin有:
@@ -248,32 +253,48 @@ Plugin从本质上来说，就是一个具有apply方法Javascript对象。apply
 
 >PS：loader是翻译官，plugin是干活滴
 ### 自定义Loader
-Loader本质上来说就是一个函数，函数中的 this 作为上下文会被 webpack 填充，因此我们不能将 loader设为一个箭头函数。该函数接受一个参数，为 webpack 传递给 loader 的文件源内容。
+Loader本质上来说就是一个函数，函数中的 this 作为上下文会被 webpack 填充，因此我们**不能将 loader设为一个箭头函数**。该函数接受一个参数，即 webpack 传递给 loader 的文件源内容。**该函数的工作就是获得处理前的源内容，对源内容进行处理后，返回处理后的内容**。
 
-函数中有异步操作或同步操作，异步操作通过 this.callback 返回，返回值要求为 string 或者 Buffer，如下。
+loader 有两种方式返回处理后的内容：
+1. **return source**
+    ```js
+    module.exports = function (source) {
+      // 处理 source ...
+      const content = source.replace("hello", "哈哈");
+      // 如果 loader 配置了 options 对象，那么this.query将指向 options
+      const options = this.query;
+      return content;
+    }
+    ```
 
-```js
-// 导出一个函数，source为webpack传递给loader的文件源内容
-module.exports = function(source) {
-    const content = doSomeThing2JsString(source);
-    
-    // 如果 loader 配置了 options 对象，那么this.query将指向 options
-    const options = this.query;
-    
-    // 可以用作解析其他模块路径的上下文
-    console.log('this.context');
-    
-    /*
-     * this.callback 参数：
-     * error：Error | null，当 loader 出错时向外抛出一个 error
-     * content：String | Buffer，经过 loader 编译后需要导出的内容
-     * sourceMap：为方便调试生成的编译后内容的 source map
-     * ast：本次编译生成的 AST 静态语法树，之后执行的 loader 可以直接使用这个 AST，进而省去重复生成 AST 的过程
-     */
-    this.callback(null, content); // 异步
-    return content; // 同步
-}
-```
+2. **this.callback()**，this.callback 是 webpack 给 loader 注入的 API，方便 loader 和 webpack之间通信。
+   ```js
+    module.exports = function (source) {
+     // 处理 source
+      const content = source.replace("hello", "哈哈");
+      // 如果 loader 配置了 options 对象，那么this.query将指向 options
+      const options = this.query;
+      // 使用 this.callback 返回内容
+      this.callback(null, content);
+      // 使用 this.callback 返回内容时，该 loader 必须返回    undefined，
+      // 以让 Webpack 知道该 loader 返回的结果在 this.callback 中，而不是 return 中 
+      return
+    };
+   ```
+   `this.callback` 的详细用法如下：
+   ```js
+   this.callback(
+       // 当无法转换源内容时，给 Webpack 返回一个 Error
+       err: Error | null,
+       // 源内容转换后的内容
+       content: string | Buffer,
+       // 用于把转换后的内容得出原内容的 Source Map，方便调试
+       sourceMap?: SourceMap,
+       // 如果本次转换为原内容生成了 AST 语法树，可以把这个 AST 返回，
+       // 以方便之后需要 AST 的 Loader 复用该 AST，以避免重复生成 AST，提升性能
+       abstractSyntaxTree?: AST
+   );
+   ```
 
 ### 自定义Plugin
 Webpack编译会创建两个核心对象：`compiler和compilation`。
@@ -333,57 +354,6 @@ sourceMap是**一项将编译、打包、压缩后的代码映射回源代码的
 <img src="./picture/webpack/devtool.png" width=60%/>
 
 
-# Webpack热更新HMR（存疑，待细看)
-
->https://zhuanlan.zhihu.com/p/30669007
-
-Webpack的热更新（Hot Module Replacement），缩写为`HMR`。这个机制可以做到不用刷新浏览器而将新变更的模块替换掉旧的模块。
-
-在Webpack中配置开启热模块也非常的简单，只需要添加如下代码即可。
-```js
-const webpack = require('webpack')
-module.exports = {
-  // ...
-  devServer: {
-    hot: true // 开启 HMR 特性
-    // hotOnly: true
-  }
-}
-```
-
-<!-- webpack热更新步骤如下：
-1. 通过webpack-dev-server创建两个服务器：提供静态资源的服务（express server）和Socket服务
-    * `express server` 负责直接提供静态资源的服务（打包后的资源直接被浏览器请求和解析）
-    * `socket server` 是一个 websocket 的长连接，双方可以通信
-2. 当 socket server 监听到对应的模块发生变化时，会生成两个文件.json（manifest文件）和.js文件（update chunk）
-3. 通过长连接，socket server 可以直接将这两个文件主动发送给客户端（浏览器）
-4. 浏览器拿到两个新的文件后，通过`HMR runtime机制`，加载这两个文件，并且针对修改的模块进行更新
-
-<img src='./picture/webpack/HMR.png' width=80%/>
-
-* `Webpack Compile`：将 JS 源代码编译成 bundle.js
-* `HMR Server`：用来将热更新的文件输出给 HMR Runtime
-* `Bundle Server`：静态资源文件服务器，提供文件访问路径
-* `HMR Runtime`：socket服务器，会被注入到浏览器，更新文件的变化
-* `bundle.js`：构建输出的文件
-* 在HMR Runtime 和 HMR Server之间建立 `websocket`，即图上4号线，用于实时更新文件变化 -->
-
-webpack热更新流程如下：
-图是webpack 配合 webpack-dev-server 进行应用开发的模块热更新流程图。
- <img src='./picture/webpack/HMR-new.png' width=80%/>
-
-其中：
-- 红色框内是服务端，橙色框是浏览器端。
-- 绿色的方框是 webpack 代码控制的区域。蓝色方框是 webpack-dev-server 代码控制的区域，洋红色的方框是文件系统，文件修改后的变化就发生在这，而青色的方框是应用本身。
-
-1. 第一步，在 webpack 的 watch 模式下，文件（代码文件）发生修改，webpack 监听到文件变化，根据配置文件对模块重新编译打包，并将打包后的代码通过JS对象保存在**内存**中。
-2. 第二步，是 `webpack-dev-server` 和 webpack 之间的接口交互，具体是dev-server 的中间件 `webpack-dev-middleware` 和 `webpack` 之间的交互，中间间用 webpack 暴露的 API对代码变化进行监控，并且告诉 webpack，将代码打包到内存中。
-3. 第三步是 `webpack-dev-server` 对文件（静态文件，与第一步监控不同）变化的一个监控。当配置文件中的devServer.watchContentBase 为 true 的时，Server 会监听这些配置文件夹中静态文件的变化，通知浏览器端对应用进行 `live reload`。注意，这儿是**浏览器刷新**，和 HMR 是两个概念。
-4. 第四步,通过 `sockjs`（`webpack-dev-server `的依赖）在浏览器端和服务端之间建立一个 **websocket 长连接**，将 webpack 编译打包的各个阶段的状态信息告知浏览器端，同时也包括第三步中 Server 监听静态文件变化的信息。浏览器端根据这些 socket 消息进行不同的操作。当然服务端传递的最主要信息还是新模块的 `hash` 值，后面的步骤根据这一 hash 值来进行模块热替换。
-5. 第五步，由于webpack-dev-server/client 端并不能够请求更新的代码，也不会执行热更模块操作，所以把这些工作又交回给了 webpack。`webpack/hot/dev-server`根据 webpack-dev-server/client 传给它的信息以及 dev-server 的配置决定是刷新浏览器呢还是进行模块热更新。
-6. 第六步，`HotModuleReplacement.runtime` 是客户端 HMR 的中枢，它接收到上一步传递给他的新模块的 hash 值，它通过 `JsonpMainTemplate.runtime `向 server 端发送 `Ajax` 请求，服务端返回一个 json，该 json 包含了所有要更新的模块的 hash 值，获取到更新列表后，该模块再次通过 `jsonp` 请求，获取到最新的模块代码。这就是上图中 7、8、9 步骤。
-7. 第十步，`HotModulePlugin` 将会对新旧模块进行对比，决定是否更新模块，在决定更新模块后，检查模块之间的依赖关系，更新模块的同时更新模块间的依赖引用。
-8. 最后一步，当 HMR 失败后，回退到 `live reload` 操作，也就是进行**浏览器刷新**来获取最新打包代码。
 
 
 # Webpack Proxy工作原理 (webpack-dev-server)
@@ -425,13 +395,13 @@ module.exports = {
 1. **浏览器**先根据同源策略对前端页面和后台交互地址做匹配，
    * 若同源，则直接发送数据请求。
    * 若不同源，则发送跨域请求，浏览器会在请求的http header中加上一个 `Origin`字段，标明这个请求是从哪里发出来的。例如：`Origin: http://www.wanwan.com`
-2. 服务器解析程序收到浏览器**跨域请求**后，如果服务器认为这个请求可以接受，就在 Access-Control-Allow-Origin 头部中回发相同的源信息， 如`Access-Control-Allow-Origin：http://www.wanwan.com`。（如果是公共资源，可回发`*`）
+2. 服务器解析程序收到浏览器**跨域请求**后，如果服务器认为这个请求可以接受，就在 `Access-Control-Allow-Origin` 头部中回发相同的源信息， 如`Access-Control-Allow-Origin：http://www.wanwan.com`。（如果是公共资源，可回发`*`）
 3. 浏览器收到服务器的响应后，根据接受到的响应头里的`Access-Control-Allow-origin`字段与**当前域名**做匹配，浏览器就会驳回请求。正常情况下，浏览器会处理请求。
 4. 注意，请求和响应都不包含 cookie 信息。
 
    
 
-PS：如果需要包含 `cookie` 信息，ajax 请求需要设置 xhr 的属性 `withCredentials` 为 true，服务器需要设置响应头部 `Access-Control-Allow-Credentials`: true。
+> PS：如果需要包含 `cookie` 信息，ajax 请求需要设置 xhr 的属性 `withCredentials` 为 true，服务器需要设置响应头部 `Access-Control-Allow-Credentials`: true。
 
 
 
@@ -473,9 +443,70 @@ proxy工作原理实质上是利用`http-proxy-middleware` 这个http代理中�
         // ...
     }
    ```
-4. 在第2步骤的基础上，由前端页面发送请求获取列表信息（`http://localhost:3000/api/getList`），此时前端页面(`http://localhost:3000`)和后台交互地址（`http://localhost:3000/api`）是**同源**(协议，域名，端口均一致)的，因此会直接把请求发生出去。
+4. 在第2步骤的基础上，由前端页面发送请求获取列表信息（`http://localhost:3003/api/getList`），此时前端页面(`http://localhost:3003`)和后台交互地址（`http://localhost:3003/api`）是**同源**(协议，域名，端口均一致)的，因此会直接把请求发生出去。
 5. 请求发生出去之后，会被webpack proxy拦截，匹配到了`api`标识，因此会按照第3步配置（`target`），将请求转发到真正的后台服务器上，也就是`http://localhost:3000`上。
 6. 后台服务器收到请求后进行处理，并将响应返回。webpack proxy会再次拦截，但proxy不会改变请求头中的任何信息。所以浏览器收到proxy返回的请求响应时，还是认为该响应是来自于**同源**服务器的。因此不会有跨域问题，可以正常的发送请求和接受响应。
+
+
+# Webpack热更新HMR
+
+>https://zhuanlan.zhihu.com/p/30669007
+
+Webpack的热更新（Hot Module Replacement），缩写为`HMR`。这个机制可以做到不用刷新浏览器而将新变更的模块替换掉旧的模块。
+
+webpack-dev-server 提供了实时重加载的功能，但是不能局部刷新。需借助了HotModuleReplacementPlugin。
+
+
+**如何开启热更新？**
+```js
+const webpack = require('webpack')
+module.exports = {
+  // ...
+  devServer: {
+    hot: true // 开启 HMR 特性
+    // hotOnly: true
+  }
+}
+```
+
+**关于webpack-dev-server**:
+webpack-dev-server 主要包含了三个部分：
+1. webpack: 负责编译代码
+2. webpack-dev-middleware: 主要负责构建内存文件系统，把webpack的 OutputFileSystem 替换成 InMemoryFileSystem。同时作为Express的中间件拦截请求，从内存文件系统中把结果拿出来。
+3. express：负责搭建请求路由服务。
+
+**工作流程**:
+1. 启动dev-server，webpack开始构建，在编译期间会向 entry 文件注入热更新代码；
+2. Client 首次打开后，Server 和 Client 基于Socket建立通讯渠道；
+3. 修改文件，Server 端监听文件发送变动，webpack开始编译，直到编译完成会触发"Done"事件；
+4. Server通过socket 发送消息告知 Client；
+5. Client根据Server的消息（hash值和state状态），通过ajax请求获取 Server 的manifest描述文件；
+6. Client对比当前 modules tree ，再次发请求到 Server 端获取新的JS模块；
+7. Client获取到新的JS模块后，会更新 modules tree并替换掉现有的模块；
+8. 最后调用 `module.hot.accept()` 完成热更新；
+
+<details>
+<summary>更详细版</summary>
+
+webpack热更新流程如下：
+图是webpack 配合 `webpack-dev-server` 进行应用开发的模块热更新流程图。
+ <img src='./picture/webpack/HMR-new.png' width=80%/>
+
+>其中：
+>- 红色框内是服务端，橙色框是浏览器端。
+>- 绿色的方框是 webpack 代码控制的区域。蓝色方框是 webpack-dev-server 代码控制的区域，洋红色的方框是文件系统，文件修改后的变化就发生在这，而青色的方框是应用本身。
+
+1. 第一步，在 webpack 的 watch 模式下，文件（代码文件）发生修改，webpack 监听到文件变化，根据配置文件对模块重新编译打包，并将打包后的代码通过JS对象保存在**内存**中。
+2. 第二步，是 `webpack-dev-server` 和 webpack 之间的接口交互，具体是dev-server 的中间件 `webpack-dev-middleware` 和 `webpack` 之间的交互，中间间用 webpack 暴露的 API对代码变化进行监控，并且告诉 webpack，将代码打包到内存中。
+3. 第三步是 `webpack-dev-server` 对文件（静态文件，与第一步监控不同）变化的一个监控。当配置文件中的devServer.watchContentBase 为 true 的时，Server 会监听这些配置文件夹中静态文件的变化，通知浏览器端对应用进行 `live reload`。注意，这儿是**浏览器刷新**，和 HMR 是两个概念。
+4. 第四步,通过 `sockjs`（`webpack-dev-server `的依赖）在浏览器端和服务端之间建立一个 **websocket 长连接**，将 webpack 编译打包的各个阶段的状态信息告知浏览器端，同时也包括第三步中 Server 监听静态文件变化的信息。浏览器端根据这些 socket 消息进行不同的操作。当然服务端传递的最主要信息还是新模块的 `hash` 值，后面的步骤根据这一 hash 值来进行模块热替换。
+5. 第五步，由于webpack-dev-server/client 端并不能够请求更新的代码，也不会执行热更模块操作，所以把这些工作又交回给了 webpack。`webpack/hot/dev-server`根据 webpack-dev-server/client 传给它的信息以及 dev-server 的配置决定是刷新浏览器呢还是进行模块热更新。
+6. 第六步，`HotModuleReplacement.runtime` 是客户端 HMR 的中枢，它接收到上一步传递给他的新模块的 hash 值，它通过 `JsonpMainTemplate.runtime `向 server 端发送 `Ajax` 请求，服务端返回一个 json，该 json 包含了所有要更新的模块的 hash 值，获取到更新列表后，该模块再次通过 `jsonp` 请求，获取到最新的模块代码。这就是上图中 7、8、9 步骤。
+7. 第十步，`HotModulePlugin` 将会对新旧模块进行对比，决定是否更新模块，在决定更新模块后，检查模块之间的依赖关系，更新模块的同时更新模块间的依赖引用。
+8. 最后一步，当 HMR 失败后，回退到 `live reload` 操作，也就是进行**浏览器刷新**来获取最新打包代码。
+
+</details>
+
 
 # 如何借助Webpack来优化性能？
 为一个项目的打包构建工具，在完成项目开发后经常需要利用Webpack对前端项目进行性能优化，常见的优化手段有如下几个方面：

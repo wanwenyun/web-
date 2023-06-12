@@ -1,15 +1,15 @@
 > 参考链接：https://juejin.cn/post/7112754818879324197
 
 # webpack
-* 热更新方面：webpack支持HMR，但是webpack需要全部重新编译并更新，效率较低
-* tree-shaking：webpack2开始支持且消除效果不好，但是webpack5有更好的tree-shaking（去除未使用代码）
-* 分包方面：webpack支持代码切割。（分包）
-* ESM打包：现在webpack支持es6module输出
+* **热更新方面**：webpack支持HMR，但是webpack需要全部重新编译并更新，效率较低
+* **tree-shaking**：webpack2开始支持且消除效果不好，但是webpack5有更好的tree-shaking（去除未使用代码）
+* **分包方面**：webpack支持代码切割。（分包）
+* **ESM打包**：现在webpack支持es6module输出
 
 # rollup
 优点：
 1. Rollup 是一款 ES Modules 打包器，从作用上来看，Rollup 与 Webpack 非常类似。不过相比于 Webpack，Rollup要小巧的多，打包生成的文件更小。（识别commonJs需要插件）
-2. 热更新：Rollup不支持HMR，在对js以外的模块的支持上不如webpack，但是如果是打包**纯js库**例如react，前期的vue的话，使用rollup是很合适的，打包的产物比较干净，没有webpack那么多工具函数
+2. 热更新：Rollup**不支持HMR**，在对js以外的模块的支持上不如webpack，但是如果是打包**纯js库**例如react，前期的vue的话，使用rollup是很合适的，打包的产物比较干净，没有webpack那么多工具函数
 3. Rollup 的插件机制设计得相对更干净简洁，单个模块的 resolve / load / transform 跟打包环节完全解耦，所以 Vite 才能在开发时模拟 Rollup 的插件机制，并且兼容大部分 Rollup 插件
 4. rollup原生支持tree-shaking
 
@@ -52,11 +52,11 @@ Vite主要特点如下：
 
 `Vite`：
 * 非打包构建，不必打包所有内容
-* 基于路由的代码拆分知道代码需要实际加载哪些部分，浏览器请求源文件时，再进行转换
+* **基于路由的代码拆分知道代码需要实际加载哪些部分，浏览器请求源文件时，再进行转换**
 * 开发构建：分为依赖和源码
     * 依赖是第三方依赖，从 node_modules 文件夹中导入的 JavaScript 模块，使用 esbuild 处理
     * 源码即是业务源代码
-* 现代浏览器中的原生 ES 模块支持，浏览器在开发中承担打包工作
+* 现代浏览器中的原生 ES 模块支持，**浏览器在开发中承担打包工作**
 
 `Webpack`:
 * 识别入口文件
