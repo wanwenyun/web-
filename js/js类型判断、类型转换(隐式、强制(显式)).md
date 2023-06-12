@@ -43,7 +43,7 @@ js有8种数据类型：
 3. Boolean，
 4. Number
 5. String，
-6. Symbol（new in es6），
+6. Symbol（new in es6），表示独一无二的值
 7. BingInt
 8. Object
 
