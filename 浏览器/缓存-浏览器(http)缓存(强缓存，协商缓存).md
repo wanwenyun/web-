@@ -3,8 +3,8 @@
   - [浏览器缓存过程](#浏览器缓存过程)
   - [缓存机制](#缓存机制)
 - [强缓存](#强缓存)
-  - [http 头：Expires](#http-头expires)
-  - [http 头：Cache-Control](#http-头cache-control)
+  - [http 响应头：Expires](#http-响应头expires)
+  - [http 响应头：Cache-Control](#http-响应头cache-control)
 - [协商缓存](#协商缓存)
   - [协商缓存过程(相关状态码：304/200)](#协商缓存过程相关状态码304200)
   - [http 头：Last-Modified／If-Modified-since(http 1.0)](#http-头last-modifiedif-modified-sincehttp-10)
@@ -61,8 +61,8 @@ Web缓存知识体系，如下图:
 - `强缓存`优先于`协商缓存`进行，
 
 - 若强制缓存(相关http头：`Expires和Cache-Control`)生效则直接使用缓存，
-- 若强缓存不生效则进行协商缓存(相关http头：`Last-Modified / If-Modified-Since`和`Etag / If-None-Match`)，
-- 协商缓存由服务器决定是否使用缓存，
+- 若强缓存不生效（1. 缓存过期 2.Cache-Control: no-store）则进行协商缓存(相关http头：`Last-Modified / If-Modified-Since`和`Etag / If-None-Match`)，
+- 协商缓存由**服务器**决定是否使用缓存，
 - 若协商缓存失效，那么代表该请求的缓存失效，返回200，重新返回**资源和缓存标识**，再存入浏览器缓存中；
 - 生效则返回`304`和`not modified`，继续使用缓存。
 
@@ -73,24 +73,24 @@ Web缓存知识体系，如下图:
 
 强缓存可以通过设置两种**HTTP Header**实现：`Expires(1.0)`和`Cache-Control(1.1)`。
 
-## http 头：Expires
+## http 响应头：Expires
 
 `Expires`是一个**绝对**时间，是缓存过期时间。用以表达在这个时间点之前发起请求可以直接从浏览器中读取数据，而无需重新发起请求。值为一个时间戳。
 
 缺点：
-Expires 是 HTTP/1 的产物，**受限于本地时间**，如果修改了本地时间，可能会造成缓存失效。
+Expires 是 HTTP/1.0 的产物，**受限于本地时间**，如果修改了本地时间，可能会造成缓存失效。
 
 ```
 Expires: Wed, 22 Oct 2018 08:41:00 GMT // 表示资源会在 Wed, 22 Oct 2018 08:41:00 GMT 后过期，需要再次请求。
 ```
 
-## http 头：Cache-Control
+## http 响应头：Cache-Control
 
 `Cache-Control`的**优先级比Expires的优先级高**。是HTTP/1.1产物。该字段表示资源缓存最大有效时间，在该时间内，客户端不需要向服务器发送请求。
 
 Cache-Control解决了Expires在浏览器中，时间被手动更改导致缓存判断错误的问题。
 
-常见指令如下(完整列表参考[MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Cache-Control))：
+**常见指令**如下(完整列表参考[MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Cache-Control))：
 
 - `private`(默认值)：客户端可以缓存，代理服务器不能缓存
 - `public`：客户端和代理服务器都可缓存
@@ -115,7 +115,7 @@ Cache-Control解决了Expires在浏览器中，时间被手动更改导致缓存
 
 # 协商缓存
 
-协商缓存就是 **强制缓存失效，或者`Cache-Control：no-store`** 后，浏览器携带缓存标识向服务器发起请求，由服务器根据缓存标识决定是否使用缓存的过程。而整个过程是需要发出请求的。
+协商缓存就是 **强制缓存失效，1. 缓存过期 2. `Cache-Control：no-store`** 后，浏览器携带缓存标识向服务器发起请求，由服务器根据缓存标识决定是否使用缓存的过程。而整个过程是需要发出请求的。
 
 协商缓存由**2组字段**(不是2个)，控制协商缓存的字段有：
 
@@ -143,14 +143,14 @@ Cache-Control解决了Expires在浏览器中，时间被手动更改导致缓存
 **缺点：**
 
 1. 只要资源发生了修改，**无论内容是否发生了实质性的改变**，都会将该资源返回客户端。例如周期性重写，但这种情况下资源包含的数据实质是一样的。
-2. 以时刻作为标识，无法识别**一秒内多次修改的情况**。如果资源更新的速度是秒以下的单位，那么该缓存是不能被使用的，因为它的时间最低单位是秒。
+2. 以时刻作为标识，无法识别**一秒内多次修改的情况**。如果资源更新的速度是**秒**以下的单位，那么该缓存是不能被使用的，因为它的时间最低单位是秒。
 
 ## http 头：Etag/If-None-match(http 1.1)
 
 为了解决上述问题，出现了一组新的字段`Etag/In-None-Match`。
 
 - `Etag`是上一次加载资源时，**服务器**返回的当前资源文件的一个**唯一标识**。它的作用是用来标识资源**是否有变化**。
-- 浏览器在下一次发起请求时，会将上一次返回的Etag值赋值给`If-None-Match`并添加在 请求 Header 中。服务端匹配传入的值与上次是否一致，如果一致返回`304`，浏览器则读取本地缓存；否则返回`200`和更新后的资源及新的Etag
+- 浏览器在下一次发起请求时，会将上一次返回的Etag值赋值给`If-None-Match`并添加在 请求 Header 中。服务端匹配传入的值与上次是否一致，如果一致返回`304`，浏览器则读取本地缓存；否则返回`200和更新后的资源及新的Etag`
 
 **优点：**
 
