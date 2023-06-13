@@ -18,7 +18,7 @@
 ## 原型和原型链
 >参考资料：https://github.com/mqyqingfeng/Blog/issues/2
 
-<img src='./picture/proto.png' width="60%"/>
+<img src='./picture/proto.png'/>
 
 每个对象都可以有一个原型`_proto_`，这个原型还可以有它自己的原型，以此类推，形成一个**原型链**。
 

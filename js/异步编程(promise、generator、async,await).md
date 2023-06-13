@@ -109,10 +109,19 @@ Promise.prototype.finally = function (callback) {
 ```js
 Promise.all([p1, p2, p3])   //只要p1、p2、p3之中有一个被rejected，p的状态就变成rejected,只有p1、p2、p3的状态都变成fulfilled，p的状态才会变成fulfilled
 Promise.race([p1, p2, p3])  //只要p1、p2、p3之中有一个实例率先改变状态，p的状态就跟着改变
-Promise.allSettled()
-Promise.any()
 Promise.resolve(obj) // 直接返回一个fulfilled状态的 Promise 实例。
 Promise.reject()  // 返回一个新的 Promise 实例，该实例的状态为rejected。
+
+Promise.any() // 是 ES2021 中引入的新特性，它接收一组 Promise 对象，返回其中第一个 Promise 状态变为“fulfilled”的结果。
+Promise.allSettled() // 是一个 ES2020 新增的静态方法，它接收一个 Promise 数组作为参数，返回一个新的 Promise，当所有的 Promise 都已经完成，该 Promise 才会被解决。
+const promises = [
+  Promise.resolve('resolved'),
+  Promise.reject('rejected'),
+  Promise.resolve('resolved again')
+];
+
+Promise.allSettled(promises)
+  .then(results => console.log(results));
 ```
 
 例题：参数是一个promise对象，如果在一秒钟之内，promise没有返回结果的话就自动reject（），如果有就返回promise返回的结果
@@ -150,14 +159,14 @@ new Promise(###)，### 这个位置的代码是 同步执行的。`Promise.then(
 ```js
 class Promise{
     constructor(executer){//构造函数constructor里面是个执行器
-      this.status = 'pending';//默认的状态 pending
-      this.value = undefined//成功的值默认undefined
-      this.reason = undefined//失败的值默认undefined
+      this.status = 'pending'; // 默认的状态 pending
+      this.value = undefined // 成功的值默认undefined
+      this.reason = undefined// 失败的值默认undefined
       //状态只有在pending时候才能改变
       let resolveFn = value =>{
         //判断只有等待时才能resolve成功
         if(this.status == pending){
-          this.status = 'resolve';
+          this.status = 'fulfilled';
           this.value = value;
         }
       }
@@ -169,15 +178,15 @@ class Promise{
         }
       }    
       try{
-        //把resolve和reject两个函数传给执行器executer
-        executer(resolve,reject);
+        //把resolveFn和rejectFn两个函数传给执行器executer
+        executer(resolveFn, rejectFn);
       }catch(e){
         reject(e);//失败的话进catch
       }
     }
-    then(onFufilled,onReject){
+    then(onFufilled, onReject){
       //如果状态成功调用onFufilled
-      if(this.status = 'resolve'){
+      if(this.status = 'fulfilled'){
         onFufilled(this.value);
       }
       //如果状态失败调用onReject
