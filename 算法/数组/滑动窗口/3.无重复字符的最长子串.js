@@ -2,6 +2,7 @@
  * @lc app=leetcode.cn id=3 lang=javascript
  *
  * [3] 无重复字符的最长子串
+ * 子串是连续的
  */
 // 单个字符串的情况
 // @lc code=start

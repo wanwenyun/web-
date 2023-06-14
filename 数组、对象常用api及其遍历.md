@@ -64,7 +64,7 @@
 ## 字符串
 * `indexOf(searchvalue，fromindex)` 在字符串中查找子字符串,如果存在则返回指定的子字符串值在字符串中首次出现的位置，否则返回-1
 * `lastIndexOf()` 方法可返回一个指定的字符串值最后出现的位置，在一个字符串中的指定位置从后向前搜索。
-* `slice(start,end)` 方法可提取字符串的某个部分，并以新的字符串返回被提取的部分。且不会改动原字符串。
+* `slice(start,end)`， 范围是`[start, end)` 方法可提取字符串的某个部分，并以新的字符串返回被提取的部分。且不会改动原字符串。
   ```js
     const str = 'The quick brown fox jumps over the lazy dog.';
 

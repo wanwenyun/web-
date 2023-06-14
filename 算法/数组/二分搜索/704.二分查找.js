@@ -13,7 +13,7 @@
 var search = function(nums, target) {
     let left = 0, right = nums.length - 1;
     while(left <= right) { // 因为搜索区间是[left, right], 所以只有当left>right时，所有的区间才会被覆盖到
-        let mid = Math.round(left + (right - left) / 2);
+        let mid = Math.round(left + (right - left) / 2); // Math.round()会四舍五入
         if(nums[mid] === target) {
             return mid;
         }else if(nums[mid] < target) {
