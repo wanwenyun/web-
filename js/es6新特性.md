@@ -8,6 +8,7 @@
   - [...操作符：收起剩余数据、展开数组](#操作符收起剩余数据展开数组)
   - [?.可选链](#可选链)
   - [箭头函数](#箭头函数)
+    - [箭头函数和普通函数的区别](#箭头函数和普通函数的区别)
 - [新增对象、全新的方法、全新的功能](#新增对象全新的方法全新的功能)
   - [Object.assign()](#objectassign)
   - [Object.is()](#objectis)
@@ -18,6 +19,7 @@
   - [class 类](#class-类)
   - [Set](#set)
   - [Map](#map)
+    - [Map和Object有什么区别](#map和object有什么区别)
   - [weakMap](#weakmap)
   - [Symbol新的数据结构，唯一值](#symbol新的数据结构唯一值)
   - [for ... of 遍历](#for--of-遍历)
@@ -121,6 +123,29 @@ const fn = function (x=1, y) {
 - 箭头函数没有自己的arguments
 - 箭头函数没有prototype
 
+### 箭头函数和普通函数的区别
+1. **语法**：箭头函数使用箭头(`=>`)来定义函数，而普通函数使用`function`关键字。
+2. `this` 的指向：箭头函数没有自己的`this`，它会继承外层作用域的`this`。而普通函数的`this`指向调用它的对象或者undefined（在严格模式下）。
+3. **构造函数**：箭头函数不能被用作构造函数，不能使用`new`关键字实例化。普通函数可以作为构造函数来创建新的对象。
+   - `new`操作简单来说，分为四步： 1.JS内部首先会先生成一个对象； 2. 再把函数中的this指向该对象； 3. 然后执行构造函数中的语句； 4. 最终返回该对象实例。
+4. `arguments` 对象：箭头函数没有自己的`arguments`对象，它会继承外层作用域的`arguments`。普通函数有自己的`arguments`对象。
+   ```js
+   function outer(val1, val2) {
+       let argOut = arguments;
+       console.log(argOut);    // 111,222
+       let fun = () => {
+           let argIn = arguments;
+           console.log(argIn);     // 111,222
+           console.log(argOut === argIn);  // true
+       };
+       fun();
+   }
+   outer(111, 222);
+   ```
+5. 箭头函数没有原型`prototype`
+6. **返回值**：箭头函数如果只有一行代码并且没有使用大括号包裹，则会自动将该行代码的结果作为返回值返回。普通函数需要使用`return`关键字来明确指定返回值。
+
+总的来说，箭头函数适用于简短的函数和不需要独立的`this`和`arguments`的场景，而普通函数适用于需要更多灵活性和特定行为的场景。
 # 新增对象、全新的方法、全新的功能
 
 ## Object.assign()
@@ -276,6 +301,13 @@ Map结构原生提供是三个遍历器生成函数和一个遍历方法
   }
   ```
 - `forEach()`：遍历Map的所有成员。
+  
+### Map和Object有什么区别
+- **键的类型**：`Object` 的键只能是字符串或符号类型，而 `Map` 的键可以是任意类型的值，包括函数、对象和基本数据类型。
+- **键值对的顺序**：`Object` 的键值对是按插入顺序排列的。在遍历时，键值对可能不是按照插入的顺序返回。`Map` 对键值对的顺序有保证，且可以使用 Map 的内置方法进行有序遍历。
+- **长度计算**：`Object` 的大小计算需要使用 `Object.keys(obj).length`，而 `Map` 可以直接使用 `map.size`。
+- **Iterating**：Map 自身支持迭代，Object 不支持。
+
 
 ## weakMap
 
