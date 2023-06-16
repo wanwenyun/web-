@@ -4,7 +4,7 @@
   - [hooks优势](#hooks优势)
   - [hooks使用限制](#hooks使用限制)
   - [hooks数据结构](#hooks数据结构)
-  - [hooks分类 :star:](#hooks分类-star)
+  - [hooks原理 :star:](#hooks原理-star)
     - [用数组模拟实现useState，useEffect](#用数组模拟实现usestateuseeffect)
   - [hooks旧引用问题](#hooks旧引用问题)
   - [为什么不能在条件语句中写hook？](#为什么不能在条件语句中写hook)
@@ -65,7 +65,7 @@ hook = {
 所以Hook是一个**链表**, 单个Hook拥有自己的状态`hook.memoizedState`和自己的更新队列`hook.queue`.
 <img src='./picture/hooks1.png' />
 
-### hooks分类 :star:
+### hooks原理 :star:
 - **状态Hook**(state hook)
   - 狭义上讲, `useState`, `useReducer`可以在function组件添加内部的`state`, 且useState实际上是useReducer的简易封装, 是一个最特殊(简单)的useReducer. 所以将useState, useReducer称为状态Hook.
   - 广义上讲, 只要能**实现数据持久化且没有副作用的Hook, 均可以视为状态Hook**, 所以还包括`useContext, useRef, useCallback, useMemo`等. 它们也能实现多次render时, 保持其初始值不变(即数据持久化)且没有任何副作用.
@@ -75,7 +75,7 @@ hook = {
  ：
 >https://medium.com/@ryardley/react-hooks-not-magic-just-arrays-cd4f1857236e
 
-其实很简单，在react中，
+hook原理其实很简单，在react中，
 
 - 在**初次渲染**的时候，按照各个hook声明生成hook对象，并把hook对象**按照声明的顺**序用**链表**保存起来。这个链表挂载在其对应的fiber节点上。在每个hook对象上，都有其一一对应的`update queue`，也是一个环状单向链表，用来保存每一次的状态更新。
 - 当**更新**的时候，找到对应的hook对象（通过一个全局的cursor变量来标记），
