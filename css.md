@@ -4,6 +4,7 @@
 - [flex弹性布局](#flex弹性布局)
   - [flex容器属性](#flex容器属性)
   - [项目属性](#项目属性)
+- [响应式布局](#响应式布局)
 
 ### 文字换行
 * `overflow-wrap(word-wrap)`通用换行控制是否保留单词
@@ -64,3 +65,94 @@ display: -webkit-box;
 - `flex-basis`：属性定义了在分配多余空间之前，项目占据的主轴空间（main size）。它的默认值为auto，即项目的本来大小
 - `flex`：属性是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto
 - `align-self`：属性允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性。默认值为auto，表示继承父元素的align-items属性，如果没有父元素，则等同于stretch。
+
+### 响应式布局
+1. **媒体查询和确定分割点**
+   - 移动端优先首先使用的是`min-width`，PC端优先使用的`max-width`
+      ```css
+      /* 移动端优先 */
+      /* iphone6 7 8 */
+      body {
+          background-color: yellow;
+      }
+      /* iphone 5 */
+      @media screen and (max-width: 320px) {  /*范围是 0-320px*/
+          body { background-color: red; }
+      }
+      /* iphone6 7 8 plus */
+      @media screen and (min-width: 414px) { /*范围是 414-768px*/
+          body { background-color: blue; }
+      }
+      /* ipad */
+      @media screen and (min-width: 768px) {
+          body { background-color: green; }
+      }
+      /* pc */
+      @media screen and (min-width: 1100px) {
+          body { background-color: black; }
+      }
+      ```
+      ```css
+      /* pc优先 */
+      /* pc width > 1024px */
+      body { background-color: yellow; }
+      /* ipad pro */
+      @media screen and (max-width: 1024px) {
+          body { background-color: #FF00FF; }
+      }
+      /* ipad */
+      @media screen and (max-width: 768px) {
+          body { background-color: green; }
+      }
+      /* iphoneX */
+      @media screen and (max-width: 375px) and (-webkit-device-pixel-ratio: 3) {
+          body { background-color: #0FF000; }
+      }
+      /* iphone6 7 8 */
+      @media screen and (max-width: 375px) and (-webkit-device-pixel-ratio: 2) {
+          body { background-color: #0FF000; }
+      }
+      /* iphone5 */
+      @media screen and (max-width: 320px) {
+          body { background-color: #0FF000; }
+      }
+      ```
+2. 百分比布局，rem布局，视口单位
+   - **百分比布局**：Bootstrap里面的栅格系统就是利用百分比来定义元素的宽高。
+     - 缺点：1. 计算困难，2. 各个属性中如果使用百分比，相对父元素的属性并不是唯一的。比如，子元素的top和bottom（left和right）如果设置百分比，则相对于直接非static定位(默认定位)的父元素的高度(宽度)
+   - **rem布局**：是CSS3新增的单位，rem单位都是相对于**根元素html的font-size**来决定大小的,根元素的font-size相当于提供了一个基准。 因此，如果通过rem来实现响应式的布局，只需要根据视图容器的大小，动态的改变font-size即可
+     > em：em会继承**父级元素**的字体大小
+     - 实现：利用媒体查询，设置在不同设备下的字体大小。
+       ```css
+       /* pc width > 1100px */
+       html{ font-size: 100%;} /* 关键 */
+       body {
+           background-color: yellow;
+           font-size: 1.5rem;
+       }
+       /* ipad pro */
+       @media screen and (max-width: 1024px) {
+           body {
+             background-color: #FF00FF;
+             font-size: 1.4rem;
+           }
+       }
+       /* ipad */
+       @media screen and (max-width: 768px) {
+           body {
+             background-color: green;
+             font-size: 1.3rem;
+           }
+       }
+       /* iphone6 7 8 plus */
+       @media screen and (max-width: 414px) {
+           body {
+             background-color: blue;
+             font-size: 1.25rem;
+           }
+       }
+       ```
+   - **视口单位`vw/vh`**：`vw`表示相对于视图窗口的宽度，`vh`表示相对于视图窗口高度。1vw 等于视口宽度的1%，即视窗宽度是100vw。
+    - 缺点：它是利用视口单位实现的布局，依赖视口大小而自动缩放，失去了响应式的意义
+   - **rem + 视口单位**：
+   
