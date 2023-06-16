@@ -13,7 +13,7 @@
   - [Loader和Plugin的区别，以及如何自定义Loader和Plugin？](#loader和plugin的区别以及如何自定义loader和plugin)
     - [自定义Loader](#自定义loader)
     - [自定义Plugin](#自定义plugin)
-- [webpack打包流程？](#webpack打包流程)
+- [webpack打包流程？:star:](#webpack打包流程star)
 - [如何理解module，chunk 和 bundle？](#如何理解modulechunk-和-bundle)
 - [sourceMap是什么？](#sourcemap是什么)
 - [Webpack Proxy工作原理 (webpack-dev-server)](#webpack-proxy工作原理-webpack-dev-server)
@@ -332,13 +332,13 @@ class MyPlugin {
 * done： 完成所有的编译过程
 * failed： 编译失败的时候
 
-# webpack打包流程？
+# webpack打包流程？:star:
 Webpack 的运行流程是一个串行的过程,从启动到结束会依次执行以下流程 :
 1. 读取webpack的`配置参数`；
 2. 启动webpack，创建`Compiler`对象并开始解析项目；
 3. 从`入口`文件（entry）开始解析，并且找到其导入的依赖模块，递归遍历分析，形成`依赖关系树`；
 4. 对不同文件类型的依赖模块文件使用对应的`Loader`进行编译，最终转为Javascript文件；
-5. 整个过程中webpack会通过**发布订阅模式**，向外抛出一些`hooks`，而webpack的插件即可通过监听这些关键的事件节点，执行`插件任务`进而达到干预输出结果的目的。
+5. 整个过程中webpack会向外抛出一些**事件**，而webpack的插件即可通过监听这些关键的事件节点，执行`插件任务`进而达到干预输出结果的目的。
 6. 根据入口和模块之间的依赖关系,组装成一个个包含多个模块的 `Chunk`,再把每个 Chunk 转换成一个单独的文件加入到输出列表，再根据配置确定输出的路径和文件名，把文件内容写入到文件系统。
 
 # 如何理解module，chunk 和 bundle？
