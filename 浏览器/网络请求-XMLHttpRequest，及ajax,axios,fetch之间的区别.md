@@ -12,6 +12,7 @@
   - [Ajax 和 Axios的区别](#ajax-和-axios的区别)
 - [Ajax和Fetch的区别](#ajax和fetch的区别)
 - [Axios和Fetch的区别](#axios和fetch的区别)
+- [前端如何防止重复请求](#前端如何防止重复请求)
 
 
 > web API: 浏览器提供的一套操作浏览器功能和页面元素的接口
@@ -279,3 +280,60 @@ Axios 和 Fetch 都是 JavaScript 中用于发送网络请求的工具。它们�
 - Axios 支持取消请求和自定义请求拦截器，而 Fetch 不太方便实现取消请求和请求拦截；
 - Axios 的 API 更加灵活和易于使用，Fetch 的 API 相对简单，使用起来不太方便。
   
+
+# 前端如何防止重复请求
+
+1. 给触发请求的动作设置**防抖，节流**，或者设置disable
+节流: n 秒内只运行一次，若在 n 秒内重复触发，只有一次生效
+防抖: n 秒后在执行该事件，若在 n 秒内被重复触发，则重新计时
+2. **axios拦截器**：
+    我们创建了一个axios实例，并定义了一个`pendingRequests`对象来存储正在进行的请求。在请求拦截器中，我们根据请求的url和请求方法生成一个唯一标识符，并检查是否已经存在相同的请求。如果存在相同的请求，我们使用`cancelToken`取消当前请求。否则，将新的请求添加到`pendingRequests`对象中。在响应拦截器中，无论请求成功或失败，我们都将该请求从`pendingRequests`对象中移除。
+    ```javascript
+    import axios from 'axios';
+
+    // 创建一个axios实例
+    const instance = axios.create();
+
+    // 定义一个对象来存储正在进行的请求
+    const pendingRequests = {};
+
+    // 请求拦截器
+    instance.interceptors.request.use((config) => {
+      // 根据请求的url和请求方法生成一个唯一标识符
+      const requestKey = `${config.url}_${config.method}`;
+
+      // 检查是否已经存在相同的请求
+      if (pendingRequests[requestKey]) {
+        // 如果存在相同的请求，取消当前请求
+        config.cancelToken = new axios.CancelToken((cancel) => {
+          cancel('Duplicate request detected.');
+        });
+      } else {
+        // 如果是新的请求，将其添加到pendingRequests对象中
+        pendingRequests[requestKey] = true;
+      }
+
+      return config;
+    }, (error) => {
+      return Promise.reject(error);
+    });
+
+    // 相应拦截器
+    instance.interceptors.response.use((response) => {
+      // 根据请求的url和请求方法生成一个唯一标识符
+      const requestKey = `${response.config.url}_${response.config. method}`;
+
+      // 请求完成后，将其从pendingRequests对象中移除
+      delete pendingRequests[requestKey];
+
+      return response;
+    }, (error) => {
+      // 请求失败后，将其从pendingRequests对象中移除
+      const requestKey = `${error.config.url}_${error.config.method}    `;
+      delete pendingRequests[requestKey];
+
+      return Promise.reject(error);
+    });
+
+    export default instance;
+    ```
