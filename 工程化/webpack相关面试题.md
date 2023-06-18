@@ -13,6 +13,7 @@
   - [Loader和Plugin的区别，以及如何自定义Loader和Plugin？](#loader和plugin的区别以及如何自定义loader和plugin)
     - [自定义Loader](#自定义loader)
     - [自定义Plugin](#自定义plugin)
+- [webpack如何工作？:star:](#webpack如何工作star)
 - [webpack打包流程？:star:](#webpack打包流程star)
 - [如何理解module，chunk 和 bundle？](#如何理解modulechunk-和-bundle)
 - [sourceMap是什么？](#sourcemap是什么)
@@ -333,6 +334,23 @@ class MyPlugin {
 * after-emit ：在将内存中 assets 内容写到磁盘文件夹之后
 * done： 完成所有的编译过程
 * failed： 编译失败的时候
+
+
+# webpack如何工作？:star:
+Webpack 打包过程：
+
+- 从一个入口文件开始，基于代码文件中的所有 import，export，require 构建依赖树；
+- 编译 JS/CSS 等模块；
+- 使用算法排序、重写、连接代码；
+- 优化。
+
+开发环境的 Webpack：
+
+- 打包所有代码；
+- 启动 webpack-dev-server 托管打包好的代码；
+- 启动 websocket 处理热更新 HMR。
+
+**应用规模越大，启动和热更新代码越慢**。及时启动了热更新，每次代码变更也需要重新生产 Bundle 文件。
 
 # webpack打包流程？:star:
 Webpack 的运行流程是一个串行的过程,从启动到结束会依次执行以下流程 :
