@@ -38,7 +38,7 @@ http/1.1规定了以下请求方法(注意，都是大写):
 - `Content-Type`: 表示响应体中包含的媒体类型。
 - `Content-Length`: 表示响应体中的数据长度。
 - `Set-Cookie`: 表示服务器要求客户端更新本地的cookie内容。
-- `Cache-Control`: 指示客户端应该如何缓存响应数据。
+- `Cache-Control`: 指示客户端应该如何缓存响应数据。`Access-Control-Allow-Credentials`：该字段可选。它的值是一个布尔值，表示是否允许发送Cookie。默认情况下，Cookie不包括在**CORS请求**之中。
 
 # HTTP状态码
 **1xx - 信息提示**

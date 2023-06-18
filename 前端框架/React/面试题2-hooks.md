@@ -5,7 +5,7 @@
   - [hooks使用限制](#hooks使用限制)
   - [hooks数据结构](#hooks数据结构)
   - [hooks原理 :star:](#hooks原理-star)
-    - [用数组模拟实现useState，useEffect](#用数组模拟实现usestateuseeffect)
+    - [用数组模拟实现useState，useEffect - 极简版](#用数组模拟实现usestateuseeffect---极简版)
   - [hooks旧引用问题](#hooks旧引用问题)
   - [为什么不能在条件语句中写hook？](#为什么不能在条件语句中写hook)
   - [hooks与声明周期](#hooks与声明周期)
@@ -34,7 +34,7 @@
 
 ### hooks使用限制
 
-1. 避免在 **循环/条件判断/嵌套函数** 中调用 hooks，保证调用顺序的稳定；（有无hook会按顺序存储在链表中，如果写在条件判断中，就没法保持链表的顺序）。可以引入 ESLint 的 Hooks 检查插件进行预防。
+1. 避免在 **循环/条件判断/嵌套函数** 中调用 hooks，保证调用顺序的稳定；（因为hook会按顺序存储在链表中，如果写在条件判断中，就没法保持链表的顺序）。可以引入 ESLint 的 Hooks 检查插件进行预防。
 2. 只有 函数定义组件 和 hooks 可以调用 hooks，避免在 类组件 或者 普通函数 中调用；
 > 另外，不能在useEffect中使用useState，React 会报错提示；
 
@@ -75,11 +75,11 @@ hook = {
  ：
 >https://medium.com/@ryardley/react-hooks-not-magic-just-arrays-cd4f1857236e
 
-hook原理其实很简单，在react中，
+hook**原理**其实很简单，在react中，
 
 - 在**初次渲染**的时候，按照各个hook声明生成hook对象，并把hook对象**按照声明的顺**序用**链表**保存起来。这个链表挂载在其对应的fiber节点上。在每个hook对象上，都有其一一对应的`update queue`，也是一个环状单向链表，用来保存每一次的状态更新。
 - 当**更新**的时候，找到对应的hook对象（通过一个全局的cursor变量来标记），
-  - 如果是**状态hook**，从hook对象的 `memoizedState` 中把上次记录的值拿出来。则再按照对应的hook对象的update queue来更新state，再重新渲染。
+  - 如果是**状态hook**，从hook对象的 `memoizedState` 中把上次记录的值拿出来。则再按照对应的hook对象的`update queue`来更新state，再重新渲染。
   - 如果是**副作用hook**，对比依赖是否改变，如果改变了，则执行**回调函数**，并更新依赖值。
 
 fiber节点数据结构如下：
@@ -101,7 +101,7 @@ hook = {
 }
 ```
 
-#### 用数组模拟实现useState，useEffect
+#### 用数组模拟实现useState，useEffect - 极简版
 <details>
 
 ```js
@@ -271,7 +271,7 @@ useEffect(()=>{
     }
   }, [])
   ```
-- `useLayoutEffect`：DOM更新同步钩子。用法与useEffect类似，只是区别于执行时间点的不同。`useEffect`属于**异步**执行，并不会等待 DOM 真正渲染后执行（**commit阶段，before mutation阶段（执行DOM操作前）**），而useLayoutEffect则会真正渲染后才触发（**commit阶段，layout阶段（执行DOM操作后）**）；可以获取更新后的 state；
+- `useLayoutEffect`：DOM更新同步钩子。用法与useEffect类似，只是区别于执行时间点的不同。`useEffect`属于异步执行，执行时机是浏览器完成渲染之后，（**commit阶段，layout阶段（执行DOM操作后）**），而`useLayoutEffect`是同步执行，执行时机是浏览器把内容真正渲染到界面之前（**commit阶段，before mutation阶段（执行DOM操作前）**）；可以获取更新后的 state；
 - `useRef`: 1. 获取组件的真实节点Dom节点；2. 存储任意可变值。
 - `useImperativeHandle`: 子组件利用useImperativeHandle可以让父组件输出任意数据。
   ```js
@@ -323,9 +323,9 @@ useEffect(()=>{
 
 ### useEffct与useLayoutEffect
 
-- `useEffect`属于异步执行，并不会等待 DOM 真正渲染后执行（**commit阶段，before mutation阶段（执行DOM操作前）**），
+- `useEffect`属于异步执行，执行时机是浏览器完成渲染之后，（**commit阶段，layout阶段（执行DOM操作后）**）
 
-- `useLayoutEffect`则会真正渲染后才触发（**commit阶段，layout阶段（执行DOM操作后）**）；可以获取更新后的 state；
+- `useLayoutEffect`是同步执行，执行时机是浏览器把内容真正渲染到界面之前（**commit阶段，before mutation阶段（执行DOM操作前）**）；可以获取更新后的 state；
 
 `useEffect`异步执行的优点是，**react渲染组件**不必等待useEffect函数执完毕，造成阻塞。
 例如，下面的代码，组件就会渲染两次。

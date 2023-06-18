@@ -2,7 +2,7 @@
   - [缓存位置](#缓存位置)
   - [浏览器缓存过程](#浏览器缓存过程)
   - [缓存机制](#缓存机制)
-- [强缓存](#强缓存)
+- [强缓存 - memory cache或disk cache](#强缓存---memory-cache或disk-cache)
   - [http 响应头：Expires](#http-响应头expires)
   - [http 响应头：Cache-Control](#http-响应头cache-control)
 - [协商缓存](#协商缓存)
@@ -66,12 +66,12 @@ Web缓存知识体系，如下图:
 - 若协商缓存失效，那么代表该请求的缓存失效，返回200，重新返回**资源和缓存标识**，再存入浏览器缓存中；
 - 生效则返回`304`和`not modified`，继续使用缓存。
 
-# 强缓存
+# 强缓存 - memory cache或disk cache
 
 当请求命中**强制缓存**时，浏览器不会将本次请求发往服务器，而是直接从缓存中读取内容，在Chrome中打开控制台，在network中显示的是`memory cache`或者是`disk cache`。
 <img src="./picture/cache/pic4.png"/>
 
-强缓存可以通过设置两种**HTTP Header**实现：`Expires(1.0)`和`Cache-Control(1.1)`。
+强缓存可以通过设置两种**HTTP 响应头**实现：`Expires(1.0)`和`Cache-Control(1.1)`。由后台设置
 
 ## http 响应头：Expires
 
@@ -117,7 +117,7 @@ Cache-Control解决了Expires在浏览器中，时间被手动更改导致缓存
 
 协商缓存就是 **强制缓存失效，1. 缓存过期 2. `Cache-Control：no-store`** 后，浏览器携带缓存标识向服务器发起请求，由服务器根据缓存标识决定是否使用缓存的过程。而整个过程是需要发出请求的。
 
-协商缓存由**2组字段**(不是2个)，控制协商缓存的字段有：
+协商缓存由**2组字段**控制协商缓存的字段有：
 
 - `Etag/If-None-match(http 1.1)`: 表示的是服务器资源的**唯一标识**，只要资源有变化，Etag就会重新生成；
 - `Last-Modified／If-Modified-since(http 1.0)`: 表示的是服务器的资源**最后一次修改的时间**；
@@ -135,7 +135,7 @@ Cache-Control解决了Expires在浏览器中，时间被手动更改导致缓存
 
 ## http 头：Last-Modified／If-Modified-since(http 1.0)
 
-- 服务器通过 `Last-Modified` 字段告知客户端(返回资源的同时在header添加)，表示资源最后一次被修改的时间，浏览器将这个值和内容一起记录在缓存数据库中
+- **服务器**通过 `Last-Modified` 字段告知客户端(返回资源的同时在header添加)，表示资源最后一次被修改的时间，浏览器将这个值和内容一起记录在缓存数据库中
 
 - 下一次请求相同的资源时，浏览器会从自己的缓存中找出“不确定是否过期的”缓存，因此在请求头中将上次的Last-Modified的值写入到请求头的`If-Modified-since`字段
 - 服务器会将If-Modified-since的值与**服务器中这个资源的最后修改时间**进行对比。如果没有变化，这表示未修改，响应304和空响应体，直接从缓存中读取；如果If-Modified-since**小于**最后修改时间，则表示修改了，响应 200 状态码，并返回数据

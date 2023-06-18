@@ -46,8 +46,18 @@ console.info(array); // ["a", "b", 0, 1, 2]
 ## bind
 
 bind() 方法将**创建一个新的函数**，在 bind() 被调用时，这个新函数的 this 被指定为 bind() 的第一个参数，而其余参数将作为新函数的参数，供调用时使用。
+`function.bind(thisArg[, arg1[, arg2[, ...]]])`
 
 ```js
+function sayHello() {
+  console.log('Hello, ' + this.name);
+}
+var person = { name: 'John' };
+var sayHelloToJohn = sayHello.bind(person);
+sayHelloToJohn(); // 输出：Hello, John
+```
+
+<!-- ```js
 const module = {
   x: 42,
   getX: function() {
@@ -62,7 +72,7 @@ console.log(unboundGetX()); // The function gets invoked at the global scope
 const boundGetX = unboundGetX.bind(module);
 console.log(boundGetX());
 // Expected output: 42
-```
+``` -->
 
 # bind、call、apply区别
 
@@ -259,12 +269,10 @@ console.log(person.age) // 18
 ## 手写new
 
 ```js
-function myNew() {
+function myNew(constructor, ...args) {
     let obj = {}; // 创建对象
 
-    let constructor = [].shift.call(arguments); // 获取构造函数,shift()把数组的第一个元素从其中删除,并返回第一个元素的值。
-
-    let ret = constructor.apply(obj, arguments); // 绑定新对象的this。并执行构造函数，得到构造函数返回数据
+    let ret = constructor.apply(obj, args); // 绑定新对象的this。并执行构造函数，得到构造函数返回数据
 
     obj.__proto__ = constructor.prototype; // 设置原型链：构造函数链接到新对象
 

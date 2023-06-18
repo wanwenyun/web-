@@ -17,7 +17,7 @@
 
 
 # 浏览器多进程架构
-chrome打开一个页面至少需要启动4个进程
+chrome打开一个页面至少需要**启动4个进程**
 
 <img src="./picture/other/pic1.png" width=50%/>
 
