@@ -24,7 +24,30 @@
       console.log(item);
     });
     ```
-* `reduce`: 接收一个函数作为累加器，数组中的每个值（从左到右）开始缩减，最终计算为一个值。
+* `reduce`: 接收一个函数作为累加器，数组中的每个值（从左到右）开始缩减，最终计算为一个值。`array.reduce(callback[, initialValue])`。callback是一个回调函数，它可以接受四个参数：accumulator（累积值），currentValue（当前值），currentIndex（当前索引）和array（原始数组）。initialValue是可选的，表示回调函数的初始累积值。
+  ```js
+  const sum = [1, 2, 3, 4, 5].reduce((accumulator, currentValue) => {
+    return accumulator + currentValue;
+  }, 0);
+  console.log(sum); // 输出: 15
+  ```
+  <details>
+  <summary>手写reduce</summary>
+  
+  ```js
+  Array.prototype.myReduce = (callback, initialValue) => {
+      // 设置初始值
+      let accumulator = initialValue !== undefined ?  initialValue : this[0];
+      // 从数组的第一个元素开始迭代
+    for (let i = initialValue !== undefined ? 0 : 1; i < this.  length; i++) {
+      // 调用回调函数
+      accumulator = callback(accumulator, this[i], i, this);
+    }
+    return accumulator;
+  }
+  ```
+  <details>
+  
 * `indexOf`: 返回第一个与给定参数相等的数组元素的索引，没有找到则返回-1。
 * `lastIndexOf`: 返回在数组中搜索到的与z给定参数相等的元素的索引里最大的值。
 * `reverse`: 颠倒数组中元素的顺序，原先第一个元素现在变成最后一个，同样原先的最后一个元素变成现在的第一个。 

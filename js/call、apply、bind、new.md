@@ -18,6 +18,9 @@ call、apply、bind都可以改变函数的this指向。
 
 使用一个指定的 this 值和单独给出的一个或多个参数来调用一个函数。会立即执行函数
 
+语法：`function.call(thisArg, arg1, arg2, ...)`
+`thisArg`是可选的，如果`thisArg`指定为 null 或 undefined 时会自动替换为指向全局对象，原始值会被包装。
+
 ```js
 function Product(name, price) {
   this.name = name;

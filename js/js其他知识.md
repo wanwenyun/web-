@@ -1,3 +1,4 @@
+- [如何在html中加载js代码](#如何在html中加载js代码)
 - [JavaScript脚本延迟加载的方式有哪些？](#javascript脚本延迟加载的方式有哪些)
 - [常见的位运算符有哪些？其计算规则是什么？](#常见的位运算符有哪些其计算规则是什么)
 - [js函数的Arguments对象](#js函数的arguments对象)
@@ -5,6 +6,23 @@
 - [use strict是什么意思 ? 使用它区别是什么？](#use-strict是什么意思--使用它区别是什么)
 - [forEach和map方法有什么区别](#foreach和map方法有什么区别)
 
+### 如何在html中加载js代码
+
+1. 外部脚本：使用 `<script>` 标签引入外部的 JavaScript 文件。例如：
+
+```html
+<script src="script.js"></script>
+```
+
+其中的 `src` 属性指定了要加载的 JavaScript 文件的路径。你需要将 `script.js` 替换为实际文件的路径。这种方法可以使你的代码更易于维护和重复使用。
+
+2. 内联脚本：直接在 HTML 文件中嵌入 JavaScript 代码。例如：
+
+```html
+<script>
+  // 这里是你的 JavaScript 代码
+</script>
+```
 ### JavaScript脚本延迟加载的方式有哪些？
 
 延迟加载就是等页面加载完成之后再加载 JavaScript 文件。 js 延迟加载有助于提高页面加载速度。
