@@ -109,7 +109,17 @@ setTimeout(() => {
 >- `setInterval(fn, interval)` 会每隔多少毫秒将 fn 加入到 timer 队列中，等待到期后执行。
 >- `setImmediate(fn)` 会在当前事件循环的 check 阶段立即执行 fn，而不是等待到下一次事件循环再执行。
 
-除了上述6个阶段，还存在`process.nextTick`，其不属于事件循环的任何一个阶段，它属于该阶段与下阶段之间的过渡, 即本阶段执行结束, 进入下一个阶段前, 所要执行的回调，类似**插队**。
+除了上述6个阶段，还存在`process.nextTick`（在微任务里面优先级最高），其不属于事件循环的任何一个阶段，它属于该阶段与下阶段之间的过渡, 即本阶段执行结束, 进入下一个阶段前, 所要执行的回调，类似**插队**。
+
+- 微任务队列
+  - next tick queue：process.nextTick
+  - other tick queue：promise的then函数、queueMicrotask
+
+- 宏任务队列
+  - timer queue: setTimeout、setInterval
+  - poll queue: io事件
+  - check queue: setImmediate
+  - close queue: close事件
 ```js
 setTimeout(() => {
  console.log('timer1')
