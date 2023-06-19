@@ -1,3 +1,4 @@
+- [如何在html文件中引入css资源](#如何在html文件中引入css资源)
 - [文字换行](#文字换行)
 - [单行文本溢出显示省略号](#单行文本溢出显示省略号)
 - [多行文本溢出显示省略号](#多行文本溢出显示省略号)
@@ -5,6 +6,40 @@
   - [flex容器属性](#flex容器属性)
   - [项目属性](#项目属性)
 - [响应式布局](#响应式布局)
+- [怎么设置一个圆形？如果设置的值超过50%会发生什么？](#怎么设置一个圆形如果设置的值超过50会发生什么)
+- [如何画三角形](#如何画三角形)
+- [如何原地旋转一个元素](#如何原地旋转一个元素)
+
+### 如何在html文件中引入css资源
+有两种方式引入：
+1. 通过`<link>`标签
+2. 通过`<style>`标签
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>引入CSS示例</title>
+  
+  <!-- 引入外部CSS文件 -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- 嵌入CSS代码 -->
+  <style>
+    body {
+      background-color: lightblue;
+    }
+    h1 {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hello, World!</h1>
+  <p>This is an example of using CSS in HTML.</p>
+</body>
+</html>
+```
 
 ### 文字换行
 * `overflow-wrap(word-wrap)`通用换行控制是否保留单词
@@ -16,7 +51,7 @@
 ```css
 overflow: hidden;
 text-overflow: ellipsis;
-white-space: no-wrap;
+white-space: no-wrap; // 控制换行的重要属性
 ```
 
 ### 多行文本溢出显示省略号
@@ -155,4 +190,78 @@ display: -webkit-box;
    - **视口单位`vw/vh`**：`vw`表示相对于视图窗口的宽度，`vh`表示相对于视图窗口高度。1vw 等于视口宽度的1%，即视窗宽度是100vw。
     - 缺点：它是利用视口单位实现的布局，依赖视口大小而自动缩放，失去了响应式的意义
    - **rem + 视口单位**：
-   
+
+### 怎么设置一个圆形？如果设置的值超过50%会发生什么？
+```css
+#circle {
+    background: lightblue;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+}
+```
+
+```css
+border-radius: 12px
+
+/* 等同于，分左上，左下，右上，右下四个角，且还有水平半径和垂直半径 */
+border-top-left-radius: 12px 12px
+border-top-right-radius: 12px 12px
+border-bottom-left-radius: 12px 12px
+border-bottom-left-radius: 12px 12px
+```
+
+### 如何画三角形
+```html
+<div class="delta"></div>
+```
+
+```css
+.delta {
+    width: 0px;
+    height: 0px;
+    border: 50px solid transparent;
+    border-bottom-color: #ff6b6b;
+    border-top-width: 0px;
+}
+```
+<img src='./picture/pic1.png' />
+
+
+### 如何原地旋转一个元素
+要在CSS中实现一个元素的原地旋转，你可以使用`transform`属性和`@keyframes`关键帧动画。
+
+首先，使用CSS的`@keyframes`关键帧动画定义一个旋转动画。你可以指定不同的关键帧来控制元素的旋转方式和时间。以下是一个例子：
+
+```css
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+```
+
+在这个例子中，`@keyframes`定义了一个名为`rotate`的关键帧动画。从0%到100%的过程中，元素将以顺时针方向从0度旋转到360度。
+
+接下来，你可以将这个动画应用到你想要旋转的元素上，通过使用`animation`属性指定关键帧动画的名称、持续时间、重复次数等。例如：
+
+```css
+.element {
+  animation: rotate 2s infinite;
+}
+```
+
+在这个例子中，我们将`rotate`动画应用到一个名为`.element`的元素上，动画持续2秒，无限次重复。
+
+最后，你可以通过在HTML文件中使用相应的类或ID来将样式应用到你想要旋转的元素上。例如：
+
+```html
+<div class="element">这是一个元素</div>
+```
+
+请注意，这个方法会使元素原地旋转，而不会改变元素在文档中的位置。
+
+希望这些信息能对你有所帮助！如果你有其他问题，请随时提问。
