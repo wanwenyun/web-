@@ -3,6 +3,8 @@
 - [Promise](#promise)
   - [为什么Promise要引入微任务？](#为什么promise要引入微任务)
   - [手写Promise](#手写promise)
+  - [Promise.then是如何实现链式调用的？:star:](#promisethen是如何实现链式调用的star)
+  - [Promise实现异步操作的原理？ :star:](#promise实现异步操作的原理-star)
 - [Generator/yield](#generatoryield)
 - [Async/Await](#asyncawait)
 
@@ -75,7 +77,7 @@ myPromise
 ```
 
 - `.then()`方法可以接受两个回调函数作为参数。第一个回调函数是Promise对象的状态变为`Fulfilled`时调用，第二个回调函数是Promise对象的状态变为`Rejected`时调用。其中，第二个函数是可选的，不一定要提供。这两个函数都接受Promise对象传出的值作为参数。
-- 每一个 `.then()` 方法还会返回一个新生成的 promise 对象，这个对象可被用作**链式调用**。
+- 每一个 `.then()` 方法还会返回一个**新生成的 promise 对象**，这个对象可被用作**链式调用**。
 - `.catch()`方法会捕获到没有捕获的异常。
 
 **Promise实例方法**
@@ -155,47 +157,22 @@ new Promise(###)，### 这个位置的代码是 同步执行的。`Promise.then(
 
 ## 手写Promise
 
-[从零实现promise](https://segmentfault.com/a/1190000016550260)
-```js
-class Promise{
-    constructor(executer){//构造函数constructor里面是个执行器
-      this.status = 'pending'; // 默认的状态 pending
-      this.value = undefined // 成功的值默认undefined
-      this.reason = undefined// 失败的值默认undefined
-      //状态只有在pending时候才能改变
-      let resolveFn = value =>{
-        //判断只有等待时才能resolve成功
-        if(this.status == pending){
-          this.status = 'fulfilled';
-          this.value = value;
-        }
-      }
-      //判断只有等待时才能reject失败
-      let rejectFn = reason =>{
-        if(this.status == pending){
-          this.status = 'reject';
-          this.reason = reason;
-        }
-      }    
-      try{
-        //把resolveFn和rejectFn两个函数传给执行器executer
-        executer(resolveFn, rejectFn);
-      }catch(e){
-        reject(e);//失败的话进catch
-      }
-    }
-    then(onFufilled, onReject){
-      //如果状态成功调用onFufilled
-      if(this.status = 'fulfilled'){
-        onFufilled(this.value);
-      }
-      //如果状态失败调用onReject
-      if(this.status = 'reject'){
-        onReject(this.reason);
-      }
-    }
-  }
-```
+> [从零实现promise](https://segmentfault.com/a/1190000016550260)
+> [看了就会，手写Promise原理](https://juejin.cn/post/6994594642280857630#heading-8)
+详见[《手写promise》](../%E6%89%8B%E5%86%99%E4%BB%A3%E7%A0%81/%E6%88%91%E7%9A%84%E4%BB%A3%E7%A0%81/%E6%89%8B%E6%92%95%E4%BB%A3%E7%A0%81/%E6%89%8B%E5%86%99promise.md)
+
+## Promise.then是如何实现链式调用的？:star:
+
+当调用 Promise 对象的 then 方法时，它会创建一个**新的 Promise 对象**，并将当前 Promise 对象的状态和值传递给新的 Promise 对象。然后，在新的 Promise 对象中，使用回调函数进行处理。
+
+如果回调函数返回一个普通值，新的 Promise 对象会被解决并传递该值作为解决值。如果回调函数返回一个 Promise 对象，新的 Promise 对象会等待该 Promise 对象的状态，然后根据该 Promise 对象的状态和值来修改自己的状态和值。如果回调函数抛出一个错误，则新的 Promise 对象会被拒绝，并传递该错误作为拒绝值。
+
+## Promise实现异步操作的原理？ :star:
+Promise之所以能够处理异步操作，主要是因为它使用了**回调函数和状态管理的机制**。
+
+Promise使用了两个重要的状态：pending（进行中）、fulfilled（已成功）和rejected（已失败）。在创建Promise对象时，它的初始状态为pending。当异步操作执行成功时，Promise的状态会从pending变为fulfilled，并将异步操作的结果传递给后续处理程序。而如果异步操作失败，则Promise的状态会从pending变为rejected，并将错误信息传递给后续处理程序。
+
+当创建Promise对象时，我们可以通过调用resolve方法将异步操作的结果传递给Promise的后续处理程序。同样，如果异步操作出现错误，我们可以通过调用reject方法将错误信息传递给Promise的后续处理程序。这样，我们的代码就可以根据异步操作的状态来执行不同的后续操作。
 
 # Generator/yield
 
