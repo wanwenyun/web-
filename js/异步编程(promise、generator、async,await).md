@@ -159,6 +159,7 @@ new Promise(###)，### 这个位置的代码是 同步执行的。`Promise.then(
 
 > [从零实现promise](https://segmentfault.com/a/1190000016550260)
 > [看了就会，手写Promise原理](https://juejin.cn/post/6994594642280857630#heading-8)
+
 详见[《手写promise》](../%E6%89%8B%E5%86%99%E4%BB%A3%E7%A0%81/%E6%88%91%E7%9A%84%E4%BB%A3%E7%A0%81/%E6%89%8B%E6%92%95%E4%BB%A3%E7%A0%81/%E6%89%8B%E5%86%99promise.md)
 
 ## Promise.then是如何实现链式调用的？:star:

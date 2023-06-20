@@ -89,7 +89,7 @@ class MyPromise {
       this.PromiseResult = value
       // 执行保存的成功回调
       while (this.onFulfilledCallbacks.length) {
-          this.onFulfilledCallbacks.shift()(this.PromiseResult)
+          this.onFulfilledCallbacks.shift()(this.PromiseResult) // shift()取出数组的第一个元素
       }
   }
 

@@ -14,7 +14,7 @@
   - [Object.is()](#objectis)
   - [proxy](#proxy)
   - [Reflect: 封装操作对象的统一API](#reflect-封装操作对象的统一api)
-  - [用于处理异步，解决回调函数的地狱式嵌套问题](#用于处理异步解决回调函数的地狱式嵌套问题)
+  - [用于处理异步，解决回调函数的地狱式嵌套问题，promise, async/await](#用于处理异步解决回调函数的地狱式嵌套问题promise-asyncawait)
 - [全新的数据结构和数据类型](#全新的数据结构和数据类型)
   - [class 类](#class-类)
   - [Set](#set)
@@ -202,7 +202,7 @@ Reflect的目的是使用同一套方式去操作对象
     console.log(Reflect.ownKeys(obj))
 ```
 
-## 用于处理异步，解决回调函数的地狱式嵌套问题
+## 用于处理异步，解决回调函数的地狱式嵌套问题，promise, async/await
 
 详见[异步编程(promise、generator、async,await)](../js/异步编程(promise、generator、async,await))
 
