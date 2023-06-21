@@ -105,7 +105,7 @@ setTimeout(() => {
 5. `check`：执行`setImmediate()` 回调函数，setImmediate 并不是立马执行，而是当事件循环 poll 中没有新的事件处理时就执行该部分
 6. `close callbacks`：处理socket的close事件`socket.on('close', ...)`，以及其他关闭的回调函数。
 
->- `setTimeout(fn, delay)` 会在多少毫秒后将 fn 加入到 timer 队列中，等待到期后执行。
+>- `setTimeout(fn, delay)` 会在多少毫秒后将  fn 加入到 timer 队列中，等待到期后执行。
 >- `setInterval(fn, interval)` 会每隔多少毫秒将 fn 加入到 timer 队列中，等待到期后执行。
 >- `setImmediate(fn)` 会在当前事件循环的 check 阶段立即执行 fn，而不是等待到下一次事件循环再执行。
 
