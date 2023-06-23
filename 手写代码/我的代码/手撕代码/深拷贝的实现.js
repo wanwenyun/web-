@@ -130,7 +130,7 @@ function deepCopyBFS(obj) {
 
 
 
-const symbolKey = Symbol('key1');
+const symbolKey = Symbol('key1'); 
 let test = {
 	num: 0,
 	str: '',
