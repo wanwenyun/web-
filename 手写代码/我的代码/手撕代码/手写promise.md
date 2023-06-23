@@ -2,6 +2,7 @@
 - [手写promise.all()](#手写promiseall)
 - [手写promise.race()](#手写promiserace)
 - [进阶： 实现返回前k个结果的`promise.race(promises, k)`](#进阶-实现返回前k个结果的promiseracepromises-k)
+- [手写 Promise.allSettled()](#手写-promiseallsettled)
 
 <!-- 
 class Promise{
@@ -257,4 +258,60 @@ function promiseRaceWithLimit(promises, k) {
     }
   });
 }
+```
+
+### 手写 Promise.allSettled()
+该方法返回一个`promise`，该promise在所有给定的promise已被解析或被拒绝后解析，并且每个对象都描述每个promise的结果。
+
+例子：
+```js
+Promise.allSettled([
+  Promise.resolve('a'),
+  Promise.reject('b'),
+])
+.then(arr => assert.deepEqual(arr, [
+  { status: 'fulfilled', value:  'a' },
+  { status: 'rejected',  reason: 'b' },
+]));
+```
+
+手写allSettled()
+```js
+function allSettled(promises) {
+  return new Promise((resolve) => {
+    const results = [];
+    let count = 0;
+
+    promises.forEach((promise, index) => {
+      Promise.resolve(promise)
+        .then((value) => {
+          results[index] = { status: 'fulfilled', value };
+        })
+        .catch((reason) => {
+          results[index] = { status: 'rejected', reason };
+        })
+        .finally(() => {
+          count++;
+          if (count === promises.length) {
+            resolve(results);
+          }
+        });
+    });
+  });
+}
+
+// test
+const promise1 = Promise.resolve(3);
+const promise2 = new Promise((resolve, reject) => setTimeout(reject, 100, 'Error'));
+const promise3 = new Promise((resolve) => setTimeout(resolve, 200, 'Hello'));
+
+allSettled([promise1, promise2, promise3]).then((results) => {
+  console.log(results);
+});
+// 结果：
+// [
+//   { status: 'fulfilled', value: 3 },
+//   { status: 'rejected', reason: 'Error' },
+//   { status: 'fulfilled', value: 'Hello' }
+// ]
 ```
