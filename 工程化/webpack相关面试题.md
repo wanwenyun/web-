@@ -10,7 +10,7 @@
   - [Chunk](#chunk)
   - [Loader](#loader)
   - [Plugin](#plugin)
-  - [Loader和Plugin的区别，以及如何自定义Loader和Plugin？](#loader和plugin的区别以及如何自定义loader和plugin)
+  - [Loader和Plugin的区别:star:，以及如何自定义Loader和Plugin？](#loader和plugin的区别star以及如何自定义loader和plugin)
     - [自定义Loader](#自定义loader)
     - [自定义Plugin](#自定义plugin)
 - [webpack如何工作？:star:](#webpack如何工作star)
@@ -22,6 +22,8 @@
   - [webpack proxy原理](#webpack-proxy原理)
   - [实际项目举例](#实际项目举例)
 - [Webpack热更新HMR](#webpack热更新hmr)
+- [webpack按需加载原理/import()的原理/异步加载原理](#webpack按需加载原理import的原理异步加载原理)
+- [Tree-Shaking 配置与实现原理](#tree-shaking-配置与实现原理)
 - [如何借助Webpack来优化性能？](#如何借助webpack来优化性能)
 - [webpack5 和 4 的区别？](#webpack5-和-4-的区别)
 - [如何优化 Webpack 的构建速度？](#如何优化-webpack-的构建速度)
@@ -249,7 +251,7 @@ Webpack编译会创建两个核心对象：`compiler和compilation`。
 
 
 
-## Loader和Plugin的区别，以及如何自定义Loader和Plugin？
+## Loader和Plugin的区别:star:，以及如何自定义Loader和Plugin？
 
 * `loader`：用来处理webpack无法处理的模块（即非js、json文件），然后你就可以利用 webpack 的打包能力，对它们进行处理。运行在打包文件**之前**。Loader在 module.rules 中配置，作为模块的解析规则，类型为**数组**。每一项都是一个 **Object**，内部包含了 test(类型文件)、loader、options (参数)等属性。
 * `plugin`：可以执行比转换更复杂的任务。比如打包优化、文件管理、环境注入等……在**整个编译周期**都起作用。Plugin在 plugins 中单独配置，类型为**数组**，每一项是一个 Plugin 的**实例**，参数都通过构造函数传入。
@@ -527,7 +529,45 @@ webpack热更新流程如下：
 
 </details>
 
+# webpack按需加载原理/import()的原理/异步加载原理
 
+`import()`函数是由TS39提出的一种动态加载模块的规范实现，其返回是一个 `promise`。
+`var promise = import("module-name");`
+
+webpack是通过`webpackJsonp`实现动态引入的。
+
+webpackJsonp动态引入本质上是JSONP，动态增删`script`，从script引入需要的文件。
+
+当遇到`import()`方法时，会将其当成一个代码分割点，然后编译成一个jsonp，import()方法内部就是引用的文件的内容。
+
+# Tree-Shaking 配置与实现原理
+应该避免将整个库导入到单个 JavaScript 对象中
+比如`lodash`
+```js
+// 全部导入 (不支持 tree-shaking)
+import _ from 'lodash';
+// 具名导入(支持 tree-shaking)
+import { debounce } from 'lodash';
+// 直接导入具体的模块 (支持 tree-shaking)
+import debounce from 'lodash/lib/debounce';
+```
+- 开发环境下的配置
+  ```js
+  module.exports = {
+    // ...
+    mode: 'development',
+    optimization: {
+      usedExports: true,
+    }
+  };
+  ```
+- 生产环境下的配置，在生产环境下，Webpack 默认会添加 Tree Shaking 的配置，因此只需写一行 mode: 'production' 即可。
+  ```js
+  module.exports = {
+    // ...
+    mode: 'production',
+  };
+  ```
 # 如何借助Webpack来优化性能？
 为一个项目的打包构建工具，在完成项目开发后经常需要利用Webpack对前端项目进行性能优化，常见的优化手段有如下几个方面：
 * JS代码压缩：例如`terser`是一个JavaScript的解释、绞肉机、压缩机的工具集，可以帮助我们压缩、丑化我们的代码，让bundle更小。

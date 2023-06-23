@@ -5,6 +5,8 @@
 - [常见的Dom操作](#常见的dom操作)
 - [use strict是什么意思 ? 使用它区别是什么？](#use-strict是什么意思--使用它区别是什么)
 - [forEach和map方法有什么区别](#foreach和map方法有什么区别)
+- [for of 和for in 有什么区别?](#for-of-和for-in-有什么区别)
+- [for...in和Object.keys()有什么区别？](#forin和objectkeys有什么区别)
 
 ### 如何在html中加载js代码
 
@@ -155,3 +157,73 @@ forEach 和 map 方法都是 JavaScript 中操作`数组`的常用方法。它�
 - map 方法则是创建一个**新数组**，其中包含对原始数组中每个元素执行指定函数所返回的结果。它不会修改原始数组。
 
 forEach 更适合在你只是需要对每个元素进行操作时使用，而 map 则更适合在你需要创建一个新的数组并将其填充为操作结果时使用。
+
+### for of 和for in 有什么区别?
+
+- **对象遍历**：for…of 遍历获取的是对象的**键值**，for…in 获取的是对象的**键名**；
+- **数组遍历**：for…of 只返回数组的下标对应的**属性值**，for…in 会返回数组中**下标**；
+
+
+总结： for...in 循环主要是为了遍历`对象`而生，不适用于遍历数组；for...of 循环可以用来遍历数组、类数组对象，字符串、Set、Map 以及 Generator 对象。
+
+```js
+const arr = [11, 22, 33, 44];
+for (const num of arr) {
+  console.log(num); // 11, 22, 33, 44
+}
+for (const index in arr) {
+  console.log(index); // 0，1，2，3
+}
+
+const obj = { foo: 'bar', baz: 42 };
+for (const prop of Object.keys(obj)) {
+  console.log(prop); // foo, baz
+}
+for (var propName in obj) {
+  console.log(propName + ": " + obj[propName]);
+}
+```
+
+
+### for...in和Object.keys()有什么区别？
+for...in与Object.keys()都可以用来遍历对象，获取到对象的除Symbol的可枚举属性名，
+
+区别在于
+- `for...in`会获取到**对象原型**上的所有除Symbol可枚举属性，
+- `Object.keys()`只能获取到**自身**的。
+
+```js
+const obj = {
+  a: 1,
+  b: 2,
+  c: 3
+};
+
+Object.prototype.d = 4;
+
+// 使用 for...in 循环遍历属性
+console.log('for...in:');
+for (const key in obj) {
+  console.log(key + ': ' + obj[key]);
+}
+
+// 使用 Object.keys() 遍历属性
+console.log('Object.keys():');
+const keys = Object.keys(obj);
+for (let i = 0; i < keys.length; i++) {
+  const key = keys[i];
+  console.log(key + ': ' + obj[key]);
+}
+```
+输出：
+```js
+for...in:
+a: 1
+b: 2
+c: 3
+d: 4
+Object.keys():
+a: 1
+b: 2
+c: 3
+```

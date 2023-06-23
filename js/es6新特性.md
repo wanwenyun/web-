@@ -321,16 +321,19 @@ WeakMap的键名所引用的对象都是**弱引用**，即垃圾回收机制不
 
 ## for ... of 遍历
 `for…of` 是ES6新增的遍历方式，允许遍历一个含有iterator接口的数据结构（数组、对象等）并且返回各项的**值**，和ES3中的`for…in`的区别如下:
-- for…of 遍历获取的是对象的键值，for…in 获取的是对象的键名；
+- **对象遍历**：for…of 遍历获取的是对象的**键值**，for…in 获取的是对象的**键名**；
+- **数组遍历**：for…of 只返回数组的下标对应的**属性值**，for…in 会返回数组中**下标**；
 - for… in 会遍历对象的整个原型链，性能非常差不推荐使用，而 for … of 只遍历当前对象不会遍历原型链；
-- 对于数组的遍历，for…in 会返回数组中所有可枚举的属性(包括原型链上可枚举的属性)，for…of 只返回数组的下标对应的属性值；
 
 总结： for...in 循环主要是为了遍历`对象`而生，不适用于遍历数组；for...of 循环可以用来遍历数组、类数组对象，字符串、Set、Map 以及 Generator 对象。
 
 ```js
-const arr = [1, 2, 3, 4];
+const arr = [11, 22, 33, 44];
 for (const num of arr) {
-  console.log(num);
+  console.log(num); // 11, 22, 33, 44
+}
+for (const index in arr) {
+  console.log(index); // 0，1，2，3
 }
 
 const obj = { foo: 'bar', baz: 42 };
