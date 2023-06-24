@@ -7,7 +7,7 @@
 - [forEach和map方法有什么区别](#foreach和map方法有什么区别)
 - [for of 和for in 有什么区别?](#for-of-和for-in-有什么区别)
 - [for...in和Object.keys()有什么区别？](#forin和objectkeys有什么区别)
-- [parseInt是什么？\[1,2,3\].map(parseInt) 为什么输出 1,NaN,NaN？](#parseint是什么123mapparseint-为什么输出-1nannan)
+- [`parseInt`是什么？`[1,2,3].map(parseInt)` 为什么输出 1,NaN,NaN？](#parseint是什么123mapparseint-为什么输出-1nannan)
 
 ### 如何在html中加载js代码
 
@@ -229,7 +229,7 @@ b: 2
 c: 3
 ```
 
-### parseInt是什么？[1,2,3].map(parseInt) 为什么输出 1,NaN,NaN？
+### `parseInt`是什么？`[1,2,3].map(parseInt)` 为什么输出 1,NaN,NaN？
 
 `parseInt` 函数接受两个参数：要解析的值和一个基数（表示要解析的数字的进制）。用于将字符串解析为整数。
 

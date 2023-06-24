@@ -15,8 +15,6 @@
     - [自定义Plugin](#自定义plugin)
 - [webpack如何工作？:star:](#webpack如何工作star)
 - [webpack打包流程？:star:](#webpack打包流程star)
-- [如何理解module，chunk 和 bundle？](#如何理解modulechunk-和-bundle)
-- [sourceMap是什么？](#sourcemap是什么)
 - [Webpack Proxy工作原理 (webpack-dev-server)](#webpack-proxy工作原理-webpack-dev-server)
   - [浏览器跨域判定的原理](#浏览器跨域判定的原理)
   - [webpack proxy原理](#webpack-proxy原理)
@@ -24,6 +22,8 @@
 - [Webpack热更新HMR](#webpack热更新hmr)
 - [webpack按需加载原理/import()的原理/异步加载原理](#webpack按需加载原理import的原理异步加载原理)
 - [Tree-Shaking 配置与实现原理](#tree-shaking-配置与实现原理)
+- [如何理解module，chunk 和 bundle？](#如何理解modulechunk-和-bundle)
+- [sourceMap是什么？](#sourcemap是什么)
 - [如何借助Webpack来优化性能？](#如何借助webpack来优化性能)
 - [webpack5 和 4 的区别？](#webpack5-和-4-的区别)
 - [如何优化 Webpack 的构建速度？](#如何优化-webpack-的构建速度)
@@ -357,23 +357,13 @@ Webpack 打包过程：
 # webpack打包流程？:star:
 Webpack 的运行流程是一个串行的过程,从启动到结束会依次执行以下流程 :
 1. 读取webpack的`配置参数`；
-2. 启动webpack，创建`Compiler`对象并开始解析项目；
+2. 启动webpack，创建`Compiler`对象（包含了 Webpack 环境的所有的配置信息，包括 options，loader 和 plugin，和 webpack 整个生命周期相关的钩子，在Plugin中通过apply 方法获取）并开始解析项目；
 3. 从`入口`文件（entry）开始解析，并且找到其导入的依赖模块，递归遍历分析，形成`依赖关系树`；
 4. 对不同文件类型的依赖模块文件使用对应的`Loader`进行编译，最终转为Javascript文件；
 5. 整个过程中webpack会向外抛出一些**事件**，而webpack的插件即可通过监听这些关键的事件节点，执行**插件任务**（比如说：按需加载，代码压缩）进而达到干预输出结果的目的。
 6. 根据入口和模块之间的依赖关系,组装成一个个包含多个模块的 `Chunk`,再把每个 Chunk 转换成一个单独的文件加入到输出列表，再根据配置确定输出的路径和文件名，把文件内容写入到文件系统。
 
-# 如何理解module，chunk 和 bundle？
-module，chunk 和 bundle 其实就是同一份逻辑代码在不同转换场景下的取了三个名字：
 
-我们直接写出来的是 module，webpack`处理时`是 chunk，最后生成浏览器可以直接运行的结果是`bundle`。
-
-# sourceMap是什么？
-sourceMap是**一项将编译、打包、压缩后的代码映射回源代码的技术**，由于打包压缩后的代码并没有阅读性可言，一旦在开发中报错或者遇到问题，直接在混淆代码中debug问题会带来非常糟糕的体验，sourceMap可以帮助我们快速定位到源代码的位置，提高我们的开发效率。
-
-在webpack.config.js中设置`devtool: 'none'`来关闭source map功能。devtool属性可以接受以下值：
-
-<img src="./picture/webpack/devtool.png" width=60%/>
 
 
 
@@ -402,7 +392,7 @@ module.exports = {
         proxy: {
             '/api': {
                 target: 'https://api.github.com', // 表示的是代理到的目标地址。
-                pathRewrite: ***, //默认情况下，我们的 /api-hy 也会被写入到URL中，如果希望删除，可以使用pathRewrite。
+                pathRewrite: ***, //默认情况下，我们的 /api 也会被写入到URL中，如果希望删除，可以使用pathRewrite。
                 secure: ***, //默认情况下不接收转发到https的服务器上，如果希望支持，可以设置为false。
                 changeOrigin: ***, //它表示是否更新代理后请求的 headers 中host地址。
             }
@@ -499,7 +489,7 @@ webpack-dev-server 主要包含了三个部分：
 
 **工作流程**:
 1. 启动dev-server，webpack开始构建，在编译期间会向 entry 文件注入热更新代码；
-2. Client 首次打开后，Server 和 Client 基于Socket建立通讯渠道；
+2. Client 首次打开后，Server 和 Client 基于`Socket`建立通讯渠道；
 3. 修改文件，Server 端监听文件发送变动，webpack开始编译，直到编译完成会触发"Done"事件；
 4. Server通过socket 发送消息告知 Client；
 5. Client根据Server的消息（hash值和state状态），通过ajax请求获取 Server 的manifest描述文件；
@@ -568,6 +558,19 @@ import debounce from 'lodash/lib/debounce';
     mode: 'production',
   };
   ```
+
+# 如何理解module，chunk 和 bundle？
+module，chunk 和 bundle 其实就是同一份逻辑代码在不同转换场景下的取了三个名字：
+
+我们直接写出来的是 module，webpack`处理时`是 chunk，最后生成浏览器可以直接运行的结果是`bundle`。
+
+# sourceMap是什么？
+sourceMap是**一项将编译、打包、压缩后的代码映射回源代码的技术**，由于打包压缩后的代码并没有阅读性可言，一旦在开发中报错或者遇到问题，直接在混淆代码中debug问题会带来非常糟糕的体验，sourceMap可以帮助我们快速定位到源代码的位置，提高我们的开发效率。
+
+在webpack.config.js中设置`devtool: 'none'`来关闭source map功能。devtool属性可以接受以下值：
+
+<img src="./picture/webpack/devtool.png" width=60%/>
+
 # 如何借助Webpack来优化性能？
 为一个项目的打包构建工具，在完成项目开发后经常需要利用Webpack对前端项目进行性能优化，常见的优化手段有如下几个方面：
 * JS代码压缩：例如`terser`是一个JavaScript的解释、绞肉机、压缩机的工具集，可以帮助我们压缩、丑化我们的代码，让bundle更小。
