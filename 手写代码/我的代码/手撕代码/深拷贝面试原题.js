@@ -12,10 +12,6 @@
  * 2、处理“拷贝两个相同的引用却最终指向不同的对象”的问题，如 `b = {};a = { b: b, bCopy: b }`
  * 3、处理对象属性名为 Symbol 的情况
 **/
-function deepClone(target) {
-
-}
-
 
 /* 测试用例1 */
 // const book = {
@@ -96,34 +92,32 @@ function deepClone(target) {
 //1. 对象object的key不能是引用类型，所以必须要用到Map类型，而Map和WeakMap的区别最大的在于WeakMap的key只能是引用类型，而Map既能是引用
 //类型也可以是普通类型,另外weakmap有个自动垃圾回收机制。（https://wjrsbu.smartapps.cn/zhihu/article?id=266054976&isShared=1&_swebfr=1&_swebFromHost=baiduboxapp）
 
-// isObject方法是用来判断是否是引用类型, 注意Object 类型、Array 类型、Date 类型、RegExp 类型这四种类型用typeof判断结果都是'object'
-const isObject = (target) =>
-    (typeof target === 'object' || typeof target === 'function') && target !== null;    // date regExp 的typeof都会被判断为'object'
 function deepClone(target, map = new Map()) {
-    if (!!map.get(target)) {
-        return map.get(target);
-    }
-
-    if(target instanceof Date) {
-      return new Date(target);
-    } else if(target instanceof RegExp) {
-      return new RegExp(target);
-    } else if(typeof target === 'function') {
-      return new Function('return ' + target.toString());
-    } else if (isObject(target)) {  // 只写这一个isObject的if，那如果初始的target他是基本数据类型呢，你也要返回他的值进行赋值吧，所以要多加下面一个else return target的判断        
-        // 判断是否是引用类型，如果是引用类型的拷贝 要另起一个内存空间
-        let cloneObj = Array.isArray(target) ? [] : {};
-        // 需要记录当前这个引用类型target被拷贝过
-        map.set(target, cloneObj);   // target 对应的value设置成 拷贝后的内存地址。
-        for (key in target) {
-            // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/for...in hasOwnProperty是拿到自己本身有的key，不会拿到原型链上继承来的key
-            if (target.hasOwnProperty(key)) {
-              cloneObj[key] = deepClone(target[key], map);
-            }
-        }
-        return cloneObj;
-    }
-     else {
-      return target;
-    }
+  if (!!map.get(target)) {
+      return map.get(target);
+  }
+  if (typeof target === 'symbol') {
+    // 返回一个新的Symbol，并且将其描述传递过去
+    return Symbol(target.description)
+  }else if(target instanceof Date) {
+    return new Date(target);
+  } else if(target instanceof RegExp) {
+    return new RegExp(target);
+  } else if(typeof target === 'function') {
+    return new Function('return ' + target.toString());
+  } else if (typeof target === 'object') {  // object类型        
+      // 判断是否是引用类型，如果是引用类型的拷贝 要另起一个内存空间
+      let cloneObj = Array.isArray(target) ? [] : {};
+      // 需要记录当前这个引用类型target被拷贝过
+      map.set(target, cloneObj);   // target 对应的value设置成 拷贝后的内存地址。
+      for (key in target) {
+          // hasOwnProperty是拿到自己本身有的key，不会拿到原型链上继承来的key
+          if (target.hasOwnProperty(key)) {
+            cloneObj[key] = deepClone(target[key], map);
+          }
+      }
+      return cloneObj;
+  } else { // 其他数据类型，直接进行赋值
+    return target;
+  }
 }
