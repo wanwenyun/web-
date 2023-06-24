@@ -8,6 +8,7 @@
   - [浏览器与Node的Event Loop 差异](#浏览器与node的event-loop-差异)
   - [Node10+的宏任务和微任务](#node10的宏任务和微任务)
 - [内存控制 - 垃圾回收机制，内存泄露](#内存控制---垃圾回收机制内存泄露)
+- [创建一个简单的nodejs应用，并实现路由功能](#创建一个简单的nodejs应用并实现路由功能)
 - [Node全局对象](#node全局对象)
 - [Node模块机制](#node模块机制)
 - [内置类库](#内置类库)
@@ -170,6 +171,42 @@ process.nextTick(() => {
 
 node.js的内存控制得益于`V8引擎`。因此这部分的内容详见[《V8-垃圾回收机制，内存泄露》](../../Google%20V8/V8(3)%20-%20%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6%EF%BC%8C%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2.md)
 
+
+# 创建一个简单的nodejs应用，并实现路由功能
+```js
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+  // 根据URL路由到相应的处理程序函数
+  if (req.url === '/') {
+    homeHandler(req, res);
+  } else if (req.url === '/about') {
+    aboutHandler(req, res);
+  } else {
+    notFoundHandler(req, res);
+  }
+});
+
+function homeHandler(req, res) {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Welcome to the home page!');
+}
+
+function aboutHandler(req, res) {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('About us page');
+}
+
+function notFoundHandler(req, res) {
+  res.writeHead(404, { 'Content-Type': 'text/plain' });
+  res.end('Page not found');
+}
+
+server.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
+
+```
 
 # Node全局对象
 JavaScript在各个运行环境下的全局对象的比较：

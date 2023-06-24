@@ -1,10 +1,13 @@
 - [如何在html文件中引入css资源](#如何在html文件中引入css资源)
+- [css盒子模型](#css盒子模型)
 - [文字换行](#文字换行)
 - [单行文本溢出显示省略号](#单行文本溢出显示省略号)
 - [多行文本溢出显示省略号](#多行文本溢出显示省略号)
+- [水平垂直居中](#水平垂直居中)
 - [flex弹性布局](#flex弹性布局)
   - [flex容器属性](#flex容器属性)
   - [项目属性](#项目属性)
+- [px、em、rem、vh/vw](#pxemremvhvw)
 - [响应式布局](#响应式布局)
 - [怎么设置一个圆形？如果设置的值超过50%会发生什么？](#怎么设置一个圆形如果设置的值超过50会发生什么)
 - [如何画三角形](#如何画三角形)
@@ -41,6 +44,16 @@
 </html>
 ```
 
+### css盒子模型
+
+一个盒子由四个部分组成：`content、padding(内边距)、border、margin(外边距)`
+
+**盒模型的分类**
+* `W3C标准盒子`：内容盒子，它的宽度一般只包含内容，不包含`padding`和`margin`
+* `IE盒子`：边框盒子，它的宽度包含`content`、`padding`、`border`
+
+通过css3新增的属性 `box-sizing: content-box | border-box`分别设置盒模型为标准模型（content-box默认）和IE模型（border-box）。
+
 ### 文字换行
 * `overflow-wrap(word-wrap)`通用换行控制是否保留单词
 * `word-break` 针对多字节文本文字 中文句子也是单词
@@ -62,6 +75,52 @@ display: -webkit-box;
 -webkit-line-clamp: 3;
 -webkit-box-orient: vertical;
 ```
+### 水平垂直居中
+
+1. flex弹性布局
+   ```html
+   <style>
+       .father {
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           width: 200px;
+           height: 200px;
+           background: skyblue;
+       }
+       .son {
+           width: 100px;
+           height: 100px;
+           background: red;
+       }
+   </style>
+   <div class="father">
+       <div class="son"></div>
+   </div>
+   ```
+2. 利用定位+transform
+   ```html
+   <style>
+       .father {
+           position: relative;
+           width: 200px;
+           height: 200px;
+           background: skyblue;
+       }
+       .son {
+           position: absolute;
+           top: 50%; // 相对father的高度
+           left: 50%; // 相对father的宽度
+           transform: translate(-50%,-50%); // 将会将元素位移自己宽度和高度的-50%
+           width: 100px;
+           height: 100px;
+           background: red;
+       }
+   </style>
+   <div class="father">
+       <div class="son"></div>
+   </div>
+   ```
 
 ### flex弹性布局
 #### flex容器属性
@@ -100,6 +159,15 @@ display: -webkit-box;
 - `flex-basis`：属性定义了在分配多余空间之前，项目占据的主轴空间（main size）。它的默认值为auto，即项目的本来大小
 - `flex`：属性是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto
 - `align-self`：属性允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性。默认值为auto，表示继承父元素的align-items属性，如果没有父元素，则等同于stretch。
+
+### px、em、rem、vh/vw
+
+- **px**，表示像素，所谓像素就是呈现在我们显示器上的一个个小点，每个像素点都是大小等同的
+  >比如视网膜手机iPhone6，物理像素 750px×1334px，由于其设备像素比为2，CSS切图时需要将设计稿的所有尺寸除以2，才是正确CSS像素值。
+- **em**，em是相对长度单位。它的值相对于**父元素**或祖先元素的字体大小。如果没有明确地设置字体大小，em将使用浏览器的默认字体大小。例如，如果父元素的字体大小是16像素，那么1em等于16像素。如果想要子元素的字体大小是父元素字体大小的两倍，可以使用2em作为子元素的字体大小。
+- **rem**，rem单位也是相对单位，但它是相对于**根元素**（通常是`<html>`元素）的字体大小。
+- **vh/vw(视口高度/宽度)**，其中视口是浏览器窗口或容器的可见区域。1vw等于视口宽度的1%。
+
 
 ### 响应式布局
 1. **媒体查询和确定分割点**
