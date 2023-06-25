@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>复选框组件示例</title>
+    <style>
+      /* 添加一些基本的样式 */
+      .checkbox-label {
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>复选框组件示例</h1>
+    <div id="checkboxContainer"></div>
+
+    <script>
+      // 创建复选框组件的函数
+      function createCheckBoxGroup(containerId, options, onchangeHandler) {
+        var container = document.getElementById(containerId);
+
+        // 遍历选项数组，并创建相应的复选框
+        options.forEach(function(option) {
+          var checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.value = option.value;
+
+          var label = document.createElement("label");
+          label.classList.add("checkbox-label");
+          label.textContent = option.label;
+
+          // onchange事件
+          checkbox.addEventListener("change", (event) => onchangeHandler(event, option.value));
+
+          // 将复选框和标签添加到容器中
+          container.appendChild(checkbox);
+          container.appendChild(label);
+        });
+      }
+
+      function handleCheckboxChange(event, value) {
+        if (event.target.checked) {
+          console.log("Checkbox is checked!", event, value);
+        } else {
+          console.log("Checkbox is unchecked!");
+        }
+      }
+
+      var containerId = "checkboxContainer";
+      var options = [
+        { label: "选项1", value: "option1" },
+        { label: "选项2", value: "option2" },
+        { label: "选项3", value: "option3" }
+      ];  
+      createCheckBoxGroup(containerId, options, handleCheckboxChange);
+    </script>
+  </body>
+</html>
