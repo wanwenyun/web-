@@ -52,12 +52,28 @@ React 路由的 Hash 模式指的是 URL 地址中以 # 开头的部分用于匹
 
 是通过**浏览器提供的 history API 来控制 URL 的变化**。history API 可以添加、修改和删除浏览器的访问历史记录，从而实现上一步、下一步和手动跳转页面。基于此，前端路由库可以使用新增的 `history.pushState()` 和 `history.replaceState()` 方法来控制 URL 的变化，在当前已有的 `back、forward、go`基础之上，它们提供了对历史记录修改的功能。然后通过监听 `popstate` 事件来实现路由的切换。只是当它们执行修改时，虽然改变了当前的 URL ，但**浏览器不会立即向后端发送请求**。
 
+在 HTML5 之前，浏览器就已经有了 history 对象。但在早期的 history 中只能用于多页面的跳转：
+```js
+history.go(-1);       // 后退一页
+history.go(2);        // 前进两页
+history.forward();     // 前进一页
+history.back();      // 后退一页
+```
+
+在 HTML5 的规范中，history 新增了以下几个 API：
+```js
+history.pushState();         // 添加新的状态到历史状态栈
+history.replaceState();      // 用新的状态代替当前状态
+history.state                // 返回当前状态对象
+```
+
 history.pushState() 和 history.replaceState() 的区别在于：
 
 - `history.pushState()` 在保留现有历史记录的同时，将 url 加入到历史记录中。
 - `history.replaceState()` 会将历史记录中的当前页面历史替换为 url。
 
-通过监听 `popstate`事件，获取URL的变化。
+
+history 的改变并不会触发任何事件，所以我们无法直接监听 history 的改变而做出相应的改变。他们不会触发 `popstate` 事件，这时我们需要手动触发页面跳转（渲染）
 
 ## react 路由history模式实现原理 - `<BrowserRouter>`
 
