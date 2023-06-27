@@ -8,6 +8,7 @@
 - [for of 和for in 有什么区别?](#for-of-和for-in-有什么区别)
 - [for...in和Object.keys()有什么区别？](#forin和objectkeys有什么区别)
 - [`parseInt`是什么？`[1,2,3].map(parseInt)` 为什么输出 1,NaN,NaN？](#parseint是什么123mapparseint-为什么输出-1nannan)
+- [setTimeout误差问题，及如何解决](#settimeout误差问题及如何解决)
 
 ### 如何在html中加载js代码
 
@@ -244,3 +245,25 @@ c: 3
 - 对于元素 `3`，`parseInt("3", 2)`，第二个参数是 `2`，但是 `3` 不是一个有效的二进制数字，所以返回 `NaN`。
 
 因此，`[1,2,3].map(parseInt)` 的输出是 `1, NaN, NaN`。
+
+### setTimeout误差问题，及如何解决
+
+因为js的事件循环机制，setTimeout会被添加到宏任务队列中。而setTimeout() 的第二个参数（延时时间）只是告诉 JavaScript 再过多长时间把当前任务添加到队列中。如果队列是空的，那么添加的代码会立即执行；如果**队列不是空的，那么它就要等前面的代码执行完了以后再执行**。这就导致了setTimeout的误差问题。
+
+
+使用Date对象进行时间校准来解决settimeout 时间偏差:
+```js
+function setDelayedTimeout(callback, delay) {
+  var currentTime = new Date().getTime();  // 获取当前时间戳
+  var expectedDelayTime = currentTime + delay;  // 计算预期的延迟时间
+
+  setTimeout(callback, expectedDelayTime - currentTime);  // 使用计算后的延迟时间设置setTimeout
+}
+
+// 示例使用
+function delayedFunction() {
+  console.log("Delayed function executed!");
+}
+
+setDelayedTimeout(delayedFunction, 1000);  // 设置延迟为1秒的setTimeout
+```

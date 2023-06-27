@@ -4,6 +4,7 @@
 - [HTTP状态码](#http状态码)
 - [URL与URI](#url与uri)
 - [http请求报文和响应报文](#http请求报文和响应报文)
+- [http请求和rpc请求的区别？如何转换？](#http请求和rpc请求的区别如何转换)
 
 # HTTP各种请求方法
 http/1.1规定了以下请求方法(注意，都是大写):
@@ -106,3 +107,7 @@ http/1.1规定了以下请求方法(注意，都是大写):
 - 空⾏
 - 响应体
 <img src='./picture/network/response.png' />
+
+# http请求和rpc请求的区别？如何转换？
+
+https://www.xiaolincoding.com/network/2_http/http_rpc.html#%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0
