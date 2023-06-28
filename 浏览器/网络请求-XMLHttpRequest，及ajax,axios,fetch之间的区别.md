@@ -13,6 +13,7 @@
 - [Ajax和Fetch的区别](#ajax和fetch的区别)
 - [Axios和Fetch的区别](#axios和fetch的区别)
 - [前端如何防止重复请求](#前端如何防止重复请求)
+- [封装axios？](#封装axios)
 
 
 > web API: 浏览器提供的一套操作浏览器功能和页面元素的接口
@@ -288,6 +289,7 @@ Axios 和 Fetch 都是 JavaScript 中用于发送网络请求的工具。它们�
 防抖: n 秒后在执行该事件，若在 n 秒内被重复触发，则重新计时
 2. **axios拦截器**：
     我们创建了一个axios实例，并定义了一个`pendingRequests`对象来存储正在进行的请求。在请求拦截器中，我们根据请求的url和请求方法生成一个唯一标识符，并检查是否已经存在相同的请求。如果存在相同的请求，我们使用`cancelToken`取消当前请求。否则，将新的请求添加到`pendingRequests`对象中。在响应拦截器中，无论请求成功或失败，我们都将该请求从`pendingRequests`对象中移除。
+    > 从 v0.22.0 开始，Axios 支持以 fetch API 方式—— `AbortController` 取消请求
     ```javascript
     import axios from 'axios';
 
@@ -337,3 +339,11 @@ Axios 和 Fetch 都是 JavaScript 中用于发送网络请求的工具。它们�
 
     export default instance;
     ```
+
+# 封装axios？
+- 实例层封装了axios实例（包含baseUrl,timeout等基础配置）+ 实例拦截器；
+- 在请求拦截器中可以注入通用配置，例如登录token；（headers:{authorization:"Bearer tokenvalue"}）;
+- 在响应拦截器中可以统一过滤数据，登录拦截等；
+- 拦截器还可以用于记录接口访问日志、统计数据与错误等；
+- 统一错误处理
+- 

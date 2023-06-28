@@ -14,6 +14,7 @@
   - [React.memo() 和 useMemo() ，useCallback()的区别](#reactmemo-和-usememo-usecallback的区别)
   - [useState与useReducer](#usestate与usereducer)
   - [useEffct与useLayoutEffect](#useeffct与uselayouteffect)
+  - [uesEffect拿不到最新的值](#ueseffect拿不到最新的值)
   - [useRef](#useref)
     - [为什么使用useRef能够每次拿到新鲜的值？](#为什么使用useref能够每次拿到新鲜的值)
   - [使用useContext和useReducer实现操作全局共享数据](#使用usecontext和usereducer实现操作全局共享数据)
@@ -323,9 +324,9 @@ useEffect(()=>{
 
 ### useEffct与useLayoutEffect
 
-- `useEffect`属于异步执行，执行时机是浏览器完成渲染之后，（**commit阶段，layout阶段（执行DOM操作后）**）
+- `useEffect`属于**异步**执行，执行时机是浏览器完成渲染之后，（**commit阶段，layout阶段（执行DOM操作后）**）
 
-- `useLayoutEffect`是同步执行，执行时机是浏览器把内容真正渲染到界面之前（**commit阶段，before mutation阶段（执行DOM操作前）**）；可以获取更新后的 state；
+- `useLayoutEffect`是**同步**执行，执行时机是浏览器把内容真正渲染到界面之前（**commit阶段，before mutation阶段（执行DOM操作前）**）；可以获取更新后的 state；
 
 `useEffect`异步执行的优点是，**react渲染组件**不必等待useEffect函数执完毕，造成阻塞。
 例如，下面的代码，组件就会渲染两次。
@@ -354,6 +355,49 @@ ReactDom.render(
 
 当你点击div时，会出现短暂的闪烁，屏幕上会先出现0，然后出现useEffect中设定数字，但是使用useLayoutEffect则不会出现闪烁的情况，屏幕上会直接显示设定的字。
 
+### uesEffect拿不到最新的值
+
+现象：
+```js
+import { useState, useEffect } from 'react'
+
+export default MyComponent = () => {
+    const [ state, setState ] = useState(0)
+
+    useEffect(() => {
+        setState(1)
+        console.log(state)    // 打印结果为：0，期望是1
+    }, [])
+
+    return (
+        <div>{ state }</div>
+    )
+}
+```
+
+原因：setState的时候相当于重新render了一次组件，此时state已经是最新值，由于useEffect的第二个参数为空数组，所以第一入参的函数依然没有改变，其中的state变量指向的还是上一次创建的MyComponent函数（形成了一个**闭包**），里面保存着上一次的state值，所以输出是0。
+
+解决办法：
+使用`useRef`来获取最新值
+```js
+import { useState, useEffect, useRef } from 'react';
+
+export default MyComponent = () => {
+    const [state, setState] = useState(0);
+    const stateRef = useRef();
+
+    useEffect(() => {
+        setState(1);
+        stateRef.current = state;
+        console.log(stateRef.current); // 打印结果为：1
+    }, []);
+
+    return (
+        <div>{state}</div>
+    );
+};
+```
+
 ### useRef
 其作用：
 1. 保存一个值,在整个生命周期中维持不变
@@ -361,7 +405,7 @@ ReactDom.render(
 
 #### 为什么使用useRef能够每次拿到新鲜的值？
 
-`useRef` 可以存储任意可变的值，而且每次更新组件后，`useRef` 的返回值都会是**同一个对象**。所以在函数组件中，当我们用 `useRef` 来保存一个变量时，即使进行了重新渲染，也只是当前渲染结果下的一个引用，所以可以每次拿到新鲜的值。
+`useRef` 可以存储任意可变的值，而且每次更新组件后，`useRef` 的返回值都会是**同一个对象**。所以在函数组件中，当我们用 `useRef` 来保存一个变量时，即使进行了重新渲染，也只是当前渲染结果下的一个**引用**，所以可以每次拿到新鲜的值。
 
 还有一个值得注意的地方是，当我们修改 `useRef` 存储的值时，并不会重新渲染组件。
 
