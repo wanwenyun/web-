@@ -608,7 +608,11 @@ sourceMap是**一项将编译、打包、压缩后的代码映射回源代码的
 > tcc项目是用的webpack4版本
 # 如何优化 Webpack 的构建速度？
 - **优化 Loader**：优化 Loader 的文件搜索范围，再将编译过的文件缓存起来。
-- `HappyPack`: 可以将 Loader 的同步执行转换为并行的，这样就能充分利用系统资源来加快打包效率了
+  - 优化 Loader 的文件搜索范围：通过配置loader的`exclude`选项,告诉对应的loader可以忽略某个目录；或者通过配置loader的`include`选项，告诉loader只需要处理指定的目录。因为loader处理的文件越少，执行速度就会更快。
+  - 缓存： `cache-loader`和`hard-source-webpack-plugin`都是用来优化webpack打包性能的插件，它们的作用是缓存webpack的构建结果，以避免每次重新构建都需要重新执行耗时的操作，从而提高打包速度。
+    - 他们的区别在于存储的位置不同，`cache-loader`会将输出结果存储在内存中，所以它的缓存速度更快，但是存储的内容也更有限。`hard-source-webpack-plugin`存储在本地磁盘中，适用于比较大型的项目。
+
+- 多线程`HappyPack`: 可以将 Loader 的同步执行转换为并行的，这样就能充分利用系统资源来加快打包效率了
   ```json
   module: {
     loaders: [

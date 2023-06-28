@@ -9,6 +9,7 @@
 - [for...in和Object.keys()有什么区别？](#forin和objectkeys有什么区别)
 - [`parseInt`是什么？`[1,2,3].map(parseInt)` 为什么输出 1,NaN,NaN？](#parseint是什么123mapparseint-为什么输出-1nannan)
 - [setTimeout误差问题，及如何解决](#settimeout误差问题及如何解决)
+- [js自定义事件](#js自定义事件)
 
 ### 如何在html中加载js代码
 
@@ -267,3 +268,35 @@ function delayedFunction() {
 
 setDelayedTimeout(delayedFunction, 1000);  // 设置延迟为1秒的setTimeout
 ```
+
+### js自定义事件
+目前实现自定义事件的方式共两种
+
+- `Event()`
+- `CustomEvent()`
+
+还得简单了解一下另外两个方法
+- `addEventListener` - 添加事件监听，`target.addEventListener(type, listener, options);`
+- `dispatchEvent` - 触发被我们定义的事件, `target.dispatchEvent(event)`
+
+实现自定义事件例子
+- Event
+  ```js
+  const sendEvent = new Event("sendMsg")
+  document.addEventListener("sendMsg",print)
+  document.dispatchEvent(sendEvent) // 触发
+  function print() {
+    console.log("自定义事件")
+  }
+  ```
+- CustomEvent
+  ```js
+  const sendEvent = new CustomEvent("sendMsg", {detail:{
+    name: "mayoha"
+  }})
+  document.addEventListener("sendMsg",print)
+  document.dispatchEvent(sendEvent) // 触发事件
+  function print(e) {
+    console.log(e.detail.name)
+  }
+  ```
