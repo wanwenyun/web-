@@ -8,7 +8,7 @@
     - [用数组模拟实现useState，useEffect - 极简版](#用数组模拟实现usestateuseeffect---极简版)
   - [hooks旧引用问题](#hooks旧引用问题)
   - [为什么不能在条件语句中写hook？](#为什么不能在条件语句中写hook)
-  - [hooks与声明周期](#hooks与声明周期)
+  - [hooks与声明周期 :star:](#hooks与声明周期-star)
   - [常用钩子](#常用钩子)
   - [useEffect 依赖为空数组与 componentDidMount 区别](#useeffect-依赖为空数组与-componentdidmount-区别)
   - [React.memo() 和 useMemo() ，useCallback()的区别](#reactmemo-和-usememo-usecallback的区别)
@@ -22,6 +22,8 @@
 ## Hooks
 ### 引入Hook的动机?
 在组件之间复用状态逻辑很难; 复杂组件变得难以理解; 难以理解的 class. 为了解决这些实际开发痛点, 引入了Hook.
+
+React Hooks 的意思是，组件尽量写成纯函数，如果需要外部功能和副作用，就用钩子把外部代码"钩"进来。
 
 ### Hook 是什么? 什么时候会用 Hook?
 - Hook 是一个特殊的函数, 它可以让你“钩入” React 的特性. 如, useState 是允许你在 React 函数组件中添加 state 的 Hook.
@@ -231,7 +233,7 @@ const Counter = () => {
 ### 为什么不能在条件语句中写hook？
 hook会按顺序存储在链表中，如果写在条件判断中，就没法保持链表的顺序
 
-### hooks与声明周期
+### hooks与声明周期 :star:
 <img src="./picture/lifeCycle.png" />
 
 ```js
