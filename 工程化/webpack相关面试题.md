@@ -180,7 +180,7 @@ publicPath的表现形式有两类：`相对路径和绝对路径`
 代码块,一个 Chunk 由多个模块组合而成，用于代码合并与分割。
 
 ## Loader
-loader 让 webpack 能够去处理那些`非js`文件（webpack 自身只理解 JavaScript）。并可以对代码做polyfill，解决一些浏览器兼容问题。
+loader 让 webpack 能够去处理那些`非js`文件（webpack 自身只理解 JavaScript）。并可以对代码做polyfill，解决一些**浏览器兼容**问题。
 >core-js 是js标准库的polyfill
 
 Loader本质就是一个`函数`，在该函数中对接收到的内容进行转换，返回转换后的结果。因为 Webpack 只认识 JavaScript，所以 Loader 就成了**翻译官**，对其他类型的资源进行转译的预处理工作。
@@ -609,7 +609,7 @@ sourceMap是**一项将编译、打包、压缩后的代码映射回源代码的
 # 如何优化 Webpack 的构建速度？
 - **优化 Loader**：优化 Loader 的文件搜索范围，再将编译过的文件缓存起来。
   - 优化 Loader 的文件搜索范围：通过配置loader的`exclude`选项,告诉对应的loader可以忽略某个目录；或者通过配置loader的`include`选项，告诉loader只需要处理指定的目录。因为loader处理的文件越少，执行速度就会更快。
-  - 缓存： `cache-loader`和`hard-source-webpack-plugin`都是用来优化webpack打包性能的插件，它们的作用是缓存webpack的构建结果，以避免每次重新构建都需要重新执行耗时的操作，从而提高打包速度。
+  - 缓存： `cache-loader（V5版本）`和`hard-source-webpack-plugin（V4版本）`都是用来优化webpack打包性能的插件，它们的作用是缓存webpack的构建结果，以避免每次重新构建都需要重新执行耗时的操作，从而提高打包速度。
     - 他们的区别在于存储的位置不同，`cache-loader`会将输出结果存储在内存中，所以它的缓存速度更快，但是存储的内容也更有限。`hard-source-webpack-plugin`存储在本地磁盘中，适用于比较大型的项目。
 
 - 多线程`HappyPack`: 可以将 Loader 的同步执行转换为并行的，这样就能充分利用系统资源来加快打包效率了
